@@ -4,7 +4,7 @@ function [depths,rhos] = modelGen(kMax,choice)
         inRhos = [10,390,10]';
     elseif choice == '4LayerA'
         inDepths = [0,5,30,200]';
-        inRhos = [100,10,250,1]';
+        inRhos = [100,10,350,1]';
     end
     
     depths = nan*zeros(kMax,1);
