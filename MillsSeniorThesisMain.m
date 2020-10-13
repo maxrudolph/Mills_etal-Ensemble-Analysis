@@ -50,10 +50,10 @@ ifSave = input('save?\n');
 model = @(a,b,c) calculateRho1D(a,b,c);
 results = mcmcAlgorithm( x,y,model,options ); %Do the inversion
 if ifSave
-    filename = ['Ensemble_', num2str(measure.noiseCoef), '_', choice,...
+    filename = ['Ensemble_', num2str(measure.noiseCoef), '_', modelChoice,...
         '_', date, '.mat'];
     save(filename,'results','trueDepths','trueRhos','x','y','fx',...
-        'options','noiseCoef');
+        'options','measure','model');
 end
 
 %% Calculate and measure "mean" model
