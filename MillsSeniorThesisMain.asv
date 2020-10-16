@@ -7,11 +7,11 @@ example. Use with calculateRho1D, genericMedium, and mcmcAlgorithm.
  Chris Mills 10/2020
 %}
 
-forwardModel = @(a,b,c) calculateRho1D(a,b,c);
-ifLoadEnsemble = input('Load previous ensemble? true/false\n');
+ifLoadEnsemble = input('Load previous ensemble? true/false');
 
 if ~ifLoadEnsemble
     %% Set inversion options
+    forwardModel = @(a,b,c) calculateRho1D(a,b,c);
     options.kMax = 10; %max number of layers allowed in models
     options.numSteps = 1e4; %total iterations for MCMC loop. 1e7+ recommended
     options.mLPSCoefficient = 1e4;
@@ -36,37 +36,34 @@ if ~ifLoadEnsemble
         disp(['Changing saveStart time']);
     end
 
-    %% Load or create data
+    %% Define and measure starting model
     ifLoadData = input('Load data? true/false\n');
 
     if ifLoadData
         % ...Not setup yet to take real data
     else
-        %Model and Measurement options
+        %Measurement options
         measure.minDist = 0.1; % Smallest electrode distance, meters
         measure.maxDist = 1000; %  Largest electrode distance, meters
         measure.numMeasurements = 21; %total # of measurements between minDist,maxDist
         measure.noiseCoef = 0.1; %How "noisy" are the measurements, smaller values = less noisy
+
         %  true model definition
         measure.modelChoice = '4LayerA'; %choice of model. '3LayerA' or '4LayerA'
-        
+
         measure.kMax = options.kMax;
         data = createSyntheticData(measure);
     end
 
-    %% Do the thing
-    results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
+%% Do the thing
+results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
 
-    ifSave = input('save?\n');
-    if ifSave
-        filename = ['Ensemble_', modelChoice, '_',...
-            num2str(measure.noiseCoef), '_', date, '.mat'];
-        save(filename,'results','trueDepths','trueRhos','data.x',...
-            'data.y','data.fx','options','measure','model');
-    end
-    
-else
-    %... Load ensemble not set up yet
+ifSave = input('save?\n');
+if ifSave
+    filename = ['Ensemble_', modelChoice, '_',...
+        num2str(measure.noiseCoef), '_', date, '.mat'];
+    save(filename,'results','trueDepths','trueRhos','x','y','fx',...
+        'options','measure','model');
 end
 
 %% Calculate and measure "mean" model
@@ -77,5 +74,5 @@ end
 
 %% Plot Run Properties
 disp(['Plotting']);
-ensembleAnalysis(results,data,forwardModel);
+ensembleAnalysis(results,measure,forwardModel);
 

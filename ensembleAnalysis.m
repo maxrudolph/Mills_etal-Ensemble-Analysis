@@ -1,4 +1,4 @@
-function ensembleAnalysis(results,measure,model)
+function ensembleAnalysis(results,data,model)
     %% Run properties
     figure();
     subplot(2,1,1);
@@ -40,7 +40,7 @@ function ensembleAnalysis(results,measure,model)
         ind = randperm(nSaved,nSavedPlot);
     end
     yVals = zeros(nxplot,nSavedPlot);
-    xVals = logspace(measure.minDist,measure.maxDist,nxplot)';
+    xVals = logspace(log10(data.x(1)),log10(data.x(end)),nxplot)';
     plotLambda = makeLambda(xVals);
     
     for i=1:nSavedPlot
@@ -56,17 +56,18 @@ function ensembleAnalysis(results,measure,model)
     for i=1:nSavedPlot
         hEnsemble=plot(xVals,yVals(:,i),'Color',[200 200 200]/255); %The ensemble solutions
     end
+    %{
     % find solution with median misfit from ensemble
     [meanModel, medianModel, bestFitModel] = createMeanModel(...
         length(results.storedRhos(:,1)),measure,results);
     
    
-    hMedian = plot(measure.x,model(medianModel.depths,medianModel.rhos,...
-        measure.lambda),'LineWidth',2);
-    hBest = plot(measure.x,model(bestFitModel.depths,bestFitModel.rhos,...
-        measure.lambda),'LineWidth',2);
+    hMedian = plot(data.x,model(medianModel.depths,medianModel.rhos,...
+        data.lambda),'LineWidth',2);
+    hBest = plot(data.x,model(bestFitModel.depths,bestFitModel.rhos,...
+        data.lambda),'LineWidth',2);
 
-   %{
+   
 set(gca,'Box','on');
 set(gcf,'Color','w');
 hdata=loglog(x,y,'r.','MarkerSize',10.0); %The measurements

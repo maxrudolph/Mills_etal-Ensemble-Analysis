@@ -1,4 +1,4 @@
-function result = mcmcAlgorithm(xObserved,yObserved,model,options)
+function result = mcmcAlgorithm(data,model,options)
 %{
 This routine is meant to be used with MillsSeniorThesisMain, 
  calculateRho1D, and the genericMedium class definition.
@@ -11,10 +11,10 @@ layers, number of steps, steps to save, and whether to sample prior pdf
 % Create bounds on parameter values. These bounds are based on Appendix A
 % in Malinverno 2002. See also the "genericMedium" constructor function
 %Bound parameters. Bounds based on Appendix A, Malinverno 2002
-numMeasurements = length(xObserved);
+numMeasurements = length(data.x);
 pBounds.maxLayers = options.kMax; % max # of layers in a given model
-pBounds.depthMin = min(xObserved); %min depth for layer interface (not top)
-pBounds.depthMax = max(xObserved); % max depth for layer interface
+pBounds.depthMin = min(data.x); %min depth for layer interface (not top)
+pBounds.depthMax = max(data.x); % max depth for layer interface
 pBounds.rhoMin = 1e-1; % min resistivity, NEEDS UPDATE
 pBounds.rhoMax = 1e8; % max resistivity, NEEDS UPDATE
 pBounds.varMin = 1e-6; % valid?  
@@ -29,7 +29,7 @@ end
 abciss = [-0.420625;-0.20265625;0.0153125;0.23328125;0.45125;...
     0.66921875;0.8871875;1.10515625;1.323125;1.54109375;1.7590625];
 
-[xGrid,abcissGrid] = meshgrid(xObserved,abciss);
+[xGrid,abcissGrid] = meshgrid(data.x,abciss);
 lambda = 10.^(abcissGrid-log10(xGrid));
 
 totalSteps = options.numSteps; %total # of iterations to run
@@ -43,7 +43,7 @@ layersProposed = genericMedium(pBounds,numMeasurements);
 layersAccepted = genericMedium(pBounds,numMeasurements);
 
 [depths,rhos] = layersAccepted.getSln();
-layersAccepted.setMisfit(yObserved - model(depths,rhos,lambda));
+layersAccepted.setMisfit(data.y - model(depths,rhos,lambda));
 
 % Pre-allocate memory for saving runs 
 result.storedDepths = nan*zeros(pBounds.maxLayers,numSavedRuns);
@@ -58,7 +58,7 @@ result.numLayers = zeros(1,numSavedRuns);
 
 % Slow down layer adding during the burn-in period
 maxLayersPerStep = []; %This will be the max layers in any given step.
-mLPSCoefficient = 10000;
+mLPSCoefficient = 1e4;
 if mLPSCoefficient*sum(2:pBounds.maxLayers) > totalSteps
     mLPSCoefficient = ceil(totalSteps/sum(2:pBounds.maxLayers));
     disp(['Not enough steps, changing burn-in time']);
@@ -93,7 +93,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         probAccept = log(1);
     else
         [depths,rhos] = layersProposed.getSln();
-        layersProposed.setMisfit(yObserved - model(depths,rhos,lambda));
+        layersProposed.setMisfit(data.y - model(depths,rhos,lambda));
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
         phiPrime = layersProposed.getMahalDist();
