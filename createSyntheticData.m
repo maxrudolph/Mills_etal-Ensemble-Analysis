@@ -1,4 +1,17 @@
-function data = createSyntheticData(measure)
+function data = createSyntheticData(measure, forwardModel)
+%{
+    Creates artificial model and synthetic measurements for
+MillsSeniorThesisMain. The input structure, 'measure,' contains:
+minDist, maxDist: scalars, min and max electrode spacing during 
+measurements, in meters; numMeasurements: number of measurements taken;
+noiseCoef: How noisy the measurements are; modelChoice: which model to use;
+kMax: max number of layers (for inversion purposes). forwardModel is a
+function handle for the choice of forward model being used (script)
+    Creates: data a structure with fields x: values of electrode spacings
+measurements; lambda: a 2D array based on x; fx: the model output with no
+noise; y: model output with noise.
+    Requires other scripts: modelGen, and something for forwardModel
+    %}
     [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
     trueNumLayers = nnz(~isnan(trueDepths)); %k = number of layers
     minDist = log10(measure.minDist);
@@ -7,7 +20,7 @@ function data = createSyntheticData(measure)
     %array of electrode spacings
     data.lambda = makeLambda(data.x);
     %lambda is an 11 x numMeasurements array of constants
-    data.fx = calculateRho1D(trueDepths,trueRhos,data.lambda); 
+    data.fx = forwardModel(trueDepths,trueRhos,data.lambda); 
     %The "true" model output given above parameters
     noiseVector = measure.noiseCoef.*data.fx.*randn(length(data.fx),1);
     % add normally distributed noise

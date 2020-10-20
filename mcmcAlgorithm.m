@@ -1,11 +1,15 @@
-function result = mcmcAlgorithm(data,model,options)
+function results = mcmcAlgorithm(data,model,options)
 %{
-This routine is meant to be used with MillsSeniorThesisMain, 
- calculateRho1D, and the genericMedium class definition.
- xObserved and yObserved are the observations (electrode spacings, apparent
-resistivities); model is handle to a function calculating forward-model 
- given parameters, options contains fields specifying max number of 
-layers, number of steps, steps to save, and whether to sample prior pdf
+    Inputs:data.x and data.y are the observations (electrode spacings, 
+apparent resistivities); model is handle to a function calculating 
+forward-model given parameters, options contains fields kMax (max number of 
+layers); numSteps (number of steps); mLPSCoefficient(int, involved with 
+length of burn-in time); saveStart,saveSkip (ints controlling which runs to
+save); samplePrior (bool, accept all proposed Slns or not); intlVar 
+(variance); alterVar (bool, controls whether variance varies or not);
+    Output: result is a structure with fields storedDepths; storedRhos;
+storedSavedVars; storedLikelihoods; allMisfits; ensembleMisfits;
+storedProbAccepts; numLayers; maxLayers; storedChoices;
 %}
 %% Initializing
 % Create bounds on parameter values. These bounds are based on Appendix A
@@ -46,15 +50,15 @@ layersAccepted = genericMedium(pBounds,numMeasurements);
 layersAccepted.setMisfit(data.y - model(depths,rhos,lambda));
 
 % Pre-allocate memory for saving runs 
-result.storedDepths = nan*zeros(pBounds.maxLayers,numSavedRuns);
-result.storedRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
-result.storedSavedVars = zeros(1,numSavedRuns); %only for saved solutions
-result.storedLikelihoods=zeros(totalSteps,1);
-result.allMisfits = zeros(totalSteps,1);
-result.ensembleMisfits = zeros(1,numSavedRuns);
+results.storedDepths = nan*zeros(pBounds.maxLayers,numSavedRuns);
+results.storedRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
+results.storedSavedVars = zeros(1,numSavedRuns); %only for saved solutions
+results.storedLikelihoods=zeros(totalSteps,1);
+results.allMisfits = zeros(totalSteps,1);
+results.ensembleMisfits = zeros(1,numSavedRuns);
 %result.storedChoices = zeros(totalSteps,1);
-result.storedProbAccepts = zeros(totalSteps,1);
-result.numLayers = zeros(1,numSavedRuns);
+results.storedProbAccepts = zeros(totalSteps,1);
+results.numLayers = zeros(1,numSavedRuns);
 
 % Slow down layer adding during the burn-in period
 maxLayersPerStep = []; %This will be the max layers in any given step.
@@ -67,7 +71,7 @@ for iter = 2:pBounds.maxLayers
     maxLayersPerStep = [maxLayersPerStep; iter*ones(mLPSCoefficient*iter,1)];
 end
 maxLayersPerStep(end+1:totalSteps) = maxLayersPerStep(end);
-result.maxLayers = maxLayersPerStep;
+results.maxLayers = maxLayersPerStep;
 
 %% Main loop
 saveStep = 0;
@@ -120,21 +124,21 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
             disp(['Saving begun']);
         end
         %Store properties for ensemble
-        [result.storedDepths(:,saveStep),...
-            result.storedRhos(:,saveStep)] = layersAccepted.getSln();
-        result.storedSavedVars(saveStep) = layersAccepted.getVar();
-        result.ensembleMisfits(saveStep) = layersAccepted.getMisfit(); 
+        [results.storedDepths(:,saveStep),...
+            results.storedRhos(:,saveStep)] = layersAccepted.getSln();
+        results.storedSavedVars(saveStep) = layersAccepted.getVar();
+        results.ensembleMisfits(saveStep) = layersAccepted.getMisfit(); 
     end
     %Store properties for entire run
-    result.allMisfits(iter) = layersAccepted.getMisfit(); 
-    result.storedLikelihoods(iter) = layersAccepted.getLikeProb();
-    result.storedChoices(iter) = choice;
-    result.storedProbAccepts(iter) = probAccept;
+    results.allMisfits(iter) = layersAccepted.getMisfit(); 
+    results.storedLikelihoods(iter) = layersAccepted.getLikeProb();
+    results.storedChoices(iter) = choice;
+    results.storedProbAccepts(iter) = probAccept;
 end
 
 %% Wrap up
 %save results to solution structure
-result.numLayers = sum(~isnan(result.storedDepths),1);
+results.numLayers = sum(~isnan(results.storedDepths),1);
 %% Functions
 function resetProposedSln(accepted,proposed)
     proposed.recieveSln(accepted.sendSln());
