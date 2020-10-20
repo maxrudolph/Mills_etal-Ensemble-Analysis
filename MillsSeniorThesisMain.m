@@ -13,7 +13,7 @@ Chris Mills 10/2020
 forwardModel = @(a,b,c) calculateRho1D(a,b,c);
 
 %% Step 1: Load data or create model/generate synthetic measurements
-ifLoadData = input('Load data? true/false\n');
+ifLoadData = false;%input('Load data? true/false\n');
 
 if ifLoadData
     % ...Not setup yet to take real data...
@@ -59,20 +59,13 @@ data = createSyntheticData(measure, forwardModel); %creates measurements
 %% Do inversion
 results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
 
-ifSave = input('save?\n');
-if ifSave
-    filename = ['Ensemble_', modelChoice, '_',...
-        num2str(measure.noiseCoef), '_', date, '.mat'];
-    save(filename,'results','trueDepths','trueRhos','data.x',...
-        'data.y','data.fx','options','measure','model');
-end
-%% Calculate and measure "mean" model
-%Model represents the mean of all models (at each depth, the mean
-%resistivity across all saved models for that depth)
-%disp(['Creating mean model']);
-%meanModel = createMeanModel(options.kMax,measure,results);
-
 %% Plot Run Properties
 disp(['Plotting']);
 ensembleAnalysis(results,data,forwardModel);
 
+ifSave = input('save? true/false\n');
+if ifSave
+    filename = ['Ensemble_', measure.modelChoice, '_',...
+        num2str(measure.noiseCoef), '_', date, '.mat'];
+    save(filename,'results','data','options','measure','forwardModel');
+end

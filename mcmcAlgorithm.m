@@ -10,6 +10,7 @@ save); samplePrior (bool, accept all proposed Slns or not); intlVar
     Output: result is a structure with fields storedDepths; storedRhos;
 storedSavedVars; storedLikelihoods; allMisfits; ensembleMisfits;
 storedProbAccepts; numLayers; maxLayers; storedChoices;
+    External scripts: genericMedium 
 %}
 %% Initializing
 % Create bounds on parameter values. These bounds are based on Appendix A
@@ -25,21 +26,17 @@ pBounds.varMin = 1e-6; % valid?
 pBounds.varMax = 1e3; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
-if options.alterVar
+if options.alterVar %Whether or not variance can be altered
     randomOptions = 5;
 else
     randomOptions = 4;
 end
-abciss = [-0.420625;-0.20265625;0.0153125;0.23328125;0.45125;...
-    0.66921875;0.8871875;1.10515625;1.323125;1.54109375;1.7590625];
 
-[xGrid,abcissGrid] = meshgrid(data.x,abciss);
-lambda = 10.^(abcissGrid-log10(xGrid));
-
+lambda = makeLambda(data.x);
 totalSteps = options.numSteps; %total # of iterations to run
 saveStart = totalSteps - options.saveStart; % what iteration to start saving
 saveSkip = options.saveSkip;
-pctSteps = round(totalSteps/100); %For printing status
+pctSteps = round(totalSteps/10); %For printing status
 numSavedRuns = ceil(options.saveStart/saveSkip); %How many runs to save
 
 % Initialize solutions
@@ -62,17 +59,14 @@ results.numLayers = zeros(1,numSavedRuns);
 
 % Slow down layer adding during the burn-in period
 maxLayersPerStep = []; %This will be the max layers in any given step.
-mLPSCoefficient = 1e4;
-if mLPSCoefficient*sum(2:pBounds.maxLayers) > totalSteps
-    mLPSCoefficient = ceil(totalSteps/sum(2:pBounds.maxLayers));
-    disp(['Not enough steps, changing burn-in time']);
-end
 for iter = 2:pBounds.maxLayers
-    maxLayersPerStep = [maxLayersPerStep; iter*ones(mLPSCoefficient*iter,1)];
+    maxLayersPerStep = [maxLayersPerStep;...
+        iter*ones(options.mLPSCoefficient*iter,1)];
 end
-maxLayersPerStep(end+1:totalSteps) = maxLayersPerStep(end);
+if length(maxLayersPerStep) < totalSteps
+    maxLayersPerStep(end+1: totalSteps) = maxLayersPerStep(end);
+end
 results.maxLayers = maxLayersPerStep;
-
 %% Main loop
 saveStep = 0;
 disp(['MCMC algorithm starting']);
@@ -118,7 +112,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         disp(['MCMC algorithm ',num2str(100*(iter/totalSteps)),'% finished']);
     end
     
-    if (iter>saveStart)&&(round(iter/saveSkip)==iter/saveSkip)  %starts recording after ItsSaved models for every Inc_save-th model
+    if (iter>saveStart)&&(round(iter/saveSkip)==iter/saveSkip) %starts recording after ItsSaved models for every Inc_save-th model
         saveStep=saveStep+1;
         if saveStep == 1
             disp(['Saving begun']);
