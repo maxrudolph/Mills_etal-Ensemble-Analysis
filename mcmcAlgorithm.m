@@ -36,7 +36,7 @@ lambda = makeLambda(data.x);
 totalSteps = options.numSteps; %total # of iterations to run
 saveStart = totalSteps - options.saveStart; % what iteration to start saving
 saveSkip = options.saveSkip;
-pctSteps = round(totalSteps/10); %For printing status
+pctSteps = round(totalSteps/100); %For printing status
 numSavedRuns = ceil(options.saveStart/saveSkip); %How many runs to save
 
 % Initialize solutions
