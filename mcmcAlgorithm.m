@@ -26,6 +26,7 @@ pBounds.varMin = 1e-6; % valid?
 pBounds.varMax = 1e3; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
+pBounds.numSteps = options.numSteps;
 if options.alterVar %Whether or not variance can be altered
     randomOptions = 5;
 else
