@@ -19,7 +19,7 @@ if ifLoadData
     % ...Not setup yet to take real data...
 else
     %Artifical model setup:
-    measure.modelChoice = '3LayerA'; %currently setup: 3LayerA, 4LayerA
+    measure.modelChoice = '4LayerA'; %currently setup: 3LayerA, 4LayerA
     %Measurement options
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
