@@ -13,6 +13,7 @@ Chris Mills 10/2020
 forwardModel = @(a,b,c) calculateRho1D(a,b,c);
 
 %% Step 1: Load data or create model/generate synthetic measurements
+%{
 ifLoadData = false;%input('Load data? true/false\n');
 
 if ifLoadData
@@ -26,17 +27,17 @@ else
     measure.numMeasurements = 21; %total # of measurements
     measure.noiseCoef = 0.1; %How "noisy" are the measurements
 end
-
+%}
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 5e5; %total iterations for MCMC loop. 1e7+ recommended
-options.mLPSCoefficient = 1e4;
+options.numSteps = 1e4; %total iterations for MCMC loop. 1e7+ recommended
+options.mLPSCoefficient = 1e5;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
 options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 100; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 10; %sample every (saveSkip)th step once sampling begins
 options.samplePrior = false; % true = always accept proposed solution
 options.intlVar = 1.0; %variance = how much misfit accepted.
 options.alterVar = true; %If false, model variance will never change
@@ -53,28 +54,37 @@ if options.numSteps - options.saveStart < options.mLPSCoefficient*...
     disp(['Changing saveStart time']);
 end
 
-measure.kMax = options.kMax;
+data.x = feetToMeters([10,25,40,50,100,125,150]);
+data.y = [7177.30,4230.1,6228.1,8701.7,591356.0,8036.3,...
+    99022.1];
+data.lambda = makeLambda(data.x);
 %data = createSyntheticData(measure, forwardModel); %creates measurements
 
 %% Do inversion
-%results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
+results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
 
-data = createSyntheticData(measure, forwardModel); %creates measurements
-results = mcmcAlgorithm(data,forwardModel,options);
-%filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
-%    num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
-%doSaving(filename,results,data,thisMeasure,options,forwardModel);
+%{
+noiseCoefValues = [0.01,0.05,0.1,0.15,0.2];
 
+parfor irun = 1:length(noiseCoefValues)
+    thisMeasure = measure;
+    thisMeasure.noiseCoef = noiseCoefValues(irun);
+    data = createSyntheticData(thisMeasure, forwardModel); %creates measurements
+    results = mcmcAlgorithm(data,forwardModel,options);
+    filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
+        num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
+    doSaving(filename,results,data,thisMeasure,options,forwardModel);
+end
+%}
 
 %% Plot Run Properties
 disp(['Plotting']);
 
 
-ifSave = true%false;%input('save? true/false\n');
+ifSave = true;%false;%input('save? true/false\n');
 if ifSave
-    filename = ['Ensemble_', measure.modelChoice, '_',...
-        num2str(measure.noiseCoef), '_', date, '.mat'];
-    save(filename,'results','data','options','measure','forwardModel');
-    ensembleAnalysis(filename);
+    filename = ['Ensemble_ActualData_',date, '.mat'];
+    save(filename,'results','data','options','forwardModel');
+    ensembleAnalysis2(filename);
 end
 %}

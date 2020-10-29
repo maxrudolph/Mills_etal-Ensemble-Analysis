@@ -1,4 +1,4 @@
-function ensembleAnalysis(filename)
+function ensembleAnalysis2(filename)
 load(filename)
 
 ifDebugging = true;
@@ -93,7 +93,7 @@ end
     set(gcf,'Color','w');
     %True model
     hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
-    hexact = loglog(data.x,data.fx,'r-','LineWidth',1.5);
+    %hexact = loglog(data.x,data.fx,'r-','LineWidth',1.5);
     
     %Mean model
     minDist = log10(data.x(1));
@@ -143,8 +143,8 @@ end
     xlabel('Array spacing (m)');
     ylabel('Apparent Resistivity (\Omega-m)')
     
-legend([hexact,hdata,hMean,hMedian,hBest,hEnsembleMean,hEnsemble],...
-    {'Exact','Data+noise','Mean model','Median model','Best fit model',...
+legend([hdata,hMean,hMedian,hBest,hEnsembleMean,hEnsemble],...
+    {'Data','Mean model','Median model','Best fit model',...
     'Ensemble mean','Ensemble'},'Location','southwest');
 
 %% Color plot
