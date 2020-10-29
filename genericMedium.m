@@ -23,6 +23,7 @@ classdef genericMedium < handle
         depthChange;% standard deviation for depth changes
         rhoChange;  % standard deviation for rho changes
         varChange;  % log, standard deviation for var changes (not really setup yet)
+        badRunsThreshold; % how many bad runs you can have before it errors
     end
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,6 +53,7 @@ classdef genericMedium < handle
             obj.mahalDist = 0;
             obj.likeProb = 0;
             obj.misfit = 0;
+            obj.badRunsThreshold = ceil(log10(pBounds.numSteps)*20);
         end
         
         %This is meant to send the solution to another genericMedium object
@@ -133,8 +135,8 @@ classdef genericMedium < handle
             nbad = 0;
             while ~success
                 nbad=nbad+1;
-                if(nbad>50)
-                    error('nbad > 50,perturbDepth');
+                if(nbad>obj.badRunsThreshold)
+                    error('nbad exceeded max,perturbDepth');
                 end
                 indx = randi([2,obj.numLayers]); %Don't touch first layer
                 dummy = obj.depths(indx) + obj.depthChange*randn;
@@ -161,8 +163,8 @@ classdef genericMedium < handle
             indx = obj.numLayers+1; %Index of the new layer
             while ~success
                 nbad=nbad+1;
-                if(nbad>50)
-                    error('nbad > 50,addLayer');
+                if(nbad>obj.badRunsThreshold)
+                    error('nbad exceeded max,addLayer');
                 end
                 dummyDepth = obj.depthMin + rand*(obj.depthMax - obj.depthMin);
                 dummyRho = obj.rhoMin + rand*(obj.rhoMax - obj.rhoMin);
@@ -185,8 +187,8 @@ classdef genericMedium < handle
             nbad = 0;
             while ~success
                 nbad=nbad+1;
-                if(nbad>50)
-                    error('nbad > 50,perturbRho');
+                if(nbad>obj.badRunsThreshold)
+                    error('nbad exceeded max ,perturbRho');
                 end
                 indx = randi([1,obj.numLayers]);
                 dummy = obj.rhos(indx) + obj.rhoChange*randn;
@@ -201,8 +203,8 @@ classdef genericMedium < handle
             nbad = 0;
             while ~success
                 nbad = nbad+1;
-                if (nbad>50)
-                    error('nbad > 50, perturbVar')
+                if (nbad>obj.badRunsThreshold)
+                    error('nbad exceeded max, perturbVar')
                 end
                 dvar = log10(obj.var);
                 dummy = dvar+(obj.varChange*randn);
