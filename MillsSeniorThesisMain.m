@@ -29,7 +29,7 @@ end
 
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 5e5; %total iterations for MCMC loop. 1e7+ recommended
+options.numSteps = 1e5; %total iterations for MCMC loop. 1e7+ recommended
 options.mLPSCoefficient = 1e4;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
 options.saveStart = floor(options.numSteps/2);
@@ -54,13 +54,26 @@ if options.numSteps - options.saveStart < options.mLPSCoefficient*...
 end
 
 measure.kMax = options.kMax;
-%data = createSyntheticData(measure, forwardModel); %creates measurements
+data = createSyntheticData(measure, forwardModel); %creates measurements
 
+% Create bounds on parameter values. These bounds are based on Appendix A
+% in Malinverno 2002. See also the "genericMedium" constructor function
+%Bound parameters. Bounds based on Appendix A, Malinverno 2002
+pBounds.maxLayers = options.kMax; % max # of layers in a given model
+pBounds.depthMin = min(data.x); %min depth for layer interface (not top)
+pBounds.depthMax = max(data.x); % max depth for layer interface
+pBounds.rhoMin = 1e-10; % min resistivity, NEEDS UPDATE
+pBounds.rhoMax = 1e10; % max resistivity, NEEDS UPDATE
+pBounds.varMin = 1e-10; % valid?  
+pBounds.varMax = 1e100; % valid?
+pBounds.varChange = 1e-1;  %valid?
+pBounds.intlVar = options.intlVar; %initial variance
+pBounds.numSteps = options.numSteps; %
 %% Do inversion
 %results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
 
 data = createSyntheticData(measure, forwardModel); %creates measurements
-results = mcmcAlgorithm(data,forwardModel,options);
+results = mcmcAlgorithm(data,forwardModel,options, pBounds);
 %filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
 %    num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
 %doSaving(filename,results,data,thisMeasure,options,forwardModel);
@@ -69,8 +82,7 @@ results = mcmcAlgorithm(data,forwardModel,options);
 %% Plot Run Properties
 disp(['Plotting']);
 
-
-ifSave = true%false;%input('save? true/false\n');
+ifSave = true;%false;%input('save? true/false\n');
 if ifSave
     filename = ['Ensemble_', measure.modelChoice, '_',...
         num2str(measure.noiseCoef), '_', date, '.mat'];
