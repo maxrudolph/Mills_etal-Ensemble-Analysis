@@ -1,4 +1,4 @@
-function ensembleAnalysis(filename)
+%function ensembleAnalysis(filename)
 load(filename)
 
 
@@ -105,25 +105,24 @@ disp('Plotting properties...');
     %make a lot of imaginary layers
     meanModelRhos = zeros(nxplot,1);
     medianModelRhos = zeros(nxplot,1);
-    dummyArrayForMedian = zeros(1,numSavedRuns);
+    dummyArray = zeros(1,numSavedRuns);
     for i = 1:nxplot %for each imaginary layer...
         for j = 1:numSavedRuns% look at each run...
             indx = nnz(depthPlot(i,j)>=results.ensembleDepths(:,j)); 
             %find the actual layer this imaginary layer lies in
-            meanModelRhos(i) = meanModelRhos(i) + ...
-                log10(results.ensembleRhos(indx,j));
-            % add the corresponding resistivity to the total
-            dummyArrayForMedian(i) = log10(results.ensembleRhos(indx,j));
+            dummyArray(j) = log10(results.ensembleRhos(indx,j));
         end
-        meanModelRhos(i) = 10.^(meanModelRhos(i)/numSavedRuns); %find average
-        dummyArrayForMedian = sort(dummyArrayForMedian);
-        medianModelRhos(i) = dummyArrayForMedian(floor(numSavedRuns/2));
+        meanModelRhos(i) = 10.^(mean(dummyArray));%meanModelRhos(i)/numSavedRuns); %find average
+        dummyArray = sort(dummyArray);
+        medianModelRhos(i) = 10.^(median(dummyArray));
     end
     meanModelY = forwardModel(xVals,meanModelRhos,data.lambda);
     medianModelY = forwardModel(xVals,medianModelRhos,data.lambda);
     % Make an interpolated version of data.y for misfit comparisons
     meanModelMisfit = norm(data.y - meanModelY);
     medianModelMisfit = norm(data.y- medianModelY);
+    assert(all(size(data.y)==size(meanModelY)));
+    assert(all(size(data.y)==size(medianModelY)))
     
     %Maximum likelihood model
     %Columns correspond to ensemble members, rows are the 
@@ -143,7 +142,7 @@ disp('Plotting properties...');
     %Note: I only vaguely understand what's going on here
     % compute a bivariate histogram of resitvity values from the posterior ensemble
     [N,c]=hist3([rhoPlot(:),depthPlot(:)],...
-        {linspace(0,4,200) linspace(-1,3,100)},'CDataMode','auto');
+        {linspace(-10,10,400) linspace(minDist,maxDist,nxplot)},'CDataMode','auto');
     % First linspace is for log(rho), second is for log(depth)
     % at each depth, find the most likely solution (ml_rho)
     maxLikelihoodRho = zeros(size(N,2),1);
@@ -253,6 +252,7 @@ legend([hexact,hdata,hEnsemble,hEnsembleMean,hEnsembleMedian,...
     plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
     plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
     plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
+    plot(ensembleMedianModelMisfit*[1 1],yy,'Color','r');
     %plot(ensembleMedianModelMisfit*[1 1],yy,'Color',ensembleMedianColor,'LineWidth',1);
     set(gca,'FontSize',12);
     xlabel('Misfit (m)');
@@ -262,4 +262,4 @@ legend([hexact,hdata,hEnsemble,hEnsembleMean,hEnsembleMedian,...
 % export_fig([results_file(1:end-4) '_ensemble.eps'])
 %exportgraphics(gcf,[results_file(1:end-4) '_ensemble.eps'],'ContentType','vector');
 
-end
+%end

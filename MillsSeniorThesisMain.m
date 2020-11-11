@@ -19,25 +19,25 @@ if ifLoadData
     % ...Not setup yet to take real data...
 else
     %Artifical model setup:
-    measure.modelChoice = '3LayerA'; %currently setup: 3LayerA, 4LayerA
+    measure.modelChoice = '4LayerA'; %currently setup: 3LayerA, 4LayerA
     %Measurement options
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
     measure.numMeasurements = 21; %total # of measurements
-    measure.noiseCoef = 0.2; %How "noisy" are the measurements
+    measure.noiseCoef = 0.1; %How "noisy" are the measurements
 end
 
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 1e6; %total iterations for MCMC loop. 1e7+ recommended
-options.mLPSCoefficient = 1e4;
+options.numSteps = 5e7; %total iterations for MCMC loop. 1e7+ recommended
+options.mLPSCoefficient = 1e5;
 options.modelChoice = measure.modelChoice;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
 options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 10; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 100; %sample every (saveSkip)th step once sampling begins
 options.samplePrior = false; % true = always accept proposed solution
 options.intlVar = 1.0; %variance = how much misfit accepted.
 options.alterVar = true; %If false, model variance will never change
@@ -63,10 +63,10 @@ data = createSyntheticData(measure, forwardModel); %creates measurements
 pBounds.maxLayers = options.kMax; % max # of layers in a given model
 pBounds.depthMin = min(data.x); %min depth for layer interface (not top)
 pBounds.depthMax = max(data.x); % max depth for layer interface
-pBounds.rhoMin = 1e-10; % min resistivity, NEEDS UPDATE
-pBounds.rhoMax = 1e10; % max resistivity, NEEDS UPDATE
+pBounds.rhoMin = 1e-8; % min resistivity, NEEDS UPDATE
+pBounds.rhoMax = 1e8; % max resistivity, NEEDS UPDATE
 pBounds.varMin = 1e-10; % valid?  
-pBounds.varMax = 1e100; % valid?
+pBounds.varMax = 1e10; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
 pBounds.numSteps = options.numSteps; %
@@ -86,8 +86,8 @@ disp(['Plotting']);
 ifSave = true;%false;%input('save? true/false\n');
 if ifSave
     filename = ['Ensemble_', measure.modelChoice, '_',...
-        num2str(measure.noiseCoef), '_', date, '.mat'];
+        num2str(measure.noiseCoef),'.mat'];
     save(filename,'results','data','options','measure','forwardModel');
-    ensembleAnalysis(filename);
+%    ensembleAnalysis(filename);
 end
 %}
