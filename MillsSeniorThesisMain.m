@@ -24,19 +24,20 @@ else
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
     measure.numMeasurements = 21; %total # of measurements
-    measure.noiseCoef = 0.1; %How "noisy" are the measurements
+    measure.noiseCoef = 0.2; %How "noisy" are the measurements
 end
 
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 1e5; %total iterations for MCMC loop. 1e7+ recommended
+options.numSteps = 1e6; %total iterations for MCMC loop. 1e7+ recommended
 options.mLPSCoefficient = 1e4;
+options.modelChoice = measure.modelChoice;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
 options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 100; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 10; %sample every (saveSkip)th step once sampling begins
 options.samplePrior = false; % true = always accept proposed solution
 options.intlVar = 1.0; %variance = how much misfit accepted.
 options.alterVar = true; %If false, model variance will never change
