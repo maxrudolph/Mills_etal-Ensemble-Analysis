@@ -5,7 +5,7 @@ rng(1) %seed to get same outcomes every time
 Inverse modeling 1D DC resistivity measurements. Based on tdmcmc_teaching
 example. This script is for doing an inverion to get an ensemble solution,
 use ensembleAnalysis to analyze an already existing ensemble.
-Requires other scripts: createSyntheticData, mcmcAlgorithm, 
+Requires other scripts: createSyntheticData, mcmcAlgorithm,
 ensembleAnalysis, calculateRho1D.
 Chris Mills 10/2020
 %}
@@ -70,13 +70,13 @@ pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
 pBounds.numSteps = options.numSteps; %
 
-noiseCoefs=[0.0,0.01,0.02,0.05,0.1,0.2]
+noiseCoefs=[0.0,0.01,0.02,0.05,0.1,0.2];
 parfor inoise=1:6
-	thisMeasure = measure;
-	thisMeasure.noiseCoef=noiseCoefs(inoise);
-	data = createSyntheticData(thisMeasure, forwardModel); %creates measurements
-	results = mcmcAlgorithm(data,forwardModel,options, pBounds);
-	filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
-	    num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
-	doSaving(filename,results,data,thisMeasure,options,forwardModel);
+    thisMeasure = measure;
+    thisMeasure.noiseCoef=noiseCoefs(inoise);
+    data = createSyntheticData(thisMeasure, forwardModel); %creates measurements
+    results = mcmcAlgorithm(data,forwardModel,options, pBounds);
+    filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
+        num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
+    doSaving(filename,results,data,thisMeasure,options,forwardModel,pBounds);
 end
