@@ -1,4 +1,4 @@
-function results = mcmcAlgorithm(data,model,options)
+function results = mcmcAlgorithm(data,model,options,pBounds)
 %{
     Inputs:data.x and data.y are the observations (electrode spacings, 
 apparent resistivities); model is handle to a function calculating 
@@ -13,20 +13,7 @@ storedProbAccepts; numLayers; maxLayers; storedChoices;
     External scripts: genericMedium 
 %}
 %% Initializing
-% Create bounds on parameter values. These bounds are based on Appendix A
-% in Malinverno 2002. See also the "genericMedium" constructor function
-%Bound parameters. Bounds based on Appendix A, Malinverno 2002
 numMeasurements = length(data.x);
-pBounds.maxLayers = options.kMax; % max # of layers in a given model
-pBounds.depthMin = min(data.x); %min depth for layer interface (not top)
-pBounds.depthMax = max(data.x); % max depth for layer interface
-pBounds.rhoMin = 1e-1; % min resistivity, NEEDS UPDATE
-pBounds.rhoMax = 1e8; % max resistivity, NEEDS UPDATE
-pBounds.varMin = 1e-6; % valid?  
-pBounds.varMax = 1e3; % valid?
-pBounds.varChange = 1e-1;  %valid?
-pBounds.intlVar = options.intlVar; %initial variance
-pBounds.numSteps = options.numSteps;
 if options.alterVar %Whether or not variance can be altered
     randomOptions = 5;
 else
@@ -48,15 +35,17 @@ layersAccepted = genericMedium(pBounds,numMeasurements);
 layersAccepted.setMisfit(data.y - model(depths,rhos,lambda));
 
 % Pre-allocate memory for saving runs 
-results.storedDepths = nan*zeros(pBounds.maxLayers,numSavedRuns);
-results.storedRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
-results.storedSavedVars = zeros(1,numSavedRuns); %only for saved solutions
-results.storedLikelihoods=zeros(totalSteps,1);
-results.allMisfits = zeros(totalSteps,1);
+results.ensembleDepths = nan*zeros(pBounds.maxLayers,numSavedRuns);
+results.ensembleRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
+results.ensembleVars = zeros(1,numSavedRuns); %only for saved solutions
 results.ensembleMisfits = zeros(1,numSavedRuns);
-%result.storedChoices = zeros(totalSteps,1);
-results.storedProbAccepts = zeros(totalSteps,1);
-results.numLayers = zeros(1,numSavedRuns);
+result.ensembleNumLayers = zeros(1,numSavedRuns);
+
+result.allChoices = zeros(totalSteps,1);
+results.allLikelihoods=zeros(totalSteps,1);
+results.allMisfits = zeros(totalSteps,1);
+results.allProbAccepts = zeros(totalSteps,1);
+results.allVars = zeros(totalSteps,1);
 
 % Slow down layer adding during the burn-in period
 maxLayersPerStep = []; %This will be the max layers in any given step.
@@ -119,21 +108,22 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
             disp(['Saving begun']);
         end
         %Store properties for ensemble
-        [results.storedDepths(:,saveStep),...
-            results.storedRhos(:,saveStep)] = layersAccepted.getSln();
-        results.storedSavedVars(saveStep) = layersAccepted.getVar();
+        [results.ensembleDepths(:,saveStep),...
+            results.ensembleRhos(:,saveStep)] = layersAccepted.getSln();
+        results.ensembleVars(saveStep) = layersAccepted.getVar();
         results.ensembleMisfits(saveStep) = layersAccepted.getMisfit(); 
     end
     %Store properties for entire run
     results.allMisfits(iter) = layersAccepted.getMisfit(); 
-    results.storedLikelihoods(iter) = layersAccepted.getLikeProb();
-    results.storedChoices(iter) = choice;
-    results.storedProbAccepts(iter) = probAccept;
+    results.allLikelihoods(iter) = layersAccepted.getLikeProb();
+    results.allChoices(iter) = choice;
+    results.allProbAccepts(iter) = probAccept;
+    results.allVars(iter) = layersAccepted.getVar();
 end
 
 %% Wrap up
 %save results to solution structure
-results.numLayers = sum(~isnan(results.storedDepths),1);
+results.ensembleNumLayers = sum(~isnan(results.ensembleDepths),1);
 %% Functions
 function resetProposedSln(accepted,proposed)
     proposed.recieveSln(accepted.sendSln());
