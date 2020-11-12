@@ -69,8 +69,6 @@ pBounds.varMax = 1e10; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
 pBounds.numSteps = options.numSteps; %
-%% Do inversion
-%results = mcmcAlgorithm(data,forwardModel,options); %Do the inversion
 
 noiseCoefs=[0.0,0.01,0.02,0.05,0.1,0.2]
 parfor inoise=1:6
@@ -78,16 +76,7 @@ parfor inoise=1:6
 	thisMeasure.noiseCoef=noiseCoefs(inoise);
 	data = createSyntheticData(thisMeasure, forwardModel); %creates measurements
 	results = mcmcAlgorithm(data,forwardModel,options, pBounds);
-	%filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
-	%    num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
-	%doSaving(filename,results,data,thisMeasure,options,forwardModel);
-
-	ifSave = true;
-	if ifSave
-	    filename = ['Ensemble_', measure.modelChoice, '_',...
-        	num2str(measure.noiseCoef),'.mat'];
-	    save(filename,'results','data','options','thisMeasure','forwardModel');
-	    %    ensembleAnalysis(filename);
-	end
+	filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
+	    num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
+	doSaving(filename,results,data,thisMeasure,options,forwardModel);
 end
-disp(['Plotting']);
