@@ -215,17 +215,17 @@ legend([hexact,hdata,hEnsemble,hEnsembleMean,hEnsembleMedian,...
     %colormap(flipud(crameri('roma')));
     % view(2);
     hold on
-    trueRhoPlot = zeros(size(xVals));
-    trueDepthsPlot = depthPlot(:,1);
+    trueLogRhoPlot = zeros(size(xVals));
+    trueLogDepthsPlot = logDepthPlot(:,1);
     [trueDepths,trueRhos] = modelGen(options.kMax,measure.modelChoice);
     trueNumLayers = nnz(~isnan(trueDepths));
     for j=1:trueNumLayers
         mask = log10(xVals) >= log10(trueDepths(j));
-        trueRhoPlot(mask) = log10(trueRhos(j));
+        trueLogRhoPlot(mask) = log10(trueRhos(j));
     end
-    plot(10.^trueRhoPlot,10.^trueDepthsPlot,trueColor);
-    plot(10.^rhoPlot(:,medianIndex),10.^depthPlot(:,medianIndex),'Color',medianColor);
-    plot(10.^rhoPlot(:,bestIndex),10.^depthPlot(:,bestIndex),'Color',bestFitColor);
+    plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueColor);
+    plot(10.^rhoPlot(:,medianIndex),10.^logDepthPlot(:,medianIndex),'Color',medianColor);
+    plot(10.^rhoPlot(:,bestIndex),10.^logDepthPlot(:,bestIndex),'Color',bestFitColor);
     plot(maxLikelihoodRho,xVals,'Color',maxLikelihoodColor);   
     plot(meanModelRhos,xVals,meanColor)
     colorbar();
