@@ -7,9 +7,11 @@ classdef genericMedium < handle
         numLayers;  % number of layers in proposed solution
         %%%%%%%%%%%%%%%%%% Solution math properties %%%%%%%%%%%%%%%%%%%%
         var;        % variance \sigma^2
-        misfit;     % norm of residuals
+        residual;   % residual (vector)
+        misfit;     % norm of residual
         mahalDist;  % Mahalanobis distance \Phi(G)
         likeProb;   %likelihood
+        Cdi;        % inverse of data+forward modeling covariance matrix.
         %%%%%%%%%% The following are bounds on values %%%%%%%%%%
         depthMin;   % Minimum log-depth for a layer interface (besides top)
         depthMax;   % Maximum log-depth for a layer interface
@@ -62,6 +64,8 @@ classdef genericMedium < handle
             output.rhos = obj.rhos;
             output.var = obj.var;
             output.misfit = obj.misfit;
+            output.Cdi = obj.Cdi;
+            output.residual = obj.residual;
         end
         
         %This is meant to recieve properties from another genericMedium
@@ -70,9 +74,11 @@ classdef genericMedium < handle
             obj.depths = input.depths;
             obj.rhos = input.rhos;
             obj.numLayers = nnz(~isnan(obj.depths));
+            obj.Cdi = input.Cdi;
+            obj.residual = input.residual;
             obj.setVar(input.var);
             obj.misfit = input.misfit;
-            obj.calculatePosterior(input.misfit);
+            obj.calculatePosterior();
             if nnz(~isnan(obj.depths)) ~= nnz(~isnan(obj.rhos))
                 fprintf('Error: accepted solution # of layers dont match');
             end
@@ -216,14 +222,14 @@ classdef genericMedium < handle
 %%%%%%%%%% GET IT %%%%%%%%%%%%%%%%%%%%
         
         %
-        function [out1,out2] = getSln(obj)
-            out1 = 10.^obj.depths;
-            out2 = 10.^obj.rhos;
+        function [depths,rhos] = getSolution(obj)
+            depths = 10.^obj.depths;
+            rhos = 10.^obj.rhos;
         end
         
         %
-        function output = getNumLayers(obj)
-            output = obj.numLayers;
+        function N = getNumLayers(obj)
+            N = obj.numLayers;
         end
         
         %
@@ -244,21 +250,29 @@ classdef genericMedium < handle
             output = obj.likeProb;
         end
     
+        function output = getCdi(obj)
+            output = obj.Cdi;
+        end
 %%%%%%%%%%% SET IT %%%%%%%%%%%%%%%% %for manually setting stuff
+        function setCdi(obj,Cdi)
+            obj.Cdi = Cdi;
+        end
         
         function setVar(obj,input)
             obj.var = input;
         end
         
-        function setMisfit(obj,input)
-            %input is residuals
-            obj.misfit = norm(input);
-            obj.calculatePosterior(obj.misfit);
+        function setMisfit(obj,residual)
+            % input should be (vector) residual and Cdi.
+            %             obj.misfit = norm(input);
+            obj.residual = residual;
+            obj.misfit = norm(residual);
+            obj.calculatePosterior();
         end
         
-        function calculatePosterior(obj,input)
+        function calculatePosterior(obj)
             %input is misfit
-            obj.mahalDist = (input^2)/obj.var;
+            obj.mahalDist = obj.residual'*obj.Cdi*obj.residual/obj.var;
             obj.likeProb = exp(-0.5*obj.mahalDist)/...
                 ((sqrt(2*pi*obj.var))^obj.numMeasurements);
         end

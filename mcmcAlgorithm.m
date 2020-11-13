@@ -27,21 +27,27 @@ saveSkip = options.saveSkip;
 pctSteps = round(totalSteps/100); %For printing status
 numSavedRuns = ceil(options.saveStart/saveSkip); %How many runs to save
 
+% Process covariance matrix
+Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data covariance matrix
+
 % Initialize solutions
 layersProposed = genericMedium(pBounds,numMeasurements);
 layersAccepted = genericMedium(pBounds,numMeasurements);
 
-[depths,rhos] = layersAccepted.getSln();
-layersAccepted.setMisfit(data.y - model(depths,rhos,lambda));
+[depths,rhos] = layersAccepted.getSolution();
+residual = data.y - model(depths,rhos,lambda);
+layersAccepted.setCdi(Cdi);
+layersProposed.setCdi(Cdi);
+layersAccepted.setMisfit(residual);
 
 % Pre-allocate memory for saving runs 
 results.ensembleDepths = nan*zeros(pBounds.maxLayers,numSavedRuns);
 results.ensembleRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
 results.ensembleVars = zeros(1,numSavedRuns); %only for saved solutions
 results.ensembleMisfits = zeros(1,numSavedRuns);
-result.ensembleNumLayers = zeros(1,numSavedRuns);
+results.ensembleNumLayers = zeros(1,numSavedRuns);
 
-result.allChoices = zeros(totalSteps,1);
+results.allChoices = zeros(totalSteps,1);
 results.allLikelihoods=zeros(totalSteps,1);
 results.allMisfits = zeros(totalSteps,1);
 results.allProbAccepts = zeros(totalSteps,1);
@@ -60,7 +66,7 @@ results.maxLayers = maxLayersPerStep;
 %% Main loop
 saveStep = 0;
 disp(['MCMC algorithm starting']);
-for iter=1:totalSteps  %Number of steps in Markov Chain
+for iter=1:totalSteps  %Number of steps in Markov Chain    
     resetProposedSln(layersAccepted,layersProposed);
     choice = chooseOption(layersProposed.getNumLayers(),...
         maxLayersPerStep(iter),randomOptions);
@@ -80,8 +86,9 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     if options.samplePrior
         probAccept = log(1);
     else
-        [depths,rhos] = layersProposed.getSln();
-        layersProposed.setMisfit(data.y - model(depths,rhos,lambda));
+        [depths,rhos] = layersProposed.getSolution();
+        residual = data.y - model(depths,rhos,lambda);       
+        layersProposed.setMisfit(residual);
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
         phiPrime = layersProposed.getMahalDist();
@@ -109,7 +116,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         end
         %Store properties for ensemble
         [results.ensembleDepths(:,saveStep),...
-            results.ensembleRhos(:,saveStep)] = layersAccepted.getSln();
+            results.ensembleRhos(:,saveStep)] = layersAccepted.getSolution();
         results.ensembleVars(saveStep) = layersAccepted.getVar();
         results.ensembleMisfits(saveStep) = layersAccepted.getMisfit(); 
     end
@@ -128,9 +135,9 @@ results.ensembleNumLayers = sum(~isnan(results.ensembleDepths),1);
 function resetProposedSln(accepted,proposed)
     proposed.recieveSln(accepted.sendSln());
 end
-
+% 
 function acceptProposedSln(accepted,proposed)
-    accepted.recieveSln(proposed.sendSln());
+     accepted.recieveSln(proposed.sendSln());
 end
 
 %Choosing a random option
