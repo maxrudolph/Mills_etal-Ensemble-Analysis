@@ -105,50 +105,42 @@ disp('Plotting properties...');
     %make a lot of imaginary layers
     meanModelRhos = zeros(nxplot,1);
     medianModelRhos = zeros(nxplot,1);
-    dummyArray = zeros(1,numSavedRuns);
-    for i = 1:nxplot %for each imaginary layer...
-        for j = 1:numSavedRuns% look at each run...
-            indx = nnz(depthPlot(i,j)>=results.ensembleDepths(:,j)); 
-            %find the actual layer this imaginary layer lies in
-            dummyArray(j) = log10(results.ensembleRhos(indx,j));
+    
+    rhoPlot = zeros(size(depthPlot));
+    for i = 1:numSavedRuns %for each run
+        nLayer = nnz(~isnan(results.ensembleDepths(:,i)));
+        %Find the number of layers in that run
+        for j = 1:nLayer
+            mask = xVals >= results.ensembleDepths(j,i);
+            rhoPlot(mask,i) = results.ensembleRhos(j,i);
         end
-        meanModelRhos(i) = 10.^(mean(dummyArray));%meanModelRhos(i)/numSavedRuns); %find average
-        dummyArray = sort(dummyArray);
-        medianModelRhos(i) = 10.^(median(dummyArray));
     end
+    logDepthPlot = log10(depthPlot);
+    logRhoPlot = log10(rhoPlot);
+    
+    for i = 1:nxplot %for each imaginary layer
+        meanModelRhos(i) = 10.^(mean(logRhoPlot(i,:)));
+        medianModelRhos(i) = 10.^(median(logRhoPlot(i,:)));
+    end
+
     meanModelY = forwardModel(xVals,meanModelRhos,data.lambda);
     medianModelY = forwardModel(xVals,medianModelRhos,data.lambda);
-    % Make an interpolated version of data.y for misfit comparisons
     meanModelMisfit = norm(data.y - meanModelY);
     medianModelMisfit = norm(data.y- medianModelY);
     assert(all(size(data.y)==size(meanModelY)));
     assert(all(size(data.y)==size(medianModelY)))
     
-    %Maximum likelihood model
-    %Columns correspond to ensemble members, rows are the 
-    rhoPlot = zeros(size(depthPlot));
-    for i = 1:numSavedRuns %for each run
-        %interpolate resistivity onto x-grid
-        nLayer = nnz(~isnan(results.ensembleDepths(:,i)));
-        %Find the number of layers in that run
-        for j = 1:nLayer
-            mask = log10(xVals) >= log10(results.ensembleDepths(j,i));
-            rhoPlot(mask,i) = log10(results.ensembleRhos(j,i));
-        end
-    end
-    %%%%%%%%%%%% Important: rhoPlot is LOG RHOS and now depthPlot is LOG
-    %%%%%%%%%%%% DEPTHS
-    depthPlot = log10(depthPlot);
+    %Maximum likelihood model    
     %Note: I only vaguely understand what's going on here
     % compute a bivariate histogram of resitvity values from the posterior ensemble
-    [N,c]=hist3([rhoPlot(:),depthPlot(:)],...
+    [N,c]=hist3([logRhoPlot(:),logDepthPlot(:)],...
         {linspace(-10,10,400) linspace(minDist,maxDist,nxplot)},'CDataMode','auto');
     % First linspace is for log(rho), second is for log(depth)
     % at each depth, find the most likely solution (ml_rho)
     maxLikelihoodRho = zeros(size(N,2),1);
     for i=1:length(xVals)
         % Use ksdensity to approximate the pdf of resistivity at this depth:
-        [xi,f] = ksdensity(rhoPlot(i,:));
+        [xi,f] = ksdensity(logRhoPlot(i,:));
         [~,ind1] = max(xi);
         maxLikelihoodRho(i) = 10.^f(ind1);
     end
@@ -192,15 +184,15 @@ disp('Plotting properties...');
     set(gca,'Box','on');
     set(gcf,'Color','w');
     %True model
-    hdata = loglog(data.x,data.y,'r.','MarkerSize',5.0);
+    hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
     hexact = loglog(data.x,data.fx,'r-','LineWidth',1.0);
     hMean = plot(data.x,meanModelY,meanColor,'LineWidth',1);
     hMedian = plot(data.x,medianModelY,medianColor,'LineWidth',1);
     hBest = plot(data.x,bestFitModelY,bestFitColor,'LineWidth',1);
-    hMaxLikelihood=plot(data.x,maxLikelihoodY,maxLikelihoodColor,'LineWidth',1);
-    hEnsembleMean = loglog(xVals,mean(yVals,2),'k','LineWidth',1);
-    hEnsembleMedian = plot(data.x,ensembleMedianModelY,ensembleMedianColor,...
+    hMaxLikelihood=plot(data.x,maxLikelihoodY,maxLikelihoodColor,...
         'LineWidth',1);
+    hEnsembleMean = loglog(xVals,mean(yVals,2),'k','LineWidth',1);
+    hEnsembleMedian = plot(data.x,ensembleMedianModelY,ensembleMedianColor);
     
     set(gca,'FontSize',12);
     set(gca,'Color','w');
@@ -252,8 +244,7 @@ legend([hexact,hdata,hEnsemble,hEnsembleMean,hEnsembleMedian,...
     plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
     plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
     plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
-    plot(ensembleMedianModelMisfit*[1 1],yy,'Color','r');
-    %plot(ensembleMedianModelMisfit*[1 1],yy,'Color',ensembleMedianColor,'LineWidth',1);
+    plot(ensembleMedianModelMisfit*[1 1],yy,ensembleMedianColor);
     set(gca,'FontSize',12);
     xlabel('Misfit (m)');
     f=gcf;

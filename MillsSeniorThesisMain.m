@@ -24,7 +24,7 @@ else
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
     measure.numMeasurements = 21; %total # of measurements
-    %measure.noiseCoef = 0.01; %How "noisy" are the measurements
+    measure.noiseCoef = 0.01; %How "noisy" are the measurements
 end
 
 %% Set inversion options
