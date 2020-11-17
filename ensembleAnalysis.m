@@ -75,7 +75,7 @@ ylabel('Misfit');
 disp('Evaluating ensemble...');
 minDist = log10(data.x(1)); %needed later
 maxDist = log10(data.x(end));
-nxplot=200; %resolution of measurement points
+nxplot=500; %resolution of measurement points
 nSavedPlot = 2000; %Number of saved runs to plot
 if nSavedPlot > size(results.ensembleRhos,2)
     %If low # of saved runs, plot all, otherwise...
@@ -165,7 +165,7 @@ bestFitModelMisfit = norm(data.y - bestFitModelY);
 
 %% Figure: Data space plot
 disp('Last plot...');
-figure;
+figure();
 subplot(4,2,[3 5 7]);
 hold on;
 %pick some colors
@@ -223,7 +223,7 @@ for j=1:trueNumLayers
     mask = log10(xVals) >= log10(trueDepths(j));
     trueRhoPlot(mask) = log10(trueRhos(j));
 end
-plot(10.^trueRhoPlot,10.^trueDepthsPlot,trueColor);
+plot(10.^trueRhoPlot,trueDepthsPlot,trueColor);
 plot(10.^rhoPlot(:,medianIndex),10.^depthPlot(:,medianIndex),'Color',medianColor);
 plot(10.^rhoPlot(:,bestIndex),10.^depthPlot(:,bestIndex),'Color',bestFitColor);
 plot(maxLikelihoodRho,xVals,'Color',maxLikelihoodColor);
@@ -232,21 +232,24 @@ colorbar();
 set(gca,'YDir','reverse');
 set(gca,'FontSize',12);
 set(gca,'Box','on');
+set(gca,'XLim',10.^[min(trueRhoPlot)-1 max(trueRhoPlot)+1]);
+set(gca,'ColorScale','log');
 xlabel('Resistivity (\Omega-m)');
 ylabel('Depth (m)');
 
 %% Sub-figure: Histogram of misfit
 subplot(4,2,1);
-histogram(results.ensembleMisfits,100);
+data_variance = var(data.y); % variance of the observations, used when calculating a variance reduction
+histogram(1-results.ensembleMisfits.^2/data_variance,100);
 hold on;
 yy=get(gca,'YLim');
-plot(medianModelMisfit*[1 1],yy,'Color',medianColor,'LineWidth',1);
-plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
-plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
-plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
-plot(ensembleMedianModelMisfit*[1 1],yy,ensembleMedianColor);
+plot(1-medianModelMisfit^2/data_variance*[1 1],yy,'Color',medianColor,'LineWidth',1);
+plot(1-bestFitModelMisfit^2/data_variance*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
+plot(1-meanModelMisfit^2/data_variance*[1 1],yy,'Color',meanColor,'LineWidth',1);
+plot(1-maxLikelihoodMisfit^2/data_variance*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
+plot(1-ensembleMedianModelMisfit^2/data_variance*[1 1],yy,ensembleMedianColor);
 set(gca,'FontSize',12);
-xlabel('Misfit (m)');
+xlabel('Variance Reduction');
 f=gcf;
 f.Renderer='painters';
 %% save the figure
