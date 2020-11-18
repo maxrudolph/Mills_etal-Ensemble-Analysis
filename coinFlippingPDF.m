@@ -1,6 +1,6 @@
 N = 0; %N is the number of flips
 R = 0; %number of heads
-H = linspace(0,1,1000); %Values for hypothesis of the coin's bias
+H = linspace(0,1,100); %Values for hypothesis of the coin's bias
 
 y = H.^R.*((1-H).^(N-R));
 figure();
@@ -13,9 +13,11 @@ plotIterations = [1 2 3 4 8 16 32 64 128 256 512 1024 2048 4096];
 for N = 1:4096 
     result = flipCoin; %1 if heads, 0 if tails
     R = R+result;
-    binomial = (H.^R).*((1-H).^(N-R));
-    normalizingConstant = 1/sum(binomial);
-    y = normalizingConstant*binomial;
+    binomial = R*log(H) + (N-R)*log(1-H);
+    m = max(binomial);
+    binomial = binomial - m;
+    normalizingConstant = log(sum(exp(binomial)));
+    y = exp(binomial - normalizingConstant);
 
     compare = N==plotIterations;
     indx = find(compare);

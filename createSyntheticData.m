@@ -13,7 +13,6 @@ noise; y: model output with noise.
     Requires other scripts: modelGen, and something for forwardModel
     %}
     [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
-    trueNumLayers = nnz(~isnan(trueDepths)); %k = number of layers
     minDist = log10(measure.minDist);
     maxDist = log10(measure.maxDist);
     data.x = logspace(minDist,maxDist,measure.numMeasurements); 
