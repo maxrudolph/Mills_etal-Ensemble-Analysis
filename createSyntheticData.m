@@ -23,7 +23,7 @@ noise; y: model output with noise.
     data.fx = forwardModel(trueDepths,trueRhos,data.lambda); 
     %The "true" model output given above parameters
     noiseVector = measure.noiseCoef.*data.fx.*randn(length(data.fx),1);
-    data.Cd = diag(data.fx.^2);     % assume sig_f/f = const (constant relative error). 
     %The absolute value of this shouldn't matter since it gets scaled by var.    
     data.y =  data.fx+noiseVector; %measurements with noise
+    data.Cd = diag(data.y.^2);     % assume sig_f/f = const (constant relative error).
 end
