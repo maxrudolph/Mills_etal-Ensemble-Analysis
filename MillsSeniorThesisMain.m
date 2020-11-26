@@ -24,12 +24,12 @@ else
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
     measure.numMeasurements = 21; %total # of measurements
-    measure.noiseCoef = 0.01; %How "noisy" are the measurements
+    measure.noiseCoef = 0.1; %How "noisy" are the measurements
 end
 
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 5e7; %total iterations for MCMC loop. 1e7+ recommended
+options.numSteps = 1e7; %total iterations for MCMC loop. 1e7+ recommended
 options.mLPSCoefficient = 1e4;
 options.modelChoice = measure.modelChoice;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
@@ -64,12 +64,12 @@ pBounds.depthMin = 1e-1; %min depth for layer interface (not top)
 pBounds.depthMax = 1e4; % max depth for layer interface
 pBounds.rhoMin = 1e-8; % min resistivity, NEEDS UPDATE
 pBounds.rhoMax = 1e8; % max resistivity, NEEDS UPDATE
-pBounds.varMin = 1e-10; % valid?
-pBounds.varMax = 1e10; % valid?
+pBounds.varMin = 1e-8; % valid?
+pBounds.varMax = 1e8; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
 pBounds.numSteps = options.numSteps; %
-
+%{
 noiseCoefs=[0.0,0.01,0.02,0.05,0.1,0.2];
 parfor inoise=1:6
     thisMeasure = measure;
@@ -80,3 +80,9 @@ parfor inoise=1:6
         num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
     doSaving(filename,results,data,thisMeasure,options,forwardModel,pBounds);
 end
+%}
+data = createSyntheticData(measure,forwardModel);
+results = mcmcAlgorithm(data,forwardModel,options,pBounds);
+filename = ['Ensemble_', measure.modelChoice, '_',...
+        num2str(measure.noiseCoef), '_', date, '.mat'];
+doSaving(filename, results,data, measure, options, forwardModel,pBounds);
