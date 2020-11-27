@@ -5,6 +5,9 @@ function [depths,rhos] = modelGen(kMax,choice)
     elseif choice == '4LayerA'
         inDepths = [0,5,30,200]';
         inRhos = [100,10,250,1]';
+    elseif choice == '1LayerA'
+        inDepths = [0]';
+        inRhos = [100]';
     end
     
     depths = nan*zeros(kMax,1);
