@@ -1,81 +1,44 @@
 %function ensembleAnalysis(filename)
-load(filename)
-
+disp('Loading data...')
+load(filename,'data','forwardModel','results','measure')
 
 ifDebugging = true;
-%% Figure: Check burn-in time and distribution of perturbation choices
+%% 1 Figures
+disp('Plotting properties...');
 if ifDebugging
-    figure();
-    subplot(2,1,1);
-    plot(results.maxLayers);
-    title('Max Layers Per Step');
-    ylabel('Maximum allowed layers');
-    xlabel('Step #')
-    
-    subplot(2,1,2);
-    histogram(results.allChoices);
-    title('Distribution of choices');
+    things = {results.maxLayers,results.allChoices};
+    histTF = [0,1,];
+    titles = {'MaxLayersPerStep','Distribution of choices'};
+    xlabels = {'Step #',' '};
+    ylabels = {'Maximum allowed layers',' '};
+    lazyPlotting(2,1,histTF,things,titles,xlabels,ylabels);   
 end
 
-%% Figure: Run properties, all iterations
-%(likelihoods, misfits, acceptance probabilities)
-disp('Plotting properties...');
-figure();
-subplot(2,2,1);
-plot(results.allLikelihoods);
+%Figure 2: run properties, all iterations
+things = {results.allLikelihoods, results.allMisfits,...
+    results.allProbAccepts, results.allVars};
+histTF = zeros(1,4);
+titles = {'Likelihood','Misfit','Acceptance Probability','Variance'};
+xlabels = {'Iteration #','Iteration #','Iteration #','Iteration #'};
+ylabels = {'Likelihood', 'Misfit (\Omega m)','Probability','Variance'};
+lazyPlotting(2,2,histTF,things,titles,xlabels,ylabels);
+subplot(2,2,1)
 set(gca,'YScale','log');
-title('Likelihood');
-xlabel('Iteration #');
-ylabel('Likelihood');
 
-subplot(2,2,2);
-plot(results.allMisfits);
-title('Misfit');
-ylabel('Misfit (\Omega m)');
-xlabel('Iteration');
+%Figure 3: Ensemble properties
+things = {results.ensembleNumLayers, log10(results.ensembleVars),...
+    results.ensembleMisfits};
+histTF = [1,1,0];
+titles = {'Ensemble # of layers','Ensemble Variance','Ensemble Misfit'};
+xlabels = {'Number of layers','log(\sigma^2)','Saved run #'};
+ylabels = {'Number of saved models','Number of saved models','Misfit'};
+lazyPlotting(1,3,histTF,things,titles,xlabels,ylabels);
 
-subplot(2,2,3);
-plot(results.allProbAccepts);
-title('Acceptance Probability');
-ylabel('Probability');
-xlabel('Iteration #');
-
-
-subplot(2,2,4);
-plot(log10(results.allVars));
-title('Variance variance');
-ylabel('Variance');
-xlabel('Iteration #');
-
-%% Figure: Ensemble properties
-%(# of layers, variance, misfits)
-figure();
-subplot(1,3,1);
-histogram(results.ensembleNumLayers);
-title('Number of layers');
-xlabel('Number of layers');
-ylabel('Number of saved models');
-
-subplot(1,3,2);
-histogram(log10(results.ensembleVars));
-title('Variance');
-xlabel('log(\sigma^2)');
-ylabel('Number of saved models');
-
-subplot(1,3,3);
-%f=fit(1:size(results.ensembleMisfits,2),results.ensembleMisfits,'poly1')
-plot(results.ensembleMisfits);
-%plot(f);
-title('Misfit in ensemble solutions');
-xlabel('Saved run #');
-ylabel('Misfit');
-
-
-%% NF: evaluate each ensemble solution on regularly spaced grid
+%% Section 2 NF: evaluate ensemble solutions on regularly spaced grid
 disp('Evaluating ensemble...');
-minDist = log10(data.x(1)); %needed later
-maxDist = log10(data.x(end));
-nxplot=200; %resolution of measurement points
+minDistL = log10(measure.minDist);
+maxDistL = log10(measure.maxDist);
+nxplot=200; %number of measurement points
 nSavedPlot = 2000; %Number of saved runs to plot
 if nSavedPlot > size(results.ensembleRhos,2)
     %If low # of saved runs, plot all, otherwise...
@@ -85,7 +48,7 @@ else %... only plot a random subset of them
     runPlotIndex = randperm(size(results.ensembleRhos,2),nSavedPlot);
 end
 yVals = zeros(nxplot,nSavedPlot);
-xVals = logspace(minDist,maxDist,nxplot)';
+xVals = logspace(minDistL,maxDistL,nxplot)';
 lambdaForXVals = makeLambda(xVals);
 
 for i=1:nSavedPlot
@@ -93,13 +56,14 @@ for i=1:nSavedPlot
         results.ensembleRhos(:,runPlotIndex(i)),lambdaForXVals);
 end
 
-%% NF: Calculating other models
+%% Section 3 NF: Calculating other models
 disp('Calculating models...');
-%Mean model and calculated median model
+%Calculated mean and calculated median
 %Both calculated in log space, from the entire ensemble
 nzplot=500;
 zVals = 10.^linspace(log10(pBounds.depthMin),log10(pBounds.depthMax),nzplot);
 numSavedRuns = size(results.ensembleRhos,2);
+
 depthPlot = zeros(nzplot, numSavedRuns);
 for i = 1:numSavedRuns
     depthPlot(:,i) = zVals;
@@ -111,13 +75,13 @@ medianModelRhos = zeros(nzplot,1);
 rhoPlot = zeros(size(depthPlot));
 for i = 1:numSavedRuns %for each run
     nLayer = nnz(~isnan(results.ensembleDepths(:,i)));
-    %Find the number of layers in that run
+    %...Find the number of layers in that run...
     for j = 1:nLayer
         mask = zVals >= results.ensembleDepths(j,i);
         rhoPlot(mask,i) = results.ensembleRhos(j,i);
     end
 end
-logDepthPlot = log10(depthPlot);
+logDepthPlot = repmat(log10(depthPlot),1,numSavedRuns);
 logRhoPlot = log10(rhoPlot);
 
 for i = 1:nzplot %for each imaginary layer
@@ -129,8 +93,6 @@ meanModelY = forwardModel(zVals,meanModelRhos,data.lambda);
 medianModelY = forwardModel(zVals,medianModelRhos,data.lambda);
 meanModelMisfit = norm(data.y - meanModelY);
 medianModelMisfit = norm(data.y- medianModelY);
-assert(all(size(data.y)==size(meanModelY)));
-assert(all(size(data.y)==size(medianModelY)))
 
 %Maximum likelihood model
 %Note: I only vaguely understand what's going on here
@@ -163,11 +125,11 @@ ensembleMedianModelY = forwardModel(ensembleMedianModelDepths,...
     ensembleMedianModelRhos,data.lambda);
 bestFitModelY = forwardModel(bestFitModelDepths,bestFitModelRhos,...
     data.lambda);
-ensembleMedianModelMisfit = norm(data.y - ensembleMedianModelY);
-bestFitModelMisfit = norm(data.y - bestFitModelY);
+ensembleMedianModelMisfit = results.ensembleMisfits(medianIndex);
+bestFitModelMisfit = results.ensembleMisfits(bestIndex);
 
-%% Figure: Data space plot
-disp('Last plot...');
+%% Section 4 Figure: Data space plot
+disp('More plots...');
 figure;
 subplot(4,2,[3 5 7]);
 hold on;
@@ -213,14 +175,15 @@ legend([hexact,hdata,hEnsemble,hEnsembleMean,hEnsembleMedian,...
 
 %% Sub-figure: Model space plot
 subplot(4,2,[2 4 6 8]);
-pcolor(10.^c{1},10.^c{2},N'); shading flat;
+pcolor(10.^binCenters{1},10.^binCenters{2},numElements'); shading flat;
 set(gca,'XScale','log','YScale','log');
 %colormap(flipud(crameri('roma')));
 % view(2);
 hold on
 trueLogRhoPlot = zeros(nzplot,1);
 trueLogDepthsPlot = logDepthPlot(:,1);
-[trueDepths,trueRhos] = modelGen(options.kMax,measure.modelChoice);
+
+[trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
 trueNumLayers = nnz(~isnan(trueDepths));
 for j=1:trueNumLayers
     mask = log10(zVals) >= log10(trueDepths(j));
@@ -238,7 +201,8 @@ set(gca,'Box','on');
 xlabel('Resistivity (\Omega-m)');
 ylabel('Depth (m)');
 
-%% Sub-figure: Histogram of misfit
+
+%% Sub-figure: Histogram of misfit in data space
 subplot(4,2,1);
 histogram(results.ensembleMisfits,100);
 hold on;
@@ -251,6 +215,7 @@ plot(ensembleMedianModelMisfit*[1 1],yy,ensembleMedianColor);
 set(gca,'FontSize',12);
 xlabel('Misfit (m)');
 f=gcf;
+
 % f.Renderer='painters';
 
 %% Save ensemble for The Sequencer
@@ -267,3 +232,210 @@ f=gcf;
 %exportgraphics(gcf,[results_file(1:end-4) '_ensemble.eps'],'ContentType','vector');
 
 %end
+
+
+%% Figure of model-space vs data-space misfit
+%{
+allModelSpaceMisfits = zeros(numSavedRuns,1);
+for i = 1:numSavedRuns
+    allModelSpaceMisfits(i) = norm(logRhoPlot(:,i)-...
+        log10(interpolatedTrueRhos'))/norm(log10(interpolatedTrueRhos'));
+end
+allDataSpaceMisfits = results.ensembleMisfits/norm(data.y);
+figure,plot(allModelSpaceMisfits,allDataSpaceMisfits,'.')
+xlabel('Model Space Misfit')
+ylabel('Data Space Misfit')
+figure
+hold on
+[~,ind] = sort(allModelSpaceMisfits);
+for i = 1:10
+    plot(logRhoPlot(:,ind(end-i+1)))
+    plot(logRhoPlot(:,ind(i)),'--')
+end
+
+%% Next figure
+
+disp('kmeans');
+numClusters = 2;
+[idx,C,sumd] = kmeans(logRhoPlot',numClusters);
+figure;
+pcolor(10.^c{1},10.^c{2},N'); shading flat;
+set(gca,'XScale','log','YScale','log');
+hold on
+for i = 1:size(C,1)
+    plot(10.^C(i,:),10.^logDepthPlot(:,1),'--','LineWidth',2);
+end
+plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueColor);
+colorbar();
+set(gca,'YDir','reverse');
+set(gca,'FontSize',12);
+set(gca,'Box','on');
+xlabel('Resistivity (\Omega-m)');
+ylabel('Depth (m)');
+legend()
+
+figure();
+subplot(3,2,1);
+hist(idx);
+%set(gca,'YScale','log');
+title('Number of ensemble slns');
+xlabel('Cluster #');
+ylabel('Frequency');
+
+numRunsEachCluster = zeros(1,numClusters);
+averageDist = zeros(1,numClusters);
+centroidMisfits = zeros(1,numClusters);
+centroidYs = zeros(length(data.y),numClusters);
+for i = 1:numClusters
+    numRunsEachCluster(i) = nnz(idx==i);
+    averageDist(i) = sumd(i)/numRunsEachCluster(i);
+    centroidYs(:,i) = forwardModel(xVals,10.^C(i,:),data.lambda);
+    % evaluate the forward model for the maximum likelihood.;
+    centroidMisfits(i) = norm(centroidYs(:,i)-data.y);
+end
+
+subplot(3,2,2);
+bar(averageDist);
+title('Distance from Centroid ');
+ylabel('Log-distance');
+xlabel('Cluster');
+
+subplot(3,2,3);
+bar(centroidMisfits)
+title('Misfit')
+ylabel('Data-space misfit (m)')
+xlabel('Cluster');
+
+subplot(3,2,4);
+histogram(results.ensembleMisfits,100);
+hold on;
+yy=get(gca,'YLim');
+for i = 1:numClusters
+    plot(centroidMisfits(i)*[1 1],yy,'LineWidth',1);
+end
+set(gca,'FontSize',12);
+xlabel('Log misfit');
+f=gcf;
+plot(medianModelMisfit*[1 1],yy,'Color',medianColor,'LineWidth',1);
+plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
+plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
+plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
+plot(ensembleMedianModelMisfit*[1 1],yy,ensembleMedianColor);
+
+
+subplot(3,2,5);
+hold on;
+
+%Ensemble solution
+for i=1:nSavedPlot
+    hEnsemble=plot(xVals,yVals(:,i),'Color',ensembleColor);
+end
+set(gca,'Box','on');
+set(gcf,'Color','w');
+%True model
+hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
+hexact = loglog(data.x,data.fx,'r-','LineWidth',1.0);
+for i = 1:numClusters
+    plot(data.x,centroidYs(:,i));
+end
+
+set(gca,'FontSize',12);
+set(gca,'Color','w');
+set(gca,'XScale','log','YScale','log');
+xlabel('Array Spacing (m)');
+ylabel('Apparent Resistivity (\Omega-m)')
+
+%% kmeans 2
+
+disp('kmeans2');
+numClusters = 2;
+[idx,C,sumd] = kmeans(logRhoPlot',numClusters,'Distance','cityblock');
+figure;
+pcolor(10.^c{1},10.^c{2},N'); shading flat;
+set(gca,'XScale','log','YScale','log');
+hold on
+for i = 1:size(C,1)
+    plot(10.^C(i,:),10.^logDepthPlot(:,1),'--','LineWidth',2);
+end
+plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueColor);
+colorbar();
+set(gca,'YDir','reverse');
+set(gca,'FontSize',12);
+set(gca,'Box','on');
+xlabel('Resistivity (\Omega-m)');
+ylabel('Depth (m)');
+legend()
+
+figure();
+subplot(3,2,1);
+hist(idx);
+%set(gca,'YScale','log');
+title('Number of ensemble slns in each cluster');
+xlabel('Cluster #');
+ylabel('Frequency');
+
+numRunsEachCluster = zeros(1,numClusters);
+averageDist = zeros(1,numClusters);
+centroidMisfits = zeros(1,numClusters);
+centroidYs = zeros(length(data.y),numClusters);
+for i = 1:numClusters
+    numRunsEachCluster(i) = nnz(idx==i);
+    averageDist(i) = sumd(i)/numRunsEachCluster(i);
+    centroidYs(:,i) = forwardModel(xVals,10.^C(i,:),data.lambda);
+    % evaluate the forward model for the maximum likelihood.;
+    centroidMisfits(i) = norm(centroidYs(:,i)-data.y);
+end
+
+subplot(3,2,2);
+bar(averageDist);
+title('Distance from Centroid in each cluster');
+ylabel('Log-distance');
+xlabel('Cluster');
+
+subplot(3,2,3);
+bar(centroidMisfits)
+title('Misfit')
+ylabel('Data-space misfit (m)')
+xlabel('Cluster');
+
+subplot(3,2,4);
+histogram(results.ensembleMisfits,100);
+hold on;
+yy=get(gca,'YLim');
+for i = 1:numClusters
+    plot(centroidMisfits(i)*[1 1],yy,'LineWidth',1);
+end
+set(gca,'FontSize',12);
+xlabel('Log misfit');
+f=gcf;
+plot(medianModelMisfit*[1 1],yy,'Color',medianColor,'LineWidth',1);
+plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
+plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
+plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
+plot(ensembleMedianModelMisfit*[1 1],yy,ensembleMedianColor);
+
+
+
+subplot(3,2,5);
+hold on;
+
+%Ensemble solution
+for i=1:nSavedPlot
+    hEnsemble=plot(xVals,yVals(:,i),'Color',ensembleColor);
+end
+set(gca,'Box','on');
+set(gcf,'Color','w');
+%True model
+hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
+hexact = loglog(data.x,data.fx,'r-','LineWidth',1.0);
+for i = 1:numClusters
+    plot(data.x,centroidYs(:,i));
+end
+
+set(gca,'FontSize',12);
+set(gca,'Color','w');
+set(gca,'XScale','log','YScale','log');
+xlabel('Array Spacing (m)');
+ylabel('Apparent Resistivity (\Omega-m)')
+
+%}
