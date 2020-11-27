@@ -60,49 +60,56 @@ end
 disp('Calculating models...');
 %Calculated mean and calculated median
 %Both calculated in log space, from the entire ensemble
+nzplot=500;
+zVals = 10.^linspace(log10(pBounds.depthMin),log10(pBounds.depthMax),nzplot);
 numSavedRuns = size(results.ensembleRhos,2);
-depthPlot = xVals; %Make a lot of imaginary layers
-meanModelRhos = zeros(nxplot,1);
-medianModelRhos = zeros(nxplot,1);
-rhoPlot = zeros(nxplot,numSavedRuns);
-for i = 1:numSavedRuns %for each run...
+
+depthPlot = zeros(nzplot, numSavedRuns);
+for i = 1:numSavedRuns
+    depthPlot(:,i) = zVals;
+end
+%make a lot of imaginary layers
+meanModelRhos = zeros(nzplot,1);
+medianModelRhos = zeros(nzplot,1);
+
+rhoPlot = zeros(size(depthPlot));
+for i = 1:numSavedRuns %for each run
     nLayer = nnz(~isnan(results.ensembleDepths(:,i)));
     %...Find the number of layers in that run...
     for j = 1:nLayer
-        mask = xVals >= results.ensembleDepths(j,i);
+        mask = zVals >= results.ensembleDepths(j,i);
         rhoPlot(mask,i) = results.ensembleRhos(j,i);
     end
 end
 logDepthPlot = repmat(log10(depthPlot),1,numSavedRuns);
 logRhoPlot = log10(rhoPlot);
 
-for i = 1:nxplot %for each imaginary layer
+for i = 1:nzplot %for each imaginary layer
     meanModelRhos(i) = 10.^(mean(logRhoPlot(i,:)));
     medianModelRhos(i) = 10.^(median(logRhoPlot(i,:)));
 end
 
-meanModelY = forwardModel(xVals,meanModelRhos,data.lambda);
-medianModelY = forwardModel(xVals,medianModelRhos,data.lambda);
+meanModelY = forwardModel(zVals,meanModelRhos,data.lambda);
+medianModelY = forwardModel(zVals,medianModelRhos,data.lambda);
 meanModelMisfit = norm(data.y - meanModelY);
 medianModelMisfit = norm(data.y- medianModelY);
 
 %Maximum likelihood model
 %Note: I only vaguely understand what's going on here
 % compute a bivariate histogram of resitvity values from the posterior ensemble
-numBins = 2*nxplot;
-[numElements,binCenters]=hist3([logRhoPlot(:),logDepthPlot(:)],...
-    {linspace(-10,10,400) linspace(minDistL,maxDistL,nxplot)},...
-    'CDataMode','auto');
+[N,c]=hist3([logRhoPlot(:),logDepthPlot(:)],...
+    {linspace(-10,10,400) log10(zVals)},'CDataMode','auto');
 % First linspace is for log(rho), second is for log(depth)
 % at each depth, find the most likely solution (ml_rho)
-maxLikelihoodRho = zeros(nxplot,1);
-for i=1:nxplot
+maxLikelihoodRho = zeros(nzplot,1);
+ks_x = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e5);
+parfor i=1:nzplot
     % Use ksdensity to approximate the pdf of resistivity at this depth:
-    [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(i,:));
-    [~,ind1] = max(pdfYVals);
-    maxLikelihoodRho(i) = 10.^pdfXVals(ind1);
+    [xi,f] = ksdensity(logRhoPlot(i,:),ks_x);
+    [~,ind1] = max(xi);
+    maxLikelihoodRho(i) = 10.^f(ind1);
 end
-maxLikelihoodY = forwardModel(xVals,maxLikelihoodRho,data.lambda);
+maxLikelihoodY = forwardModel(zVals,maxLikelihoodRho,data.lambda);
 % evaluate the forward model for the maximum likelihood.
 maxLikelihoodMisfit = norm(data.y-maxLikelihoodY);
 
@@ -173,20 +180,20 @@ set(gca,'XScale','log','YScale','log');
 %colormap(flipud(crameri('roma')));
 % view(2);
 hold on
-trueLogRhoPlot = zeros(size(xVals));
+trueLogRhoPlot = zeros(nzplot,1);
 trueLogDepthsPlot = logDepthPlot(:,1);
 
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
 trueNumLayers = nnz(~isnan(trueDepths));
 for j=1:trueNumLayers
-    mask = log10(xVals) >= log10(trueDepths(j));
+    mask = log10(zVals) >= log10(trueDepths(j));
     trueLogRhoPlot(mask) = log10(trueRhos(j));
 end
 plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueColor);
 plot(rhoPlot(:,medianIndex),10.^logDepthPlot(:,medianIndex),'Color',medianColor);
 plot(rhoPlot(:,bestIndex),10.^logDepthPlot(:,bestIndex),'Color',bestFitColor);
-plot(maxLikelihoodRho,xVals,'Color',maxLikelihoodColor);
-plot(meanModelRhos,xVals,meanColor)
+plot(maxLikelihoodRho,zVals,'Color',maxLikelihoodColor);
+plot(meanModelRhos,zVals,meanColor)
 colorbar();
 set(gca,'YDir','reverse');
 set(gca,'FontSize',12);
