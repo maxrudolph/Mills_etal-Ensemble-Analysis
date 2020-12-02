@@ -29,7 +29,7 @@ end
 
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 1e7; %total iterations for MCMC loop. 1e7+ recommended
+options.numSteps = 5e7; %total iterations for MCMC loop. 1e7+ recommended
 options.mLPSCoefficient = 1e4;
 options.modelChoice = measure.modelChoice;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
@@ -38,7 +38,6 @@ options.saveStart = floor(options.numSteps/2);
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
 options.saveSkip = 100; %sample every (saveSkip)th step once sampling begins
-options.samplePrior = false; % true = always accept proposed solution
 options.intlVar = 1.0; %variance = how much misfit accepted.
 options.alterVar = true; %If false, model variance will never change
 
@@ -69,20 +68,32 @@ pBounds.varMax = 1e8; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
 pBounds.numSteps = options.numSteps; %
-%{
+
 noiseCoefs=[0.0,0.01,0.02,0.05,0.1,0.2];
-parfor inoise=1:6
-    thisMeasure = measure;
-    thisMeasure.noiseCoef=noiseCoefs(inoise);
+parfor inoise=1:(length(noiseCoefs)+1)
+    thisMeasure = measure;    
+    thisOptions = options;
+    
+    if inoise == (length(noiseCoefs)+1) % special case for sampling the prior.
+        thisMeasure.noiseCoef=0.0;
+        thisOptions.samplePrior = true;
+        filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
+            'prior', '_', date, '.mat'];
+    else
+        thisMeasure.noiseCoef=noiseCoefs(inoise);
+        thisOptions.samplePrior = false;
+        filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
+            num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
+    end
+    
     data = createSyntheticData(thisMeasure, forwardModel); %creates measurements
-    results = mcmcAlgorithm(data,forwardModel,options, pBounds);
-    filename = ['Ensemble_', thisMeasure.modelChoice, '_',...
-        num2str(thisMeasure.noiseCoef), '_', date, '.mat'];
-    doSaving(filename,results,data,thisMeasure,options,forwardModel,pBounds);
+    results = mcmcAlgorithm(data,forwardModel,thisOptions, pBounds);
+    
+    doSaving(filename,results,data,thisMeasure,thisOptions,forwardModel,pBounds);
 end
-%}
-data = createSyntheticData(measure,forwardModel);
-results = mcmcAlgorithm(data,forwardModel,options,pBounds);
-filename = ['Ensemble_', measure.modelChoice, '_',...
-        num2str(measure.noiseCoef), '_', date, '.mat'];
-doSaving(filename, results,data, measure, options, forwardModel,pBounds);
+
+% data = createSyntheticData(measure,forwardModel);
+% results = mcmcAlgorithm(data,forwardModel,options,pBounds);
+% filename = ['Ensemble_', measure.modelChoice, '_',...
+%         num2str(measure.noiseCoef), '_', date, '.mat'];
+% doSaving(filename, results,data, measure, options, forwardModel,pBounds);
