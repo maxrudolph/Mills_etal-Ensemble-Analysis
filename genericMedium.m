@@ -96,14 +96,14 @@ classdef genericMedium < handle
         end
         
         %
-        function good = checkDepthProperties(obj,input,indx)
+        function good = checkDepthProperties(obj,proposedDepth,indx)
             %checks new depth values to make sure in bounds
             testDepths = obj.depths(~isnan(obj.depths));
             if indx <= length(testDepths) %if perturbDepth, 
                 testDepths(indx) = []; %remove old layer depth before comparison
             end
-            if (input > obj.depthMax || input < obj.depthMin) || ...
-                    (min(abs(input - testDepths)) < obj.hMin)
+            if (proposedDepth > obj.depthMax-obj.hMin || proposedDepth < obj.depthMin) || ...
+                    (min(abs(proposedDepth - testDepths)) < obj.hMin)
                 good = false;
             else
                 good = true;
@@ -111,9 +111,9 @@ classdef genericMedium < handle
         end
         
         %
-        function good = checkRhoProperties(obj,input)
+        function good = checkRhoProperties(obj,proposedRho)
             %checks to make sure rho values are in bounds
-            if (input < obj.rhoMin || input>obj.rhoMax)
+            if (proposedRho < obj.rhoMin || proposedRho>obj.rhoMax)
                 good = false;
             else
                 good = true;

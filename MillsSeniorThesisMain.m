@@ -19,7 +19,7 @@ if ifLoadData
     % ...Not setup yet to take real data...
 else
     %Artifical model setup:
-    measure.modelChoice = '3LayerA'; %currently setup: 3LayerA, 4LayerA
+    measure.modelChoice = '1LayerA'; %currently setup: 3LayerA, 4LayerA
     %Measurement options
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
@@ -61,7 +61,7 @@ measure.kMax = options.kMax;
 %Bound parameters. Bounds based on Appendix A, Malinverno 2002
 pBounds.maxLayers = options.kMax; % max # of layers in a given model
 pBounds.depthMin = 1e-1; %min depth for layer interface (not top)
-pBounds.depthMax = 1e4; % max depth for layer interface
+pBounds.depthMax = measure.maxDist; % max depth for layer interface
 pBounds.rhoMin = 1e-8; % min resistivity, NEEDS UPDATE
 pBounds.rhoMax = 1e8; % max resistivity, NEEDS UPDATE
 pBounds.varMin = 1e-8; % valid?

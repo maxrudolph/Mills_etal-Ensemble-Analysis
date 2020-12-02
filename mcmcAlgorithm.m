@@ -84,7 +84,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     end %end of switch statement
     
     if options.samplePrior
-        probAccept = log(1);
+        probAccept = log(k+1) - log(kPrime+1);
     else
         [depths,rhos] = layersProposed.getSolution();
         residual = data.y - model(depths,rhos,lambda);       
@@ -109,7 +109,8 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         disp(['MCMC algorithm ',num2str(100*(iter/totalSteps)),'% finished']);
     end
     
-    if (iter>saveStart)&&(round(iter/saveSkip)==iter/saveSkip) %starts recording after ItsSaved models for every Inc_save-th model
+    if (iter>saveStart)&&(round(iter/saveSkip)==iter/saveSkip) 
+        %starts recording after ItsSaved models for every Inc_save-th model
         saveStep=saveStep+1;
         if saveStep == 1
             disp(['Saving begun']);
