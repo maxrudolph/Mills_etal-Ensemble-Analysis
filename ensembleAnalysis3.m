@@ -66,14 +66,17 @@ numBins = 2*nxplot;
 % First linspace is for log(rho), second is for log(depth)
 % at each depth, find the most likely solution (ml_rho)
 maxLikelihoodRho = zeros(nzplot,1);
-ksRho = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e5);
+ksRho = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e4);
 %Bandwidth issues - possible bug in matlab
+logRhoPlot = logRhoPlot';
 parfor i=1:nzplot
+    i
     % Use ksdensity to approximate the pdf of resistivity at this depth:
-    [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(i,:),ksRho);
+    [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(:,i),ksRho,'bandwidth',.01);
     [~,ind1] = max(pdfYVals);
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1);
 end
+logRhoPlot = logRhoPlot';
 maxLikelihood = makeCalculatedModel(zVals,maxLikelihoodRho,data,...
     forwardModel,'m');
 

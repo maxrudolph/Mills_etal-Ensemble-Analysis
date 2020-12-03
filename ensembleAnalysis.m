@@ -81,7 +81,7 @@ for i = 1:numSavedRuns %for each run
         rhoPlot(mask,i) = results.ensembleRhos(j,i);
     end
 end
-logDepthPlot = repmat(log10(depthPlot),1,numSavedRuns);
+logDepthPlot = log10(depthPlot);
 logRhoPlot = log10(rhoPlot);
 
 for i = 1:nzplot %for each imaginary layer
@@ -104,8 +104,9 @@ medianModelMisfit = norm(data.y- medianModelY);
 maxLikelihoodRho = zeros(nzplot,1);
 ks_x = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e5);
 parfor i=1:nzplot
+    i
     % Use ksdensity to approximate the pdf of resistivity at this depth:
-    [xi,f] = ksdensity(logRhoPlot(i,:),ks_x);
+    [xi,f] = ksdensity(logRhoPlot(i,:),ks_x,'bandwidth',0.01);
     [~,ind1] = max(xi);
     maxLikelihoodRho(i) = 10.^f(ind1);
 end
