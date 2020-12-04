@@ -84,6 +84,8 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     end %end of switch statement
     
     if options.samplePrior
+        k = layersAccepted.getNumLayers();
+        kPrime = layersProposed.getNumLayers();
         probAccept = log(k+1) - log(kPrime+1);
     else
         [depths,rhos] = layersProposed.getSolution();
