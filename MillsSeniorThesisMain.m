@@ -19,17 +19,17 @@ if ifLoadData
     % ...Not setup yet to take real data...
 else
     %Artifical model setup:
-    measure.modelChoice = '1LayerA'; %currently setup: 3LayerA, 4LayerA
+    measure.modelChoice = '3LayerA'; %currently setup: 3LayerA, 4LayerA
     %Measurement options
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
     measure.numMeasurements = 21; %total # of measurements
-    measure.noiseCoef = 0.1; %How "noisy" are the measurements
+    measure.noiseCoef = 0.11; %How "noisy" are the measurements
 end
 
 %% Set inversion options
 options.kMax = 10; %max number of layers allowed in models
-options.numSteps = 5e7; %total iterations for MCMC loop. 1e7+ recommended
+options.numSteps = 1e6; %total iterations for MCMC loop. 1e7+ recommended
 options.mLPSCoefficient = 1e4;
 options.modelChoice = measure.modelChoice;
 %mLPS = max layers per step. Set higher for longer 'burn-in' period.
@@ -68,7 +68,7 @@ pBounds.varMax = 1e8; % valid?
 pBounds.varChange = 1e-1;  %valid?
 pBounds.intlVar = options.intlVar; %initial variance
 pBounds.numSteps = options.numSteps; %
-
+%{
 noiseCoefs=[0.0,0.01,0.02,0.05,0.1,0.2];
 parfor inoise=1:(length(noiseCoefs)+1)
     thisMeasure = measure;    
@@ -91,9 +91,10 @@ parfor inoise=1:(length(noiseCoefs)+1)
     
     doSaving(filename,results,data,thisMeasure,thisOptions,forwardModel,pBounds);
 end
-
-% data = createSyntheticData(measure,forwardModel);
-% results = mcmcAlgorithm(data,forwardModel,options,pBounds);
-% filename = ['Ensemble_', measure.modelChoice, '_',...
-%         num2str(measure.noiseCoef), '_', date, '.mat'];
-% doSaving(filename, results,data, measure, options, forwardModel,pBounds);
+%}
+options.samplePrior = false;
+ data = createSyntheticData(measure,forwardModel);
+ results = mcmcAlgorithm(data,forwardModel,options,pBounds);
+ filename = ['Ensemble_', measure.modelChoice, '_',...
+         num2str(measure.noiseCoef), '_', date, '.mat'];
+ doSaving(filename, results,data, measure, options, forwardModel,pBounds);
