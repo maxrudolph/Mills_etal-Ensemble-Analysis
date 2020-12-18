@@ -98,7 +98,7 @@ medianModelMisfit = norm(data.y- medianModelY);
 %Maximum likelihood model
 %Note: I only vaguely understand what's going on here
 % compute a bivariate histogram of resitvity values from the posterior ensemble
-[N,c]=hist3([logRhoPlot(:),logDepthPlot(:)],...
+[numElements,binCenters]=hist3([logRhoPlot(:),logDepthPlot(:)],...
     {linspace(-10,10,400) log10(zVals)},'CDataMode','auto');
 % First linspace is for log(rho), second is for log(depth)
 % at each depth, find the most likely solution (ml_rho)
@@ -107,7 +107,7 @@ ks_x = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e4);
 parfor i=1:nzplot
     i
     % Use ksdensity to approximate the pdf of resistivity at this depth:
-    [xi,f] = ksdensity(logRhoPlot(i,:),ks_x,'bandwidth',0.01);
+    [xi,f] = ksdensity(logRhoPlot(i,:),ks_x,'bandwidth',0.05);
     [~,ind1] = max(xi);
     maxLikelihoodRho(i) = 10.^f(ind1);
 end
