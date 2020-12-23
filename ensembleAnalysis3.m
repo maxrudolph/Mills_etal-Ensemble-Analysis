@@ -2,8 +2,6 @@
 rng(1);
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
-doAll = true; %set this to false to skip the most time consuming stuff
-%Calculating max likelihood model, all pre-GM plots)
 %% Section 1 NF: evaluate ensemble solutions on regularly spaced grid
 disp('Evaluating ensemble...');
 minDistL = log10(measure.minDist);
@@ -45,7 +43,7 @@ for i = 1:numSavedRuns %for each run...
     end
 end
 logRhoPlot = log10(rhoPlot);
-if doAll
+
 dMean = makeCalculatedModel(zVals,10.^(mean(logRhoPlot,2)),data,...
     forwardModel,'g','Data Space Mean');
 dMedian = makeCalculatedModel(zVals,10.^(median(logRhoPlot,2)),data,...
@@ -74,7 +72,7 @@ ksRho = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e4);
 logRhoPlot = logRhoPlot';
 parfor i=1:nzplot
     % Use ksdensity to approximate the pdf of resistivity at this depth:
-    [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(:,i),ksRho,'bandwidth',.1);
+    [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(:,i),ksRho,'bandwidth',.05);
     [~,ind1] = max(pdfYVals);
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1);
 end
@@ -169,7 +167,7 @@ for iPlot = 2:6
 end
 set(gca,'FontSize',12);
 xlabel('Misfit (m)');
-end
+
 %% GM Model
 disp('Next phase...');
 rng(1);
@@ -340,6 +338,42 @@ ylabel('Apparent Resistivity (\Omega-m)')
 %end
 
 
+%% AIC and BIC vs regularization value
+disp('testing phase...');
+rng(1);
+%downsample
+downsampleNumber = floor(size(results.ensembleRhos,2)/10);
+gmPlotIndex = randperm(size(results.ensembleRhos,2),downsampleNumber);
+
+%Step one: use k-means clustering
+numClusters = 6;
+clust = zeros(downsampleNumber,numClusters);
+gmRhoPlot = logRhoPlot(:,gmPlotIndex);
+parfor i=1:numClusters
+    disp(i);
+    clust(:,i) = kmeans(gmRhoPlot',i);
+end
+
+AIC = zeros(1,10);
+BIC = zeros(1,10);
+
+for iReg = 1:10
+    eva = evalclusters(gmRhoPlot',clust,'CalinskiHarabasz');
+    options = statset('Display','final');
+    GMModel = fitgmdist(gmRhoPlot',eva.OptimalK,...
+        'Options',options,'RegularizationValue',1*(10^(-iReg)));
+    AIC(iReg) = GMModel.AIC;
+    BIC(iReg) = GMModel.BIC;
+    disp(iReg)
+end
+
+figure;
+plot([1:10],AIC,'*','DisplayName','AIC');
+hold on
+plot([1:10],BIC,'^','DisplayName','BIC');
+xlabel('Regularization Value = 1e(-x)')
+ylabel('AIC or BIC');
+legend;
 %% Figure of model-space vs data-space misfit
 %{
 allModelSpaceMisfits = zeros(numSavedRuns,1);
