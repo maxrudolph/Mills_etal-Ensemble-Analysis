@@ -9,6 +9,7 @@ classdef calculatedModel < handle
         misfit;     %real number
         %%%%%% Plotting properties %%%%%
         color;      %RGB triplet (can be input as char)
+        lineStyle;
         displayName;      %Which model is this
     end
     
@@ -20,13 +21,14 @@ classdef calculatedModel < handle
 
         %Constructor%
         function obj = calculatedModel(inDepths,inRhos,...
-                colorChoice,title)
+                colorChoice,lineStyle,title)
             obj.depths = inDepths;
             obj.rhos = inRhos;
             obj.y = 0;
             obj.misfit = 0;
             obj.setColor(colorChoice);
             obj.displayName = title;
+            obj.lineStyle = lineStyle;
         end
         
 %%%%%%%%%%%%%%% Set functions %%%%%%%%%%%%%%%%%%%%%

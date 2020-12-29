@@ -44,21 +44,28 @@ for i = 1:numSavedRuns %for each run...
 end
 logRhoPlot = log10(rhoPlot);
 
-dMean = makeCalculatedModel(zVals,10.^(mean(logRhoPlot,2)),data,...
-    forwardModel,'g','Data Space Mean');
-dMedian = makeCalculatedModel(zVals,10.^(median(logRhoPlot,2)),data,...
-    forwardModel,'y','Data Space Median');
+mMean = makeCalculatedModel(zVals,10.^(mean(logRhoPlot,2)),data,...
+    forwardModel,'g','-','Model Space Mean');
+mMedian = makeCalculatedModel(zVals,10.^(median(logRhoPlot,2)),data,...
+    forwardModel,'y','-','Model Space Median');
 
 % Ensemble median and best fit models
 [~,ind2] = sort(results.ensembleMisfits);
 medianIndex= ind2(floor(length(ind2)/2));
 bestIndex = ind2(1);
-mMedian = makeCalculatedModel(results.ensembleDepths(:,medianIndex),...
-    results.ensembleRhos(:,medianIndex),data,forwardModel,'k',...
-    'Model Space Median');
-bestFit = makeCalculatedModel(results.ensembleDepths(:,bestIndex),...
-    results.ensembleRhos(:,bestIndex),data,forwardModel,'c',...
-    'Best Fit Model');
+medianRhoPlot = zeros(size(zVals,1),1);
+bestRhoPlot = zeros(size(zVals,1),1);
+for j = 1:size(results.ensembleDepths,1)
+    mask = zVals >= results.ensembleDepths(j,medianIndex);
+    medianRhoPlot(mask) = results.ensembleRhos(j,medianIndex);
+    mask = zVals >= results.ensembleDepths(j,bestIndex);
+    bestRhoPlot(mask) = results.ensembleRhos(j,bestIndex);
+end
+
+dMedian = makeCalculatedModel(zVals,medianRhoPlot,data,forwardModel,'k',...
+    '-','Data Space Median');
+bestFit = makeCalculatedModel(zVals,bestRhoPlot,data,forwardModel,'c',...
+    '-','Best Fit Model');
 %Maximum likelihood model
 % compute a bivariate histogram of resitvity values from the posterior ensemble
 numBins = 2*nxplot;
@@ -78,251 +85,88 @@ parfor i=1:nzplot
 end
 logRhoPlot = logRhoPlot';
 maxLikelihood = makeCalculatedModel(zVals,maxLikelihoodRho,data,...
-    forwardModel,'m','Maximum Likelihood Model');
+    forwardModel,'m','-','Maximum Likelihood Model');
 
 %Setup true model
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
-trueModel = makeCalculatedModel(trueDepths,trueRhos,data,forwardModel,...
-    'r','True Model');
+trueLogDepthsPlot = logDepthPlot(:,1);
+trueLogRhoPlot = zeros(nzplot,1);
+trueNumLayers = nnz(~isnan(trueDepths));
+for j = 1:trueNumLayers
+    mask = log10(zVals) >= log10(trueDepths(j));
+    trueLogRhoPlot(mask) = log10(trueRhos(j));
+end
+trueModel = makeCalculatedModel(10.^trueLogDepthsPlot,10.^trueLogRhoPlot,...
+    data,forwardModel,'r','-','True Model');
 
 %% 3 Figures
 disp('Plotting properties...');
 smallPlots(results);
 %% Section 4 The big figure:
 disp('More plots...');
+allModels = {trueModel,mMean,mMedian,bestFit,maxLikelihood,dMedian};
 
-% Part 1: Data space plot
-figure;
-subplot(4,2,[3 5 7]);
-hold on;
-ensembleColor = [200 200 200]/255;
-
-%Ensemble solution
-for i=1:nSavedPlot
-    hEnsemble=plot(xVals,yVals(:,i),'Color',ensembleColor);
-end
-
-set(gca,'Box','on');
-set(gcf,'Color','w');
-allModels = {trueModel,dMean,dMedian,bestFit,maxLikelihood,...
-    mMedian};
-plots = cell(1,6);
-for iPlot = 1:6
-    plots{iPlot} = loglog(data.x,allModels{iPlot}.y,'-','Color',...
-        allModels{iPlot}.color);
-end
-
-hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
-hmMean = loglog(xVals,mean(yVals,2),'ks');
-
-legend([plots{1},plots{2},plots{3},plots{4},plots{5},plots{6},hdata,...
-    hmMean,hEnsemble],{allModels{1}.displayName,allModels{2}.displayName,...
-    allModels{3}.displayName,allModels{4}.displayName,...
-    allModels{5}.displayName,allModels{6}.displayName,'Data+noise',...
-    'Model Space mean','Ensemble'},'Position',[0.2 0.2 0.1 0.2]);
-
-set(gca,'FontSize',12);
-set(gca,'Color','w');
-set(gca,'XScale','log','YScale','log');
-xlabel('Array Spacing (m)');
-ylabel('Apparent Resistivity (\Omega-m)')
-
-% Part 2 Sub-figure: Model space plot
-subplot(4,2,[2 4 6 8]);
-pcolor(10.^binCenters{1},10.^binCenters{2},numElements'); shading flat;
-set(gca,'XScale','log','YScale','log');
-
-hold on
-trueLogRhoPlot = zeros(nzplot,1);
-trueLogDepthsPlot = logDepthPlot(:,1);
-
-trueNumLayers = nnz(~isnan(trueDepths));
-for j=1:trueNumLayers
-    mask = log10(zVals) >= log10(trueDepths(j));
-    trueLogRhoPlot(mask) = log10(trueRhos(j));
-end
-plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueModel.color);
-plot(rhoPlot(:,medianIndex),10.^logDepthPlot(:,medianIndex),'-',...
-    'Color',mMedian.color);
-plot(rhoPlot(:,bestIndex),10.^logDepthPlot(:,bestIndex),'-',...
-    'Color',bestFit.color);
-plot(maxLikelihood.rhos,maxLikelihood.depths,'-',...
-    'Color',maxLikelihood.color);
-plot(dMean.rhos,dMean.depths,'-','Color',dMean.color);
-colorbar();
-set(gca,'YDir','reverse');
-set(gca,'FontSize',12);
-set(gca,'Box','on');
-xlabel('Resistivity (\Omega-m)');
-ylabel('Depth (m)');
-
-
-% Part 3 Sub-figure: Histogram of misfit in data space
-subplot(4,2,1);
-histogram(results.ensembleMisfits,100);
-hold on;
-yy=get(gca,'YLim');
-for iPlot = 2:6
-    plot(allModels{iPlot}.misfit*[1 1],yy,'-','Color',allModels{iPlot}.color);
-end
-set(gca,'FontSize',12);
-xlabel('Misfit (m)');
-
-%% GM Model
-disp('Next phase...');
-rng(1);
+bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ');
+%% 5 Clustering stuff
+disp('Calculating number of clusters')
 %downsample
-downsampleNumber = floor(size(results.ensembleRhos,2))%/10);
+downsampleNumber = floor(size(results.ensembleRhos,2));%/10;
 gmPlotIndex = randperm(size(results.ensembleRhos,2),downsampleNumber);
 
-%Step one: use k-means clustering
-numClusters = 6;
-clust = zeros(downsampleNumber,numClusters);
-gmRhoPlot = logRhoPlot(:,gmPlotIndex);
-parfor i=1:numClusters
-    disp(i);
-    clust(:,i) = kmeans(gmRhoPlot',i);
+%Use k-means clustering
+maxNumClusters = 6;
+clust = zeros(downsampleNumber,maxNumClusters);
+dsLogRhoPlot = logRhoPlot(:,gmPlotIndex);
+parfor i = 1:maxNumClusters
+    fprintf('\nCalculating for %d clusters',i)
+    clust(:,i) = kmeans(dsLogRhoPlot',i);
 end
 
-eva = evalclusters(gmRhoPlot',clust,'CalinskiHarabasz')
+%Step 2: Use results from k-means to determine optimal # of clusters
+eva = evalclusters(dsLogRhoPlot',clust,'CalinskiHarabasz');
+numClusters = eva.OptimalK;
+
+%Step 3: Find Gaussian mixture models
+disp('Finding Gaussian models')
 options = statset('Display','final');
-GMModel = fitgmdist(gmRhoPlot',eva.OptimalK,...
-    'Options',options,'RegularizationValue',1e-6);
-%AIC = zeros(1,numClusters);
-%GMModels = cell(1,numClusters);
-%options = statset('MaxIter',500);
-%parfor k = 1:numClusters
-%    disp(k)
-%    GMModels{k} = fitgmdist(logRhoPlot',k,'Options',options,'CovarianceType','diagonal');
-%    AIC(k)= GMModels{k}.AIC;
-%end
+GMModel = fitgmdist(dsLogRhoPlot',numClusters,'Options',options,...
+    'RegularizationValue',1e-8);
 
-%[minAIC,numComponents] = min(AIC);
-%numComponents;
-%BestModel = GMModels{numComponents};
+%Step 4: Find kmeans centroids
+disp('Finding k-means')
+[idxEuclid,CEuclid,sumdEuclid] = kmeans(dsLogRhoPlot',numClusters);
+[idxMan,CMan,sumdMan] = kmeans(dsLogRhoPlot',numClusters,'Distance','cityblock');
 
-figure()
-pcolor(10.^binCenters{1},10.^binCenters{2},numElements'); shading flat;
-set(gca,'XScale','log','YScale','log');
-hold on
-plot(10.^GMModel.mu,10.^logDepthPlot(:,1)','--','DisplayName','GM means');
-plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueModel.color,'DisplayName','True model');
-colorbar();
-set(gca,'YDir','reverse');
-set(gca,'FontSize',12);
-set(gca,'Box','on');
-xlabel('Resistivity (\Omega-m)');
-ylabel('Depth (m)');
-legend()
-title('GM Stuff')
-figure()
-histogram(results.ensembleMisfits,100);
-hold on;
-yy=get(gca,'YLim');
-gmYs = zeros(size(data.y,1),eva.OptimalK);
-gmMisfits = zeros(1,eva.OptimalK);
-for i = 1:eva.OptimalK
-    gmYs(:,i) = forwardModel(zVals,10.^GMModel.mu(i,:)',data.lambda);
-    % evaluate the forward model for the maximum likelihood.;
-    gmMisfits(i) = norm(gmYs(:,i)-data.y);
-    plot(gmMisfits(i)*[1 1],yy,'--');
+%Step 5: Make models
+disp('Calculating models')
+GMData = cell(1,numClusters+1);
+KMDataEuclid = cell(1,numClusters+1);
+KMDataMan = cell(1,numClusters+1);
+GMData{1} = trueModel;
+KMDataEuclid{1} = trueModel;
+KMDataMan{1} = trueModel;
+for i = 1:numClusters
+    GMData{i+1} = makeCalculatedModel(zVals,10.^GMModel.mu(i,:)',data,...
+        forwardModel,rand(1,3),'--',strcat('GM mean #',num2str(i)));
+    KMDataEuclid{i+1} = makeCalculatedModel(zVals,10.^CEuclid(i,:)',data,...
+        forwardModel,rand(1,3),'--',strcat('Centroid #',num2str(i)));
+    KMDataMan{i+1} = makeCalculatedModel(zVals,10.^CMan(i,:)',data,...
+        forwardModel,rand(1,3),'--',strcat('Centroid #',num2str(i)));
 end
 
-for iPlot = 2:6
-    plot(allModels{iPlot}.misfit*[1 1],yy,'-','Color',allModels{iPlot}.color);
-end
+%%6 Plots of GM and k-means
+disp('Plotting')
 
-%%
-figure()
-[idx,C,sumd] = kmeans(logRhoPlot',eva.OptimalK);
-pcolor(10.^binCenters{1},10.^binCenters{2},numElements'); shading flat;
-set(gca,'XScale','log','YScale','log');
-hold on
-for i = 1:size(C,1)
-    plot(10.^C(i,:),10.^logDepthPlot(:,1),'--','LineWidth',2,'DisplayName',...
-        'Centroids');
-end
-plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueModel.color,'DisplayName',...
-    'True model');
-colorbar();
-set(gca,'YDir','reverse');
-set(gca,'FontSize',12);
-set(gca,'Box','on');
-xlabel('Resistivity (\Omega-m)');
-ylabel('Depth (m)');
-legend()
+bigPlot(binCenters,numElements,GMData,xVals,yVals,data,results,...
+    'Gaussian Mixture Models')
+bigPlot(binCenters,numElements,KMDataEuclid,xVals,yVals,data,results,...
+    'K-means: Euclidean');
+kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid);
+bigPlot(binCenters,numElements,KMDataMan,xVals,yVals,data,results,...
+    'K-means: Manhattan');
+kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan);
 
-figure();
-subplot(3,2,1);
-histogram(idx);
-%set(gca,'YScale','log');
-title('Number of ensemble slns');
-xlabel('Cluster #');
-ylabel('Frequency');
-
-numRunsEachCluster = zeros(1,eva.OptimalK);
-averageDist = zeros(1,eva.OptimalK);
-centroidMisfits = zeros(1,eva.OptimalK);
-centroidYs = zeros(length(data.y),eva.OptimalK);
-for i = 1:eva.OptimalK
-    numRunsEachCluster(i) = nnz(idx==i);
-    averageDist(i) = sumd(i)/numRunsEachCluster(i);
-    centroidYs(:,i) = forwardModel(zVals,10.^C(i,:),data.lambda);
-    % evaluate the forward model for the maximum likelihood.;
-    centroidMisfits(i) = norm(centroidYs(:,i)-data.y);
-end
-
-subplot(3,2,2);
-bar(averageDist);
-title('Distance from Centroid ');
-ylabel('Log-distance');
-xlabel('Cluster');
-
-subplot(3,2,3);
-bar(centroidMisfits)
-title('Misfit')
-ylabel('Data-space misfit (m)')
-xlabel('Cluster');
-
-subplot(3,2,4);
-histogram(results.ensembleMisfits,100);
-hold on;
-yy=get(gca,'YLim');
-for i = 1:eva.OptimalK
-    plot(centroidMisfits(i)*[1 1],yy,'--','LineWidth',1,'DisplayName',...
-        'Centroids');
-end
-set(gca,'FontSize',12);
-xlabel('Log misfit');
-f=gcf;
-for iPlot = 2:6
-    plot(allModels{iPlot}.misfit*[1 1],yy,'-','Color',allModels{iPlot}.color,...
-        'DisplayName',allModels{iPlot}.displayName);
-end
-
-subplot(3,2,5);
-hold on;
-
-%Ensemble solution
-for i=1:nSavedPlot
-    hEnsemble=plot(xVals,yVals(:,i),'Color',ensembleColor);
-end
-set(gca,'Box','on');
-set(gcf,'Color','w');
-%True model
-hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
-hexact = loglog(data.x,data.fx,'r-','LineWidth',1.0);
-for i = 1:eva.OptimalK
-    plot(data.x,centroidYs(:,i));
-end
-
-set(gca,'FontSize',12);
-set(gca,'Color','w');
-set(gca,'XScale','log','YScale','log');
-xlabel('Array Spacing (m)');
-ylabel('Apparent Resistivity (\Omega-m)')
-
-%% 5 Optional: Save ensemble for The Sequencer
+%% 7 Optional: Save ensemble for The Sequencer
 % nsequence = 100000;
 % slashpos = find(filename=='/',1,'last');
 % txtfile = [filename(slashpos+1:end-3) 'csv'];
@@ -331,13 +175,117 @@ ylabel('Apparent Resistivity (\Omega-m)')
 % struggles with very large datasets. I choose just the last nsequence
 % samples in the ensemble.
 
-%% 6 Optional: save the figure
+%% 8 Optional: save the figure
 % export_fig([results_file(1:end-4) '_ensemble.eps'])
 %exportgraphics(gcf,[results_file(1:end-4) '_ensemble.eps'],'ContentType','vector');
 
 %end
+%% Functions
 
+function bigPlot(bC,nE,inModels,x,y,data,results,inTitle)
+figure;
+title(inTitle);
+subplot(4,2,[2 4 6 8]);
+modelSpacePlot(bC,nE,inModels,'Model Space');
 
+%Part 2: Data space plot
+subplot(4,2,[3 5 7]);
+dataSpacePlot(x,y,inModels,data);
+
+% Part 3 Sub-figure: Histogram of misfit in data space
+subplot(4,2,1);
+plotMisfit(inModels,results);
+end
+
+function kMeansPlots(intitle,idx,sumd,inModels)
+numClusters = size(inModels,2)-1;
+figure();
+title(intitle)
+subplot(3,1,1);
+histogram(idx);
+%set(gca,'YScale','log');
+title('Number of ensemble slns');
+xlabel('Cluster #');
+ylabel('Frequency');
+
+averageDist = zeros(1,numClusters);
+centroidMisfits = zeros(1,numClusters);
+for i = 1:numClusters
+    averageDist(i) = sumd(i)/nnz(idx==i);
+    centroidMisfits = inModels{i+1}.misfit;
+end
+
+subplot(3,1,2);
+bar(averageDist);
+title('Distance from Centroid ');
+ylabel('Log-distance');
+xlabel('Cluster');
+
+subplot(3,1,3);
+bar(centroidMisfits)
+title('Misfit')
+ylabel('Data-space misfit (m)')
+xlabel('Cluster');
+end
+
+function modelSpacePlot(bC,nE,inModels,inTitle)
+pcolor(10.^bC{1},10.^bC{2},nE'); shading flat;
+set(gca,'XScale','log','YScale','log');
+hold on
+for i = 1:size(inModels,2)
+    plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
+        inModels{i}.lineStyle,'Color',inModels{i}.color,'DisplayName',...
+        inModels{i}.displayName);
+end
+colorbar();
+legend();
+set(gca,'YDir','reverse');
+set(gca,'FontSize',12);
+set(gca,'Box','on');
+xlabel('Resistivity (\Omega-m)');
+ylabel('Depth (m)');
+legend()
+title(inTitle)
+end
+
+function dataSpacePlot(x,y,inModels,data)
+hold on;
+ensembleColor = [200 200 200]/255;
+
+%Ensemble solution
+for i=1:size(y,2)
+    plot(x,y(:,i),'Color',ensembleColor);
+end
+
+set(gca,'Box','on');
+set(gcf,'Color','w');
+for i = 1:size(inModels,2)
+    loglog(data.x,inModels{i}.y,'Color',inModels{i}.color,'LineStyle',...
+        inModels{i}.lineStyle);
+end
+loglog(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0);
+loglog(x,mean(y,2),'b');
+
+set(gca,'FontSize',12);
+set(gca,'Color','w');
+set(gca,'XScale','log','YScale','log');
+xlabel('Array Spacing (m)');
+ylabel('Apparent Resistivity (\Omega-m)')
+end
+
+function plotMisfit(inModels,results)
+histogram(results.ensembleMisfits,100);
+hold on;
+yy=get(gca,'YLim');
+for iPlot = 1:size(inModels,2)
+    plot(inModels{iPlot}.misfit*[1 1],yy,'LineStyle',inModels{iPlot}.lineStyle,...
+        'Color',inModels{iPlot}.color);
+end
+set(gca,'FontSize',12);
+xlabel('Misfit (m)');
+end
+
+%{
 %% AIC and BIC vs regularization value
 disp('testing phase...');
 rng(1);
@@ -375,7 +323,6 @@ xlabel('Regularization Value = 1e(-x)')
 ylabel('AIC or BIC');
 legend;
 %% Figure of model-space vs data-space misfit
-%{
 allModelSpaceMisfits = zeros(numSavedRuns,1);
 for i = 1:numSavedRuns
     allModelSpaceMisfits(i) = norm(logRhoPlot(:,i)-...
@@ -393,192 +340,3 @@ for i = 1:10
     plot(logRhoPlot(:,ind(i)),'--')
 end
 %}
-%% k-means
-%{
-disp('kmeans');
-numClusters = 2;
-[idx,C,sumd] = kmeans(logRhoPlot',numClusters);
-figure;
-pcolor(10.^c{1},10.^c{2},N'); shading flat;
-set(gca,'XScale','log','YScale','log');
-hold on
-for i = 1:size(C,1)
-    plot(10.^C(i,:),10.^logDepthPlot(:,1),'--','LineWidth',2);
-end
-plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueColor);
-colorbar();
-set(gca,'YDir','reverse');
-set(gca,'FontSize',12);
-set(gca,'Box','on');
-xlabel('Resistivity (\Omega-m)');
-ylabel('Depth (m)');
-legend()
-
-figure();
-subplot(3,2,1);
-histogram(idx);
-%set(gca,'YScale','log');
-title('Number of ensemble slns');
-xlabel('Cluster #');
-ylabel('Frequency');
-
-numRunsEachCluster = zeros(1,numClusters);
-averageDist = zeros(1,numClusters);
-centroidMisfits = zeros(1,numClusters);
-centroidYs = zeros(length(data.y),numClusters);
-for i = 1:numClusters
-    numRunsEachCluster(i) = nnz(idx==i);
-    averageDist(i) = sumd(i)/numRunsEachCluster(i);
-    centroidYs(:,i) = forwardModel(xVals,10.^C(i,:),data.lambda);
-    % evaluate the forward model for the maximum likelihood.;
-    centroidMisfits(i) = norm(centroidYs(:,i)-data.y);
-end
-
-subplot(3,2,2);
-bar(averageDist);
-title('Distance from Centroid ');
-ylabel('Log-distance');
-xlabel('Cluster');
-
-subplot(3,2,3);
-bar(centroidMisfits)
-title('Misfit')
-ylabel('Data-space misfit (m)')
-xlabel('Cluster');
-
-subplot(3,2,4);
-histogram(results.ensembleMisfits,100);
-hold on;
-yy=get(gca,'YLim');
-for i = 1:numClusters
-    plot(centroidMisfits(i)*[1 1],yy,'LineWidth',1);
-end
-set(gca,'FontSize',12);
-xlabel('Log misfit');
-f=gcf;
-plot(medianModelMisfit*[1 1],yy,'Color',medianColor,'LineWidth',1);
-plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
-plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
-plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
-plot(mMedianModelMisfit*[1 1],yy,mMedianColor);
-
-
-subplot(3,2,5);
-hold on;
-
-%Ensemble solution
-for i=1:nSavedPlot
-    hEnsemble=plot(xVals,yVals(:,i),'Color',ensembleColor);
-end
-set(gca,'Box','on');
-set(gcf,'Color','w');
-%True model
-hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
-hexact = loglog(data.x,data.fx,'r-','LineWidth',1.0);
-for i = 1:numClusters
-    plot(data.x,centroidYs(:,i));
-end
-
-set(gca,'FontSize',12);
-set(gca,'Color','w');
-set(gca,'XScale','log','YScale','log');
-xlabel('Array Spacing (m)');
-ylabel('Apparent Resistivity (\Omega-m)')
-
-%% kmeans 2
-
-disp('kmeans2');
-numClusters = 2;
-[idx,C,sumd] = kmeans(logRhoPlot',numClusters,'Distance','cityblock');
-figure;
-pcolor(10.^c{1},10.^c{2},N'); shading flat;
-set(gca,'XScale','log','YScale','log');
-hold on
-for i = 1:size(C,1)
-    plot(10.^C(i,:),10.^logDepthPlot(:,1),'--','LineWidth',2);
-end
-plot(10.^trueLogRhoPlot,10.^trueLogDepthsPlot,trueColor);
-colorbar();
-set(gca,'YDir','reverse');
-set(gca,'FontSize',12);
-set(gca,'Box','on');
-xlabel('Resistivity (\Omega-m)');
-ylabel('Depth (m)');
-legend()
-
-figure();
-subplot(3,2,1);
-hist(idx);
-%set(gca,'YScale','log');
-title('Number of ensemble slns in each cluster');
-xlabel('Cluster #');
-ylabel('Frequency');
-
-numRunsEachCluster = zeros(1,numClusters);
-averageDist = zeros(1,numClusters);
-centroidMisfits = zeros(1,numClusters);
-centroidYs = zeros(length(data.y),numClusters);
-for i = 1:numClusters
-    numRunsEachCluster(i) = nnz(idx==i);
-    averageDist(i) = sumd(i)/numRunsEachCluster(i);
-    centroidYs(:,i) = forwardModel(xVals,10.^C(i,:),data.lambda);
-    % evaluate the forward model for the maximum likelihood.;
-    centroidMisfits(i) = norm(centroidYs(:,i)-data.y);
-end
-
-subplot(3,2,2);
-bar(averageDist);
-title('Distance from Centroid in each cluster');
-ylabel('Log-distance');
-xlabel('Cluster');
-
-subplot(3,2,3);
-bar(centroidMisfits)
-title('Misfit')
-ylabel('Data-space misfit (m)')
-xlabel('Cluster');
-
-subplot(3,2,4);
-histogram(results.ensembleMisfits,100);
-hold on;
-yy=get(gca,'YLim');
-for i = 1:numClusters
-    plot(centroidMisfits(i)*[1 1],yy,'LineWidth',1);
-end
-set(gca,'FontSize',12);
-xlabel('Log misfit');
-f=gcf;
-plot(medianModelMisfit*[1 1],yy,'Color',medianColor,'LineWidth',1);
-plot(bestFitModelMisfit*[1 1],yy,'Color',bestFitColor,'LineWidth',1);
-plot(meanModelMisfit*[1 1],yy,'Color',meanColor,'LineWidth',1);
-plot(maxLikelihoodMisfit*[1 1],yy,'Color',maxLikelihoodColor,'LineWidth',1);
-plot(mMedianModelMisfit*[1 1],yy,mMedianColor);
-
-
-
-subplot(3,2,5);
-hold on;
-
-%Ensemble solution
-for i=1:nSavedPlot
-    hEnsemble=plot(xVals,yVals(:,i),'Color',ensembleColor);
-end
-set(gca,'Box','on');
-set(gcf,'Color','w');
-%True model
-hdata = loglog(data.x,data.y,'r.','MarkerSize',10.0);
-hexact = loglog(data.x,data.fx,'r-','LineWidth',1.0);
-for i = 1:numClusters
-    plot(data.x,centroidYs(:,i));
-end
-
-set(gca,'FontSize',12);
-set(gca,'Color','w');
-set(gca,'XScale','log','YScale','log');
-xlabel('Array Spacing (m)');
-ylabel('Apparent Resistivity (\Omega-m)')
-
-%}
-
-function plotTrueModelSpace()
-end
