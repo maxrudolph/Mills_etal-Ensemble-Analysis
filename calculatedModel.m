@@ -1,16 +1,22 @@
 classdef calculatedModel < handle
     
-    properties (Access = public)
+    %{
+    1/5/21 - Chris Mills
+    To be used with the Mills Senior Thesis; ensembleAnalysis3. Purely for 
+    convenience of analyzing a number of different models.
+    %}
+    
+    properties (Access = public) %public for easy editing
         %%%%%% Model properties %%%%%
-        depths;     %array
-        rhos;       %array
+        depths;     %array of model-space parameter values
+        rhos;       %array of model-space parameter values
         %%%%%% Data properties %%%%%%%
-        y;          %array
+        y;          %array of data-space output values
         misfit;     %real number
         %%%%%% Plotting properties %%%%%
-        color;      %RGB triplet (can be input as char)
-        lineStyle;
-        displayName;      %Which model is this
+        color;      %RGB triplet or char or hexadecimal or string
+        lineStyle;  %char using standard matlab conventions
+        displayName;      %Title/name of the model
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -20,13 +26,17 @@ classdef calculatedModel < handle
 %%%%%%%%%%%%%%%% Core Functions %%%%%%%%%%%%%%%%%%%%%%
 
         %Constructor%
-        function obj = calculatedModel(inDepths,inRhos,...
+        function obj = calculatedModel(inDepths,inRhos,inY,dataY,...
                 colorChoice,lineStyle,title)
+            %inDepths, inRhos are arrays containing depths and 
+            %resistivities associated with this model; lineStyle,
+            %colorChoice,and title are for graphing and follow matlab 
+            %plotting conventions for LineStyle, Color, and DisplayName 
+            %respectively
             obj.depths = inDepths;
             obj.rhos = inRhos;
-            obj.y = 0;
-            obj.misfit = 0;
-            obj.setColor(colorChoice);
+            obj.setY(inY,dataY);
+            obj.color = colorChoice;
             obj.displayName = title;
             obj.lineStyle = lineStyle;
         end
@@ -34,37 +44,18 @@ classdef calculatedModel < handle
 %%%%%%%%%%%%%%% Set functions %%%%%%%%%%%%%%%%%%%%%
 
         function setY(obj,inY,dataY)
-            obj.y = inY;
+            %inY is the y-values in data space associated with this model 
+            %(in our case, resistivities as a fxn of electrode spacings;
+            %dataY is the 'actual' data from field measurements (or
+            %synth-generated), used to calculate misfit. Both are arrays of
+            %the same size
+            obj.y = inY; 
             obj.setMisfit(dataY);
         end
         
         function setMisfit(obj,dataY)
+            %see setY fxn
             obj.misfit = norm(obj.y - dataY);
         end
-        
-        function setColor(obj,colorChoice)
-            if isstring(colorChoice)
-                switch colorChoice
-                    case 'y'
-                        obj.color = [1 1 0];
-                    case 'm'
-                        obj.color = [1 0 1];
-                    case 'c'
-                        obj.color = [0 1 1];
-                    case 'r'
-                        obj.color = [1 0 0];
-                    case 'g'
-                        obj.color = [0 1 0];
-                    case 'b'
-                        obj.color = [0 0 1];
-                    case 'w'
-                        obj.color = [1 1 1];
-                    case 'k'
-                        obj.color = [0 0 0];
-                end
-            else
-                obj.color = colorChoice;
-            end
-        end       
     end
 end

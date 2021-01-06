@@ -2,6 +2,7 @@
 rng(1);
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
+saveFigures = false;
 %% Section 1 NF: evaluate ensemble solutions on regularly spaced grid
 disp('Evaluating ensemble...');
 minDistL = log10(measure.minDist);
@@ -44,10 +45,12 @@ for i = 1:numSavedRuns %for each run...
 end
 logRhoPlot = log10(rhoPlot);
 
-mMean = makeCalculatedModel(zVals,10.^(mean(logRhoPlot,2)),data,...
-    forwardModel,'g','-','Model Space Mean');
-mMedian = makeCalculatedModel(zVals,10.^(median(logRhoPlot,2)),data,...
-    forwardModel,'y','-','Model Space Median');
+inRhos = 10.^(mean(logRhoPlot,2));
+mMean = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+    data.lambda),data.y,'g','-','Model Space Mean');
+inRhos = 10.^(median(logRhoPlot,2));
+mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+    data.lambda),data.y,'y','-','Model Space Median');
 
 % Ensemble median and best fit models
 [~,ind2] = sort(results.ensembleMisfits);
@@ -62,10 +65,12 @@ for j = 1:size(results.ensembleDepths,1)
     bestRhoPlot(mask) = results.ensembleRhos(j,bestIndex);
 end
 
-dMedian = makeCalculatedModel(zVals,medianRhoPlot,data,forwardModel,'k',...
-    '-','Data Space Median');
-bestFit = makeCalculatedModel(zVals,bestRhoPlot,data,forwardModel,'c',...
-    '-','Best Fit Model');
+inRhos = medianRhoPlot;
+dMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+    data.lambda),data.y,'k','-','Data Space Median');
+inRhos = bestRhoPlot;
+bestFit = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+    data.lambda),data.y,'c','-','Best Fit Model');
 %Maximum likelihood model
 % compute a bivariate histogram of resitvity values from the posterior ensemble
 numBins = 2*nxplot;
@@ -84,8 +89,9 @@ parfor i=1:nzplot
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1);
 end
 logRhoPlot = logRhoPlot';
-maxLikelihood = makeCalculatedModel(zVals,maxLikelihoodRho,data,...
-    forwardModel,'m','-','Maximum Likelihood Model');
+inRhos = maxLikelihoodRho;
+maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+    data.lambda),data.y,'m','-','Maximum Likelihood Model');
 
 %Setup true model
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
@@ -96,8 +102,10 @@ for j = 1:trueNumLayers
     mask = log10(zVals) >= log10(trueDepths(j));
     trueLogRhoPlot(mask) = log10(trueRhos(j));
 end
-trueModel = makeCalculatedModel(10.^trueLogDepthsPlot,10.^trueLogRhoPlot,...
-    data,forwardModel,'r','-','True Model');
+inDepths = 10.^trueLogDepthsPlot;
+inRhos = 10.^trueLogRhoPlot;
+trueModel = calculatedModel(inDepths,inRhos,forwardModel(inDepths,inRhos,...
+    data.lambda),data.y,'r','-','True Model');
 
 %% 3 Figures
 disp('Plotting properties...');
@@ -110,8 +118,14 @@ bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ');
 %% 5 Clustering stuff
 disp('Calculating number of clusters')
 %downsample
-downsampleNumber = floor(size(results.ensembleRhos,2));%/10;
-gmPlotIndex = randperm(size(results.ensembleRhos,2),downsampleNumber);
+downsample = false;
+if downsample
+    downsampleNumber = floor(size(results.ensembleRhos,2)/10);
+    gmPlotIndex = randperm(size(results.ensembleRhos,2),downsampleNumber);
+else
+    downsampleNumber = size(results.ensembleRhos,2);
+    gmPlotIndex = 1:size(results.ensembleRhos,2);
+end
 
 %Use k-means clustering
 maxNumClusters = 6;
@@ -137,6 +151,10 @@ disp('Finding k-means')
 [idxEuclid,CEuclid,sumdEuclid] = kmeans(dsLogRhoPlot',numClusters);
 [idxMan,CMan,sumdMan] = kmeans(dsLogRhoPlot',numClusters,'Distance','cityblock');
 
+%Step 5: Hierarchical
+disp('Hierarchical clustering')
+T = clusterdata(dsLogRhoPlot','MaxClust',numClusters);
+
 %Step 5: Make models
 disp('Calculating models')
 GMData = cell(1,numClusters+1);
@@ -146,12 +164,17 @@ GMData{1} = trueModel;
 KMDataEuclid{1} = trueModel;
 KMDataMan{1} = trueModel;
 for i = 1:numClusters
-    GMData{i+1} = makeCalculatedModel(zVals,10.^GMModel.mu(i,:)',data,...
-        forwardModel,rand(1,3),'--',strcat('GM mean #',num2str(i)));
-    KMDataEuclid{i+1} = makeCalculatedModel(zVals,10.^CEuclid(i,:)',data,...
-        forwardModel,rand(1,3),'--',strcat('Centroid #',num2str(i)));
-    KMDataMan{i+1} = makeCalculatedModel(zVals,10.^CMan(i,:)',data,...
-        forwardModel,rand(1,3),'--',strcat('Centroid #',num2str(i)));
+    inRhos = 10.^GMModel.mu(i,:)';
+    GMData{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+        data.lambda),data.y,rand(1,3),'--',strcat('GM mean #',num2str(i)));
+    inRhos = 10.^CEuclid(i,:)';
+    KMDataEuclid{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,...
+        inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Centroid #',...
+        num2str(i)));
+    inRhos = 10.^CMan(i,:)';
+    KMDataMan{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,...
+        inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Centroid #',...
+        num2str(i)));
 end
 
 %%6 Plots of GM and k-means
