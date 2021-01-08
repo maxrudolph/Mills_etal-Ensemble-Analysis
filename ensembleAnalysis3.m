@@ -1,5 +1,5 @@
 %function ensembleAnalysis(filename)
-rng(1);
+rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
 saveFigures = false;

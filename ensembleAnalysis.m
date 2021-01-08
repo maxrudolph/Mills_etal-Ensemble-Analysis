@@ -1,4 +1,5 @@
 %function ensembleAnalysis(filename)
+%Old version, use ensembleAnalysis3 now
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
 
