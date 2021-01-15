@@ -2,7 +2,17 @@
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
-saveFigures = false;
+saveFigures = true;
+if saveFigures
+    visibility = 'off';
+    ensembleName = filename(10:end-9); %captures most relevant info
+    folderName = ['figures_' ensembleName];
+    mkdir(folderName);
+else
+    folderName = ' ';
+    visibility = 'on';
+end  
+
 %% Section 1 NF: evaluate ensemble solutions on regularly spaced grid
 disp('Evaluating ensemble...');
 minDistL = log10(measure.minDist);
@@ -47,10 +57,10 @@ logRhoPlot = log10(rhoPlot);
 
 inRhos = 10.^(mean(logRhoPlot,2));
 mMean = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'g','-','Model Space Mean');
+    data.lambda),data.y,'g','-','Mean');
 inRhos = 10.^(median(logRhoPlot,2));
 mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'y','-','Model Space Median');
+    data.lambda),data.y,'y','-','Median');
 
 % Ensemble median and best fit models
 [~,ind2] = sort(results.ensembleMisfits);
@@ -67,10 +77,10 @@ end
 
 inRhos = medianRhoPlot;
 dMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'k','-','Data Space Median');
+    data.lambda),data.y,'k','-','whole Median');
 inRhos = bestRhoPlot;
 bestFit = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'c','-','Best Fit Model');
+    data.lambda),data.y,'c','-','Best Fit');
 %Maximum likelihood model
 % compute a bivariate histogram of resitvity values from the posterior ensemble
 numBins = 2*nxplot;
@@ -91,7 +101,7 @@ end
 logRhoPlot = logRhoPlot';
 inRhos = maxLikelihoodRho;
 maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'m','-','Maximum Likelihood Model');
+    data.lambda),data.y,'m','-','Max Likelihood');
 
 %Setup true model
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
@@ -109,12 +119,13 @@ trueModel = calculatedModel(inDepths,inRhos,forwardModel(inDepths,inRhos,...
 
 %% 3 Figures
 disp('Plotting properties...');
-smallPlots(results);
+smallPlots(results,saveFigures,folderName,visibility);
 %% Section 4 The big figure:
 disp('More plots...');
 allModels = {trueModel,mMean,mMedian,bestFit,maxLikelihood,dMedian};
 
-bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ');
+bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',visibility);
+saveFigs(saveFigures,folderName,'4');
 %% 5 Clustering stuff
 disp('Calculating number of clusters')
 %downsample
@@ -166,29 +177,41 @@ KMDataMan{1} = trueModel;
 for i = 1:numClusters
     inRhos = 10.^GMModel.mu(i,:)';
     GMData{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-        data.lambda),data.y,rand(1,3),'--',strcat('GM mean #',num2str(i)));
+        data.lambda),data.y,rand(1,3),'--',strcat('GM mean ',num2str(i)));
     inRhos = 10.^CEuclid(i,:)';
     KMDataEuclid{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,...
         inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Centroid #',...
         num2str(i)));
     inRhos = 10.^CMan(i,:)';
     KMDataMan{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,...
-        inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Centroid #',...
+        inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Cent ',...
         num2str(i)));
 end
 
-%%6 Plots of GM and k-means
+%% 6 Plots of GM and k-means
 disp('Plotting')
 
 bigPlot(binCenters,numElements,GMData,xVals,yVals,data,results,...
-    'Gaussian Mixture Models')
+    'Gaussian Mixture Models',visibility)
+saveFigs(saveFigures,folderName,'GM Models');
 bigPlot(binCenters,numElements,KMDataEuclid,xVals,yVals,data,results,...
-    'K-means: Euclidean');
-kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid);
+    'K-means: Euclidean',visibility);
+saveFigs(saveFigures,folderName,'K-means Euclidean1');
+kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid,visibility);
+saveFigs(saveFigures,folderName,'K-Means Euclidean2');
 bigPlot(binCenters,numElements,KMDataMan,xVals,yVals,data,results,...
-    'K-means: Manhattan');
-kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan);
+    'K-means: Manhattan',visibility);
+saveFigs(saveFigures,folderName,'K-means Manhattan1');
+kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan,visibility);
+saveFigs(saveFigures,folderName,'K-means Manhattan2');
 
+%% 8 
+if saveFigures
+    readMe = fopen([folderName, '/info.txt'],'w');
+    fprintf(readMe,'Ensemble: %s \nFigures recorded on: %s\nTotal runs: %d\n ',...
+    ensembleName,date,size(results.ensembleRhos,2));
+    fclose(readMe);
+end
 %% 7 Optional: Save ensemble for The Sequencer
 % nsequence = 100000;
 % slashpos = find(filename=='/',1,'last');
@@ -205,8 +228,8 @@ kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan);
 %end
 %% Functions
 
-function bigPlot(bC,nE,inModels,x,y,data,results,inTitle)
-figure;
+function bigPlot(bC,nE,inModels,x,y,data,results,inTitle,visibility)
+figure('visible',visibility);
 title(inTitle);
 subplot(4,2,[2 4 6 8]);
 modelSpacePlot(bC,nE,inModels,'Model Space');
@@ -220,9 +243,9 @@ subplot(4,2,1);
 plotMisfit(inModels,results);
 end
 
-function kMeansPlots(intitle,idx,sumd,inModels)
+function kMeansPlots(intitle,idx,sumd,inModels,visibility)
 numClusters = size(inModels,2)-1;
-figure();
+figure('visible',visibility);
 title(intitle)
 subplot(3,1,1);
 histogram(idx);
@@ -267,7 +290,7 @@ set(gca,'FontSize',12);
 set(gca,'Box','on');
 xlabel('Resistivity (\Omega-m)');
 ylabel('Depth (m)');
-legend()
+legend('location','northwest')
 title(inTitle)
 end
 
