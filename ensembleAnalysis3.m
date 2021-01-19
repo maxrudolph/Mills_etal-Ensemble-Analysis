@@ -121,7 +121,7 @@ trueModel = calculatedModel(inDepths,inRhos,forwardModel(inDepths,inRhos,...
 disp('Plotting properties...');
 smallPlots(results,saveFigures,folderName,visibility);
 %% Section 4 The big figure:
-disp('More plots...');
+disp('Big plot...');
 allModels = {trueModel,mMean,mMedian,bestFit,maxLikelihood,dMedian};
 
 bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',visibility);
@@ -139,7 +139,7 @@ else
 end
 
 %Use k-means clustering
-maxNumClusters = 6;
+maxNumClusters = 10;
 clust = zeros(downsampleNumber,maxNumClusters);
 dsLogRhoPlot = logRhoPlot(:,gmPlotIndex);
 parfor i = 1:maxNumClusters
@@ -163,8 +163,8 @@ disp('Finding k-means')
 [idxMan,CMan,sumdMan] = kmeans(dsLogRhoPlot',numClusters,'Distance','cityblock');
 
 %Step 5: Hierarchical
-disp('Hierarchical clustering')
-T = clusterdata(dsLogRhoPlot','MaxClust',numClusters);
+%disp('Hierarchical clustering')
+%T = clusterdata(dsLogRhoPlot','MaxClust',numClusters);
 
 %Step 5: Make models
 disp('Calculating models')
@@ -189,29 +189,37 @@ for i = 1:numClusters
 end
 
 %% 6 Plots of GM and k-means
-disp('Plotting')
+disp('Cluster plotting')
 
 bigPlot(binCenters,numElements,GMData,xVals,yVals,data,results,...
     'Gaussian Mixture Models',visibility)
-saveFigs(saveFigures,folderName,'GM Models');
+saveFigs(saveFigures,folderName,'5');
 bigPlot(binCenters,numElements,KMDataEuclid,xVals,yVals,data,results,...
     'K-means: Euclidean',visibility);
-saveFigs(saveFigures,folderName,'K-means Euclidean1');
+saveFigs(saveFigures,folderName,'6');
 kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid,visibility);
-saveFigs(saveFigures,folderName,'K-Means Euclidean2');
+saveFigs(saveFigures,folderName,'7');
 bigPlot(binCenters,numElements,KMDataMan,xVals,yVals,data,results,...
     'K-means: Manhattan',visibility);
-saveFigs(saveFigures,folderName,'K-means Manhattan1');
+saveFigs(saveFigures,folderName,'8');
 kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan,visibility);
-saveFigs(saveFigures,folderName,'K-means Manhattan2');
+saveFigs(saveFigures,folderName,'9');
 
 %% 8 
 if saveFigures
+    stringPart1 = 'Ensemble: %s\nFigures recorded on:%s\nTotal runs: %d';%ensembleName,date,size(results.ensembleRhos,2)
+    stringPart2 = '\n\nMISFITS\nBestFit: %f\nwholeMedian: %f\nMaxLikelihood: %f\nMean: %f\nMedian: %f\nTrue Model: %f\n'; %bestFit.misfit,dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,trueModel.misfit
+    stringPart3 = '\n\nOptimal number of clusters: %d\nMode of ensembleMisfits: %f\n'; %numClusters
+    h = histogram(results.ensembleMisfits);
+    [~,ind] = max(h.Values);
     readMe = fopen([folderName, '/info.txt'],'w');
-    fprintf(readMe,'Ensemble: %s \nFigures recorded on: %s\nTotal runs: %d\n ',...
-    ensembleName,date,size(results.ensembleRhos,2));
+    fprintf(readMe,[stringPart1,stringPart2,stringPart3],...
+    ensembleName,date,size(results.ensembleRhos,2),bestFit.misfit,...
+    dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,...
+    trueModel.misfit,numClusters,h.BinEdges(ind));
     fclose(readMe);
 end
+disp('Done');
 %% 7 Optional: Save ensemble for The Sequencer
 % nsequence = 100000;
 % slashpos = find(filename=='/',1,'last');
