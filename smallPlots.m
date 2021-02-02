@@ -20,7 +20,6 @@ subplot(2,2,1)
 set(gca,'YScale','log');
 saveFigs(saveFigures,folderName,'2');
 
-
 %Figure 3: Ensemble properties
 things = {results.ensembleNumLayers, log10(results.ensembleVars),...
     results.ensembleMisfits};
