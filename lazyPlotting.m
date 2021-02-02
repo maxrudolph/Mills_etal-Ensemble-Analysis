@@ -4,7 +4,7 @@ function lazyPlotting(subplotSize1,subplotSize2,histTF,things,titles,...
     for i = 1:(subplotSize1*subplotSize2)
         subplot(subplotSize1,subplotSize2,i);
         if histTF(i)
-            histogram(things{i})
+            histogram(things{i},'EdgeAlpha',0)
         else
             plot(things{i})
         end

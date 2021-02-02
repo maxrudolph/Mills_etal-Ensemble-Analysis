@@ -1,2 +1,0 @@
-Figures from ensemble 3LayerA_0.11_05-Jan recorded on 14-Jan-2021
-Total runs: 5000

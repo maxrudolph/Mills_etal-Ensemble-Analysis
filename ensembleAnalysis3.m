@@ -2,7 +2,7 @@
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
-saveFigures = true;
+saveFigures = false;
 if saveFigures
     visibility = 'off';
     ensembleName = filename(10:end-9); %captures most relevant info
@@ -11,7 +11,7 @@ if saveFigures
 else
     folderName = ' ';
     visibility = 'on';
-end  
+end
 
 %% Section 1 NF: evaluate ensemble solutions on regularly spaced grid
 disp('Evaluating ensemble...');
@@ -31,7 +31,8 @@ xVals = logspace(minDistL,maxDistL,nxplot)';
 lambdaForXVals = makeLambda(xVals);
 
 for i=1:nSavedPlot
-    yVals(:,i) = forwardModel(squeeze(results.ensembleDepths(:,runPlotIndex(i))),...
+    yVals(:,i) = forwardModel(squeeze(...
+        results.ensembleDepths(:,runPlotIndex(i))),...
         results.ensembleRhos(:,runPlotIndex(i)),lambdaForXVals);
 end
 
@@ -57,10 +58,10 @@ logRhoPlot = log10(rhoPlot);
 
 inRhos = 10.^(mean(logRhoPlot,2));
 mMean = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'g','-','Mean');
+    data.lambda),data.y,'b','-','MS Mean');
 inRhos = 10.^(median(logRhoPlot,2));
 mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'y','-','Median');
+    data.lambda),data.y,'g','-','MS Median');
 
 % Ensemble median and best fit models
 [~,ind2] = sort(results.ensembleMisfits);
@@ -77,12 +78,13 @@ end
 
 inRhos = medianRhoPlot;
 dMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'k','-','whole Median');
+    data.lambda),data.y,'g','--','DS Median');
 inRhos = bestRhoPlot;
 bestFit = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'c','-','Best Fit');
+    data.lambda),data.y,'#df4ec8','--','DS Best Fit');
 %Maximum likelihood model
-% compute a bivariate histogram of resitvity values from the posterior ensemble
+% compute a bivariate histogram of resitvity values from the
+%posterior ensemble
 numBins = 2*nxplot;
 [numElements,binCenters]=hist3([logRhoPlot(:),logDepthPlot(:)],...
     {linspace(-10,10,numBins) log10(zVals)},'CDataMode','auto');
@@ -101,7 +103,7 @@ end
 logRhoPlot = logRhoPlot';
 inRhos = maxLikelihoodRho;
 maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'m','-','Max Likelihood');
+    data.lambda),data.y,'#d1b26f','-','MS Max Likelihood');
 
 %Setup true model
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
@@ -115,18 +117,20 @@ end
 inDepths = 10.^trueLogDepthsPlot;
 inRhos = 10.^trueLogRhoPlot;
 trueModel = calculatedModel(inDepths,inRhos,forwardModel(inDepths,inRhos,...
-    data.lambda),data.y,'r','-','True Model');
+    data.lambda),data.y,'r','-','Exact solution');
 
 %% 3 Figures
 disp('Plotting properties...');
 smallPlots(results,saveFigures,folderName,visibility);
 %% Section 4 The big figure:
 disp('Big plot...');
-allModels = {trueModel,mMean,mMedian,bestFit,maxLikelihood,dMedian};
+allModels = {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 
-bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',visibility);
+bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
+    visibility);
 saveFigs(saveFigures,folderName,'4');
 %% 5 Clustering stuff
+
 disp('Calculating number of clusters')
 %downsample
 downsample = false;
@@ -160,7 +164,8 @@ GMModel = fitgmdist(dsLogRhoPlot',numClusters,'Options',options,...
 %Step 4: Find kmeans centroids
 disp('Finding k-means')
 [idxEuclid,CEuclid,sumdEuclid] = kmeans(dsLogRhoPlot',numClusters);
-[idxMan,CMan,sumdMan] = kmeans(dsLogRhoPlot',numClusters,'Distance','cityblock');
+[idxMan,CMan,sumdMan] = kmeans(dsLogRhoPlot',numClusters,...
+    'Distance','cityblock');
 
 %Step 5: Hierarchical
 %disp('Hierarchical clustering')
@@ -197,7 +202,8 @@ saveFigs(saveFigures,folderName,'5');
 bigPlot(binCenters,numElements,KMDataEuclid,xVals,yVals,data,results,...
     'K-means: Euclidean',visibility);
 saveFigs(saveFigures,folderName,'6');
-kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid,visibility);
+kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid,...
+    visibility);
 saveFigs(saveFigures,folderName,'7');
 bigPlot(binCenters,numElements,KMDataMan,xVals,yVals,data,results,...
     'K-means: Manhattan',visibility);
@@ -205,18 +211,18 @@ saveFigs(saveFigures,folderName,'8');
 kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan,visibility);
 saveFigs(saveFigures,folderName,'9');
 
-%% 8 
+%% 8
 if saveFigures
     stringPart1 = 'Ensemble: %s\nFigures recorded on:%s\nTotal runs: %d';%ensembleName,date,size(results.ensembleRhos,2)
-    stringPart2 = '\n\nMISFITS\nBestFit: %f\nwholeMedian: %f\nMaxLikelihood: %f\nMean: %f\nMedian: %f\nTrue Model: %f\n'; %bestFit.misfit,dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,trueModel.misfit
+    stringPart2 = '\n\nMISFITS\nBestFit: %f\nDS Median: %f\nMS Max Likelihood: %f\nMS Mean: %f\nMS Median: %f\nExact solution: %f\n'; %bestFit.misfit,dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,trueModel.misfit
     stringPart3 = '\n\nOptimal number of clusters: %d\nMode of ensembleMisfits: %f\n'; %numClusters
     h = histogram(results.ensembleMisfits);
     [~,ind] = max(h.Values);
     readMe = fopen([folderName, '/info.txt'],'w');
     fprintf(readMe,[stringPart1,stringPart2,stringPart3],...
-    ensembleName,date,size(results.ensembleRhos,2),bestFit.misfit,...
-    dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,...
-    trueModel.misfit,numClusters,h.BinEdges(ind));
+        ensembleName,date,size(results.ensembleRhos,2),bestFit.misfit,...
+        dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,...
+        trueModel.misfit,numClusters,h.BinEdges(ind));
     fclose(readMe);
 end
 disp('Done');
@@ -237,11 +243,19 @@ disp('Done');
 %% Functions
 
 function bigPlot(bC,nE,inModels,x,y,data,results,inTitle,visibility)
-figure('visible',visibility);
+figure('visible',visibility,'units','normalized','outerposition',[0 0 1 1]);
+set(gca,'Box','on');
+ax = gca;
+ax.XColor = 'k';
+ax.YColor = 'k';
+ax.ZColor = 'k';
+set(gca,'Box','on')
+ax.BoxStyle = 'full';
 title(inTitle);
 subplot(4,2,[2 4 6 8]);
+set(gca,'Box','on');
 modelSpacePlot(bC,nE,inModels,'Model Space');
-
+set(gca,'Box','on');
 %Part 2: Data space plot
 subplot(4,2,[3 5 7]);
 dataSpacePlot(x,y,inModels,data);
@@ -253,10 +267,10 @@ end
 
 function kMeansPlots(intitle,idx,sumd,inModels,visibility)
 numClusters = size(inModels,2)-1;
-figure('visible',visibility);
+figure('visible',visibility,'units','normalized','outerposition',[0 0 1 1]);
 title(intitle)
 subplot(3,1,1);
-histogram(idx);
+histogram(idx,'EdgeAlpha',0);
 %set(gca,'YScale','log');
 title('Number of ensemble slns');
 xlabel('Cluster #');
@@ -266,7 +280,7 @@ averageDist = zeros(1,numClusters);
 centroidMisfits = zeros(1,numClusters);
 for i = 1:numClusters
     averageDist(i) = sumd(i)/nnz(idx==i);
-    centroidMisfits = inModels{i+1}.misfit;
+    centroidMisfits(i) = inModels{i+1}.misfit;
 end
 
 subplot(3,1,2);
@@ -283,23 +297,43 @@ xlabel('Cluster');
 end
 
 function modelSpacePlot(bC,nE,inModels,inTitle)
-pcolor(10.^bC{1},10.^bC{2},nE'); shading flat;
-set(gca,'XScale','log','YScale','log');
+p = pcolor(10.^bC{1},10.^bC{2},nE'); shading flat;
+set(gca,'Box','on');
+ax = gca;
+ax.XColor = 'k';
+ax.YColor = 'k';
+ax.ZColor = 'k';
+set(gca,'Box','on')
+ax.BoxStyle = 'full';
+colormap(flipud(bone))
+set(gca,'XScale','log','YScale','log','ColorScale','log');
 hold on
 for i = 1:size(inModels,2)
     plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
         inModels{i}.lineStyle,'Color',inModels{i}.color,'DisplayName',...
-        inModels{i}.displayName);
+        inModels{i}.displayName,'LineWidth',1.75);
 end
-colorbar();
-legend();
-set(gca,'YDir','reverse');
-set(gca,'FontSize',12);
-set(gca,'Box','on');
+c=colorbar();
+c.Label.String = 'Number of solutions';
+set(get(get(p(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+%legend();
+set(gca,'YDir','reverse','FontSize',12,'Box','on');
+k = find(sum(nE')>0);
+xlim([0.9*10.^(bC{1}(k(2))),...
+    1.2*10.^(bC{1}(k(end)))]);
 xlabel('Resistivity (\Omega-m)');
 ylabel('Depth (m)');
 legend('location','northwest')
 title(inTitle)
+set(gca,'Box','on');
+set(gca,'Box','on');
+ax = gca;
+ax.XColor = 'k';
+ax.YColor = 'k';
+ax.ZColor = 'k';
+set(gca,'Box','on')
+ax.BoxStyle = 'full';
+ax.LineWidth = 1;
 end
 
 function dataSpacePlot(x,y,inModels,data)
@@ -308,32 +342,36 @@ ensembleColor = [200 200 200]/255;
 
 %Ensemble solution
 for i=1:size(y,2)
-    plot(x,y(:,i),'Color',ensembleColor);
+    h=plot(x,y(:,i),'Color',ensembleColor,'DisplayName','Ensemble members');
+    if i~=size(y,2)
+        set(get(get(h,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+    end
 end
 
-set(gca,'Box','on');
 set(gcf,'Color','w');
+set(gca,'Box','on');
 for i = 1:size(inModels,2)
     loglog(data.x,inModels{i}.y,'Color',inModels{i}.color,'LineStyle',...
-        inModels{i}.lineStyle);
+        inModels{i}.lineStyle,'LineWidth',1.25,...
+        'DisplayName',inModels{i}.displayName);
 end
-loglog(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0);
-loglog(x,mean(y,2),'b');
+h1 = loglog(x,mean(y,2),'b--','LineWidth',1,'DisplayName','DS Mean');
+h2 = loglog(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0,...
+    'DisplayName','Data + noise');
+legend([h1,h2,h],'Location','northwest');
+set(gca,'FontSize',12,'Color','w','XScale','log','YScale','log');
+xlabel('Array Spacing (m)'); ylabel('Apparent Resistivity (\Omega-m)')
 
-set(gca,'FontSize',12);
-set(gca,'Color','w');
-set(gca,'XScale','log','YScale','log');
-xlabel('Array Spacing (m)');
-ylabel('Apparent Resistivity (\Omega-m)')
 end
 
 function plotMisfit(inModels,results)
-histogram(results.ensembleMisfits,100);
+histogram(results.ensembleMisfits,100,'EdgeAlpha',0);
 hold on;
 yy=get(gca,'YLim');
 for iPlot = 1:size(inModels,2)
-    plot(inModels{iPlot}.misfit*[1 1],yy,'LineStyle',inModels{iPlot}.lineStyle,...
-        'Color',inModels{iPlot}.color);
+    plot(inModels{iPlot}.misfit*[1 1],yy,'LineStyle',...
+        inModels{iPlot}.lineStyle,'Color',inModels{iPlot}.color,...
+        'LineWidth',1.5);
 end
 set(gca,'FontSize',12);
 xlabel('Misfit (m)');
