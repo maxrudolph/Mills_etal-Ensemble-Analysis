@@ -1,11 +1,11 @@
-%function ensembleAnalysis(filename)
+function ensembleAnalysis3(filename)
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
 
 %% Section 0: Parameter setup
 %IF running to generate/save figures, set to true
-saveFigures = false;
+saveFigures = true;
 nxplot=200; %number of measurement points for evaluating ensemble members
 nSavedPlot = 2000; %Number of saved runs to plot
 nzplot = 500; %number of imaginary layers to divide models into
@@ -161,16 +161,15 @@ numClusters = eva.OptimalK;
 
 %Step 3: Find Gaussian mixture models
 disp('Finding Gaussian models')
-options = statset('Display','final');
-GMModel = fitgmdist(dsLogRhoPlot',numClusters,'Options',options,...
+GMModel = fitgmdist(dsLogRhoPlot',numClusters,...
     'RegularizationValue',1e-8);
 
 %Step 4: Find kmeans centroids
 disp('Finding k-means')
 [idxEuclid,CEuclid,sumdEuclid] = kmeans(dsLogRhoPlot',numClusters,...
-    'MaxIter',1000,'Options',options,'Replicates',5);
+    'MaxIter',1000,'Replicates',5);
 [idxMan,CMan,sumdMan] = kmeans(dsLogRhoPlot',numClusters,'MaxIter',1000,...
-    'Distance','cityblock','Options',options,'Replicates',5);
+    'Distance','cityblock','Replicates',5);
 
 %Step 5: Hierarchical
 %disp('Hierarchical clustering')
@@ -231,176 +230,4 @@ if saveFigures
     fclose(readMe);
 end
 disp('Done');
-
-
-%% Functions
-
-function bigPlot(bC,nE,inModels,x,y,data,results,inTitle,visibility)
-figure('visible',visibility,'units','normalized','outerposition',[0 0 1 1]);
-title(inTitle);
-subplot(4,2,[2 4 6 8]);
-modelSpacePlot(bC,nE,inModels);
-%Part 2: Data space plot
-subplot(4,2,[3 5 7]);
-dataSpacePlot(x,y,inModels,data);
-
-% Part 3 Sub-figure: Histogram of misfit in data space
-subplot(4,2,1);
-plotMisfit(inModels,results);
 end
-
-function kMeansPlots(intitle,idx,sumd,inModels,visibility)
-numClusters = size(inModels,2)-1;
-figure('visible',visibility,'units','normalized','outerposition',[0 0 1 1]);
-title(intitle)
-subplot(3,1,1);
-histogram(idx,'EdgeAlpha',0);
-%set(gca,'YScale','log');
-title('Number of ensemble slns');
-xlabel('Cluster #');
-ylabel('Frequency');
-
-averageDist = zeros(1,numClusters);
-centroidMisfits = zeros(1,numClusters);
-for i = 1:numClusters
-    averageDist(i) = sumd(i)/nnz(idx==i);
-    centroidMisfits(i) = inModels{i+1}.misfit;
-end
-
-subplot(3,1,2);
-bar(averageDist);
-title('Distance from Centroid ');
-ylabel('Log-distance');
-xlabel('Cluster');
-
-subplot(3,1,3);
-bar(centroidMisfits)
-title('Misfit')
-ylabel('Data-space misfit (m)')
-xlabel('Cluster');
-end
-
-function modelSpacePlot(bC,nE,inModels)
-p = pcolor(10.^bC{1},10.^bC{2},nE'); shading flat;
-colormap(flipud(bone))
-set(gca,'XScale','log','YScale','log','ColorScale','log');
-hold on
-for i = 1:size(inModels,2)
-    plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
-        inModels{i}.lineStyle,'Color',inModels{i}.color,'DisplayName',...
-        inModels{i}.displayName,'LineWidth',1.75);
-end
-c=colorbar();
-c.Label.String = 'Number of solutions';
-set(get(get(p(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-%legend();
-set(gca,'YDir','reverse','FontSize',12,'Box','on','Layer','Top');
-k = find(sum(nE')>0);
-xlim([min(inModels{1}.rhos)/100,max(inModels{1}.rhos)*100]);
-xlabel('Resistivity (\Omega-m)'); ylabel('Depth (m)'); title('Model Space');
-legend('location','northwest')
-end
-
-function dataSpacePlot(x,y,inModels,data)
-hold on;
-ensembleColor = [200 200 200]/255;
-
-%Ensemble solution
-for i=1:size(y,2)-1
-    plot(x,y(:,i),'Color',ensembleColor);
-end
-i = size(y,2);
-h = plot(x,y(:,i),'Color',ensembleColor,'DisplayName','Ensemble Members');
-
-set(gcf,'Color','w');
-for i = 1:size(inModels,2)
-    plot(data.x,inModels{i}.y,'Color',inModels{i}.color,'LineStyle',...
-        inModels{i}.lineStyle,'LineWidth',1.25,...
-        'DisplayName',inModels{i}.displayName);
-end
-h1 = plot(x,mean(y,2),'b--','LineWidth',1,'DisplayName','DS Mean');
-h2 = plot(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0,...
-    'DisplayName','Data + noise');
-legend([h1,h2,h],'Location','northwest');
-set(gca,'FontSize',12,'Color','w','XScale','log','YScale','log','Box','on');
-xlabel('Array Spacing (m)'); ylabel('Apparent Resistivity (\Omega-m)')
-title('Data Space');
-end
-
-function plotMisfit(inModels,results)
-histogram(results.ensembleMisfits,100,'EdgeAlpha',0);
-hold on;
-yy=get(gca,'YLim');
-for iPlot = 1:size(inModels,2)
-    plot(inModels{iPlot}.misfit*[1 1],yy,'LineStyle',...
-        inModels{iPlot}.lineStyle,'Color',inModels{iPlot}.color,...
-        'LineWidth',1.5);
-end
-set(gca,'FontSize',12);
-xlabel('Misfit (m)');
-end
-
-%{
-%% AIC and BIC vs regularization value
-disp('testing phase...');
-rng(1);
-%downsample
-downsampleNumber = floor(numSavedRuns/10);
-gmPlotIndex = randperm(numSavedRuns,downsampleNumber);
-
-%Step one: use k-means clustering
-numClusters = 6;
-clust = zeros(downsampleNumber,numClusters);
-gmRhoPlot = logRhoPlot(:,gmPlotIndex);
-parfor i=1:numClusters
-    disp(i);
-    clust(:,i) = kmeans(gmRhoPlot',i);
-end
-
-AIC = zeros(1,10);
-BIC = zeros(1,10);
-
-for iReg = 1:10
-    eva = evalclusters(gmRhoPlot',clust,'CalinskiHarabasz');
-    options = statset('Display','final');
-    GMModel = fitgmdist(gmRhoPlot',eva.OptimalK,...
-        'Options',options,'RegularizationValue',1*(10^(-iReg)));
-    AIC(iReg) = GMModel.AIC;
-    BIC(iReg) = GMModel.BIC;
-    disp(iReg)
-end
-
-figure;
-plot([1:10],AIC,'*','DisplayName','AIC');
-hold on
-plot([1:10],BIC,'^','DisplayName','BIC');
-xlabel('Regularization Value = 1e(-x)')
-ylabel('AIC or BIC');
-legend;
-%% Figure of model-space vs data-space misfit
-allModelSpaceMisfits = zeros(numSavedRuns,1);
-for i = 1:numSavedRuns
-    allModelSpaceMisfits(i) = norm(logRhoPlot(:,i)-...
-        log10(interpolatedTrueRhos'))/norm(log10(interpolatedTrueRhos'));
-end
-allDataSpaceMisfits = results.ensembleMisfits/norm(data.y);
-figure,plot(allModelSpaceMisfits,allDataSpaceMisfits,'.')
-xlabel('Model Space Misfit')
-ylabel('Data Space Misfit')
-figure
-hold on
-[~,ind] = sort(allModelSpaceMisfits);
-for i = 1:10
-    plot(logRhoPlot(:,ind(end-i+1)))
-    plot(logRhoPlot(:,ind(i)),'--')
-end
-
-%% 7 Optional: Save ensemble for The Sequencer
-% nsequence = 100000;
-% slashpos = find(filename=='/',1,'last');
-% txtfile = [filename(slashpos+1:end-3) 'csv'];
-% % each row should correspond to a different resistivity profile
-% csvwrite(txtfile,logRhoPlot(:,end-nsequence:end)'); % note that sequencer
-% struggles with very large datasets. I choose just the last nsequence
-% samples in the ensemble.
-%}
