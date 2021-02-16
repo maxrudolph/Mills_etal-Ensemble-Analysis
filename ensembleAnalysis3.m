@@ -1,14 +1,14 @@
-function ensembleAnalysis3(filename)
+function ensembleAnalysis3(filename,saveFigures)
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','measure','pBounds')
 
 %% Section 0: Parameter setup
 %IF running to generate/save figures, set to true
-saveFigures = true;
-nxplot=200; %number of measurement points for evaluating ensemble members
+% saveFigures = true;
+nxplot=1000; %number of measurement points for evaluating ensemble members
 nSavedPlot = 2000; %Number of saved runs to plot
-nzplot = 500; %number of imaginary layers to divide models into
+nzplot = 5000; %number of imaginary layers to divide models into
 meanColor = 'b'; medianColor = 'g';
 
 if saveFigures
