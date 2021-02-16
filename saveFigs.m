@@ -11,6 +11,7 @@ if saveFigures
         export_fig([folderName '/Figure ' figNumber '.eps']);
         export_fig(['Allfigure',figNumber,'/',folderName,'.png']);
         export_fig(['Allfigure',figNumber,'/',folderName,'.eps']);
+        close
     end
 end
 end
