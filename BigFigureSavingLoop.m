@@ -9,7 +9,7 @@ for i = 1:length(types)
     for j = 1:length(noiseLevels)
         tic
         filename = ['Ensemble_',types{i},'_',noiseLevels{j},'_02-Dec-2020.mat']
-        ensembleAnalysis3(filename,True) % filename, saveFigures
+        ensembleAnalysis3(filename,true) % filename, saveFigures
         toc
     end
 end
