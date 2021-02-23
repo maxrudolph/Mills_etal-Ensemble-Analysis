@@ -3,7 +3,7 @@ measure.modelChoice = '4LayerA'; %currently setup: 3LayerA, 4LayerA
     measure.minDist = 0.1; % Smallest electrode distance, meters
     measure.maxDist = 1000; %  Largest electrode distance, meters
     measure.numMeasurements = 21; %total # of measurements
-    measure.noiseCoef = 0.11; %How "noisy" are the measurements
+    measure.noiseCoef = 0.01; %How "noisy" are the measurements
     measure.kMax = 10;
     forwardModel = @(a,b,c) calculateRho1D(a,b,c);
     
@@ -15,5 +15,14 @@ measure.modelChoice = '4LayerA'; %currently setup: 3LayerA, 4LayerA
    measure.modelChoice = '4LayerB';
    data4 = createSyntheticData(measure,forwardModel);
    
-   figure,plot(data1.x,data1.y)
+   figure,plot(data1.x,data1.y);
+   set(gca,'XScale','log','YScale','log');
+   hold on
+   plot(data2.x,data2.y);
+   set(gca,'XScale','log','YScale','log');
+   plot(data3.x,data3.y);
+   set(gca,'XScale','log','YScale','log');
+   plot(data4.x,data4.y);
+   set(gca,'XScale','log','YScale','log');
+  
    %....

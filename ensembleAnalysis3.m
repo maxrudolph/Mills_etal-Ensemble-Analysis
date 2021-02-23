@@ -5,10 +5,10 @@ load(filename,'data','forwardModel','results','measure','pBounds')
 
 %% Section 0: Parameter setup
 %IF running to generate/save figures, set to true
-saveFigures = true;
-nxplot=200; %number of measurement points for evaluating ensemble members
+saveFigures = false;
+nxplot=1000; %number of measurement points when evaluating ensemble members
 nSavedPlot = 2000; %Number of saved runs to plot
-nzplot = 500; %number of imaginary layers to divide models into
+nzplot = 2500; %number of imaginary layers to divide models into
 meanColor = 'b'; medianColor = 'g';
 
 if saveFigures
@@ -36,7 +36,7 @@ end
 yVals = zeros(nxplot,nSavedPlot); %apparent rhos from measuring at xVals
 xVals = logspace(minDistL,maxDistL,nxplot)'; %surface measurement points
 zVals = logspace(minDistL,maxDistL,nzplot)'; %depth values for evaluating
-lambdaForXVals = makeLambda(xVals);
+lambdaForXVals = makeLambda(xVals); %lambda matrix for forward model
 %Ensemble members are saved as media (layers+resistivities), we want to
 %show them in data space
 for i=1:nSavedPlot
@@ -60,17 +60,24 @@ for i = 1:numSavedRuns %for each run...
     end
 end
 %Generate Model-Space Mean and Median models
-inRhos = 10.^(mean(logRhoPlot,2));
-mMean = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+inRhos = 10.^(mean(logRhoPlot,2)); %Calculated in log space
+[C,IA,~] = unique(inRhos,'stable');
+mMean = calculatedModel(zVals,inRhos,forwardModel(zVals(IA),C,...
     data.lambda),data.y,meanColor,'-','MS Mean');
 inRhos = 10.^(median(logRhoPlot,2));
-mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+[C,IA,~] = unique(inRhos,'stable');
+mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals(IA),C,...
     data.lambda),data.y,medianColor,'-','MS Median');
 
 % Data space median and best fit models
 [~,ind2] = sort(results.ensembleMisfits);
 medianIndex= ind2(floor(length(ind2)/2));
 bestIndex = ind2(1);
+
+medianRho = results.ensembleRhos(:,medianIndex);
+medianDepth = results.ensembleDepths(:,medianIndex);
+bestRho = results.ensembleRhos(:,bestIndex);
+bestDepth = results.ensembleDepths(:,bestIndex);
 medianRhoPlot = zeros(size(zVals,1),1);
 bestRhoPlot = zeros(size(zVals,1),1);
 for j = 1:size(results.ensembleDepths,1)
@@ -79,14 +86,26 @@ for j = 1:size(results.ensembleDepths,1)
     mask2 = zVals >= results.ensembleDepths(j,bestIndex);
     bestRhoPlot(mask2) = results.ensembleRhos(j,bestIndex);
 end
-
+dMedian = calculatedModel(zVals,medianRhoPlot,forwardModel(medianDepth,...
+    medianRho,data.lambda),data.y,medianColor,'--','DS Median');
+bestFit = calculatedModel(zVals,bestRhoPlot,forwardModel(bestDepth,...
+    bestRho,data.lambda),data.y,'#df4ec8','--','DS Best Fit');
+%{
+medianRhoPlot = zeros(size(zVals,1),1);
+bestRhoPlot = zeros(size(zVals,1),1);
+for j = 1:size(results.ensembleDepths,1)
+    mask1 = zVals >= results.ensembleDepths(j,medianIndex);
+    medianRhoPlot(mask1) = results.ensembleRhos(j,medianIndex);
+    mask2 = zVals >= results.ensembleDepths(j,bestIndex);
+    bestRhoPlot(mask2) = results.ensembleRhos(j,bestIndex);
+end
 inRhos = medianRhoPlot;
 dMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
     data.lambda),data.y,medianColor,'--','DS Median');
 inRhos = bestRhoPlot;
 bestFit = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
     data.lambda),data.y,'#df4ec8','--','DS Best Fit');
-
+%}
 %Maximum likelihood model (Model Space)
 % compute a bivariate histogram of resitvity values from the
 %posterior ensemble

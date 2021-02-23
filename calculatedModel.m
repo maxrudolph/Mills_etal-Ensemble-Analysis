@@ -12,7 +12,7 @@ classdef calculatedModel < handle
         rhos;       %array of model-space parameter values
         %%%%%% Data properties %%%%%%%
         y;          %array of data-space output values
-        misfit;     %real number
+        misfit;     %real number: data-space misfit
         %%%%%% Plotting properties %%%%%
         color;      %RGB triplet or char or hexadecimal or string
         lineStyle;  %char using standard matlab conventions
