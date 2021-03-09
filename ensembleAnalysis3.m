@@ -6,9 +6,9 @@ load(filename,'data','forwardModel','results','measure','pBounds')
 %% Section 0: Parameter setup
 %IF running to generate/save figures, set to true
 saveFigures = false;
-nxplot=400; %number of measurement points when evaluating ensemble members
+nxplot=200; %number of measurement points when evaluating ensemble members
 nSavedPlot = 2000; %Number of saved runs to plot
-nzplot = 1000; %number of imaginary layers to divide models into
+nzplot = 500; %number of imaginary layers to divide models into
 meanColor = 'b'; medianColor = 'g';
 
 if saveFigures
@@ -61,13 +61,13 @@ for i = 1:numSavedRuns %for each run...
 end
 %Generate Model-Space Mean and Median models
 inRhos = 10.^(mean(logRhoPlot,2)); %Calculated in log space
-[C,IA,~] = unique(inRhos,'stable'); %Remove redundant layers in depts/rhos
-mMean = calculatedModel(zVals,inRhos,forwardModel(zVals(IA),C,...
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+mMean = calculatedModel(zVals,inRhos,forwardModel(shortDepths,shortRhos,...
     data.lambda),data.y,meanColor,'-','MS Mean');
 
 inRhos = 10.^(median(logRhoPlot,2));
-[C,IA,~] = unique(inRhos,'stable');
-mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals(IA),C,...
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+mMedian = calculatedModel(zVals,inRhos,forwardModel(shortDepths,shortRhos,...
     data.lambda),data.y,medianColor,'-','MS Median');
 
 % Data space median and best fit models
@@ -109,9 +109,9 @@ parfor i=1:nzplot
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1);
 end
 inRhos = maxLikelihoodRho;
-[C,IA,~] = unique(inRhos,'stable');
-maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(zVals(IA),C,...
-    data.lambda),data.y,'#d1b26f','-','MS Max Likelihood');
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(shortDepths,...
+    shortRhos,data.lambda),data.y,'#d1b26f','-','MS Max Likelihood');
 
 %Setup true model/solution
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
@@ -233,4 +233,14 @@ if saveFigures
     fclose(readMe);
 end
 disp('Done');
+end
+
+function [outDepths,outRhos] = shortForm(inDepths,inRhos)
+%removes duplicate values
+h = diff(inRhos);
+ind = find(h==0);
+outRhos = inRhos;
+outDepths = inDepths;
+outRhos(ind+1) = [];
+outDepths(ind+1) = [];
 end

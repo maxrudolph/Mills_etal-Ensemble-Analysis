@@ -1,5 +1,5 @@
 function bigPlot(bC,nE,inModels,x,y,data,results,inTitle,visibility)
-figure('visible',visibility,'units','normalized','outerposition',[0 0 1 1]);
+figure('visible',visibility,'units','inches','position',[0 0 6.5 4.5]);
 title(inTitle);
 subplot(4,2,[2 4 6 8]);
 modelSpacePlot(bC,nE,inModels);

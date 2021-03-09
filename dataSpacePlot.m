@@ -20,7 +20,7 @@ h2 = plot(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0,...
     'DisplayName','Data + noise');
 lgd = legend([h1,h2,h],'Location','northwest');
 lgd.FontSize = 8;
-set(gca,'FontSize',12,'Color','w','XScale','log','YScale','log','Box','on');
+set(gca,'FontSize',10,'Color','w','XScale','log','YScale','log','Box','on');
 xlabel('Array Spacing (m)'); ylabel('Apparent Resistivity (\Omega-m)')
-text(0.95,0.95,'B','units','normalized','FontSize',14)
+text(0.8,0.95,'B','units','normalized','FontSize',14)
 end

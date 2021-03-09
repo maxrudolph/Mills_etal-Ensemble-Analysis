@@ -18,5 +18,5 @@ xlim([min(inModels{1}.rhos)/100,max(inModels{1}.rhos)*100]);
 xlabel('Resistivity (\Omega-m)'); ylabel('Depth (m)'); title('Model Space');
 lgd = legend('location','northwest');
 lgd.FontSize = 8;
-text(0.9,0.95,'C','units','normalized','FontSize',14)
+text(0.8,0.95,'C','units','normalized','FontSize',14)
 end
