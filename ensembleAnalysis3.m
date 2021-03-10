@@ -8,12 +8,14 @@ load(filename,'data','forwardModel','results','measure','pBounds')
 % saveFigures = true;
 nxplot=1000; %number of measurement points for evaluating ensemble members
 nSavedPlot = 2000; %Number of saved runs to plot
-nzplot = 5000; %number of imaginary layers to divide models into
+nzplot = 3000; %number of imaginary layers to divide models into
 meanColor = 'b'; medianColor = 'g';
 
 if saveFigures
     visibility = 'off';
     ensembleName = filename(10:end-9); %captures most relevant info
+    slashpos = find(filename == '/',1,'last');
+    ensembleName = filename(slashpos+10:end-9);
     folderName = ['figures_' ensembleName];
     mkdir(folderName);
 else
