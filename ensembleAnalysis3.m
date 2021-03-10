@@ -6,7 +6,8 @@ load(filename,'data','forwardModel','results','measure','pBounds')
 %% Section 0: Parameter setup
 %IF running to generate/save figures, set to true
 % saveFigures = true;
-nxplot=1000; %number of measurement points for evaluating ensemble members
+nxplot=500; %number of measurement points for evaluating ensemble members
+
 nSavedPlot = 2000; %Number of saved runs to plot
 nzplot = 3000; %number of imaginary layers to divide models into
 meanColor = 'b'; medianColor = 'g';
@@ -38,7 +39,7 @@ end
 yVals = zeros(nxplot,nSavedPlot); %apparent rhos from measuring at xVals
 xVals = logspace(minDistL,maxDistL,nxplot)'; %surface measurement points
 zVals = logspace(minDistL,maxDistL,nzplot)'; %depth values for evaluating
-lambdaForXVals = makeLambda(xVals);
+lambdaForXVals = makeLambda(xVals); %lambda matrix for forward model
 %Ensemble members are saved as media (layers+resistivities), we want to
 %show them in data space
 for i=1:nSavedPlot
@@ -62,17 +63,24 @@ for i = 1:numSavedRuns %for each run...
     end
 end
 %Generate Model-Space Mean and Median models
-inRhos = 10.^(mean(logRhoPlot,2));
-mMean = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+inRhos = 10.^(mean(logRhoPlot,2)); %Calculated in log space
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+mMean = calculatedModel(zVals,inRhos,forwardModel(shortDepths,shortRhos,...
     data.lambda),data.y,meanColor,'-','MS Mean');
+
 inRhos = 10.^(median(logRhoPlot,2));
-mMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+mMedian = calculatedModel(zVals,inRhos,forwardModel(shortDepths,shortRhos,...
     data.lambda),data.y,medianColor,'-','MS Median');
 
 % Data space median and best fit models
 [~,ind2] = sort(results.ensembleMisfits);
 medianIndex= ind2(floor(length(ind2)/2));
 bestIndex = ind2(1);
+medianRho = results.ensembleRhos(:,medianIndex);
+medianDepth = results.ensembleDepths(:,medianIndex);
+bestRho = results.ensembleRhos(:,bestIndex);
+bestDepth = results.ensembleDepths(:,bestIndex);
 medianRhoPlot = zeros(size(zVals,1),1);
 bestRhoPlot = zeros(size(zVals,1),1);
 for j = 1:size(results.ensembleDepths,1)
@@ -81,18 +89,15 @@ for j = 1:size(results.ensembleDepths,1)
     mask2 = zVals >= results.ensembleDepths(j,bestIndex);
     bestRhoPlot(mask2) = results.ensembleRhos(j,bestIndex);
 end
-
-inRhos = medianRhoPlot;
-dMedian = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,medianColor,'--','DS Median');
-inRhos = bestRhoPlot;
-bestFit = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'#df4ec8','--','DS Best Fit');
+dMedian = calculatedModel(zVals,medianRhoPlot,forwardModel(medianDepth,...
+    medianRho,data.lambda),data.y,medianColor,'--','DS Median');
+bestFit = calculatedModel(zVals,bestRhoPlot,forwardModel(bestDepth,...
+    bestRho,data.lambda),data.y,'#df4ec8','--','DS Best Fit');
 
 %Maximum likelihood model (Model Space)
 % compute a bivariate histogram of resitvity values from the
 %posterior ensemble
-numBins = 2*nxplot;
+numBins = 2*nxplot; %number of resistivity values for histogram
 [numElements,binCenters]=hist3([logRhoPlot(:),logDepthPlot(:)],...
     {linspace(-10,10,numBins) log10(zVals)},'CDataMode','auto');
 % First linspace is for log(rho), second is for log(depth)
@@ -107,22 +112,21 @@ parfor i=1:nzplot
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1);
 end
 inRhos = maxLikelihoodRho;
-maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-    data.lambda),data.y,'#d1b26f','-','MS Max Likelihood');
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(shortDepths,...
+    shortRhos,data.lambda),data.y,'#d1b26f','-','MS Max Likelihood');
 
 %Setup true model/solution
 [trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
-trueLogDepthsPlot = logDepthPlot(:,1);
-trueLogRhoPlot = zeros(nzplot,1);
+trueDepthsPlot = 10.^logDepthPlot(:,1);
+trueRhoPlot = zeros(nzplot,1);
 trueNumLayers = nnz(~isnan(trueDepths));
 for j = 1:trueNumLayers
-    mask = log10(zVals) >= log10(trueDepths(j));
-    trueLogRhoPlot(mask) = log10(trueRhos(j));
+    mask = zVals >= trueDepths(j);
+    trueRhoPlot(mask) = trueRhos(j);
 end
-inDepths = 10.^trueLogDepthsPlot;
-inRhos = 10.^trueLogRhoPlot;
-trueModel = calculatedModel(inDepths,inRhos,forwardModel(inDepths,inRhos,...
-    data.lambda),data.y,'r','-','Exact solution');
+trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(...
+    trueDepths,trueRhos,data.lambda),data.y,'r','-','Exact solution');
 
 %% 3 Figures
 disp('Plotting properties...');
@@ -232,4 +236,14 @@ if saveFigures
     fclose(readMe);
 end
 disp('Done');
+end
+
+function [outDepths,outRhos] = shortForm(inDepths,inRhos)
+%removes duplicate values
+h = diff(inRhos);
+ind = find(h==0);
+outRhos = inRhos;
+outDepths = inDepths;
+outRhos(ind+1) = [];
+outDepths(ind+1) = [];
 end

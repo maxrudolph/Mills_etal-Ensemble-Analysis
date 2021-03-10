@@ -5,6 +5,15 @@ function [depths,rhos] = modelGen(kMax,choice)
     elseif choice == '4LayerA'
         inDepths = [0,5,30,200]';
         inRhos = [100,10,250,1]';
+    elseif choice == '4LayerB'
+        inDepths = [0,5,30,200]';
+        inRhos = [100,10,250,1e-2]';
+    elseif choice == '4LayerC'
+        inDepths = [0,5,30,200]';
+        inRhos = [100,10,250,1e2]';
+    elseif choice == '4LayerD'
+        inDepths = [0,5,30,200]';
+        inRhos = [100,10,250,1e4]';
     elseif choice == '1LayerA'
         inDepths = [0]';
         inRhos = [100]';

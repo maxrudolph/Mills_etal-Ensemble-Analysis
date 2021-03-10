@@ -16,5 +16,7 @@ set(gca,'YDir','reverse','FontSize',12,'Box','on','Layer','Top');
 k = find(sum(nE')>0);
 xlim([min(inModels{1}.rhos)/100,max(inModels{1}.rhos)*100]);
 xlabel('Resistivity (\Omega-m)'); ylabel('Depth (m)'); title('Model Space');
-legend('location','northwest')
+lgd = legend('location','northwest');
+lgd.FontSize = 8;
+text(0.8,0.95,'C','units','normalized','FontSize',14)
 end

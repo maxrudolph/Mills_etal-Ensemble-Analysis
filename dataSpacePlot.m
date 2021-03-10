@@ -18,8 +18,9 @@ end
 h1 = plot(x,mean(y,2),'b--','LineWidth',1,'DisplayName','DS Mean');
 h2 = plot(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0,...
     'DisplayName','Data + noise');
-legend([h1,h2,h],'Location','northwest');
-set(gca,'FontSize',12,'Color','w','XScale','log','YScale','log','Box','on');
+lgd = legend([h1,h2,h],'Location','northwest');
+lgd.FontSize = 8;
+set(gca,'FontSize',10,'Color','w','XScale','log','YScale','log','Box','on');
 xlabel('Array Spacing (m)'); ylabel('Apparent Resistivity (\Omega-m)')
-title('Data Space');
+text(0.8,0.95,'B','units','normalized','FontSize',14)
 end
