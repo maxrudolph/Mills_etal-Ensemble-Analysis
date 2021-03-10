@@ -9,7 +9,10 @@ load(filename,'data','forwardModel','results','measure','pBounds')
 nxplot=500; %number of measurement points for evaluating ensemble members
 
 nSavedPlot = 2000; %Number of saved runs to plot
-nzplot = 3000; %number of imaginary layers to divide models into
+
+nzplot = 1000; %number of imaginary layers to divide models into
+
+>>>>>>> 81b73e84b35cfa98e634ca6df209702d249ae076
 meanColor = 'b'; medianColor = 'g';
 
 if saveFigures
@@ -237,6 +240,7 @@ if saveFigures
 end
 disp('Done');
 end
+<<<<<<< HEAD
 
 function [outDepths,outRhos] = shortForm(inDepths,inRhos)
 %removes duplicate values
@@ -247,3 +251,5 @@ outDepths = inDepths;
 outRhos(ind+1) = [];
 outDepths(ind+1) = [];
 end
+=======
+>>>>>>> 81b73e84b35cfa98e634ca6df209702d249ae076

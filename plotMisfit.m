@@ -9,8 +9,8 @@ for iPlot = 1:size(inModels,2)
 end
 set(gca,'FontSize',12);
 xlabel('Misfit (\Omega-m)');
-<<<<<<< HEAD
-=======
+
+
 text(0.8,0.8,'A','units','normalized','FontSize',14);
->>>>>>> 0ce9c3f5235649a6d740600aa2fbd6288858aff5
+
 end
