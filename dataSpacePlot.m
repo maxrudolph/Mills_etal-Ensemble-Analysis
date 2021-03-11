@@ -12,15 +12,15 @@ h = plot(x,y(:,i),'Color',ensembleColor,'DisplayName','Ensemble Members');
 set(gcf,'Color','w');
 for i = 1:size(inModels,2)
     plot(data.x,inModels{i}.y,'Color',inModels{i}.color,'LineStyle',...
-        inModels{i}.lineStyle,'LineWidth',1.25,...
+        inModels{i}.lineStyle,'LineWidth',1.0,...
         'DisplayName',inModels{i}.displayName);
 end
 h1 = plot(x,mean(y,2),'b--','LineWidth',1,'DisplayName','DS Mean');
 h2 = plot(data.x,data.y,'.','Color',inModels{1}.color,'MarkerSize',10.0,...
     'DisplayName','Data + noise');
-lgd = legend([h1,h2,h],'Location','northwest');
-lgd.FontSize = 8;
+lgd = legend([h1,h2,h],'Location','best');
+lgd.FontSize = 7;
 set(gca,'FontSize',10,'Color','w','XScale','log','YScale','log','Box','on');
 xlabel('Array Spacing (m)'); ylabel('Apparent Resistivity (\Omega-m)')
-text(0.8,0.95,'B','units','normalized','FontSize',14)
+text(0.9,0.95,'B','units','normalized','FontSize',14)
 end
