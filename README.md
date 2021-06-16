@@ -1,13 +1,19 @@
 # Senior-Thesis-stuff
 Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Monte Carlo Markov Chain approach
 
+Step 1: Synthetic Data Generation
+  - Master Script: Create Synthetic Data
+    - Generates and saves synthetic data for a virtual Schlumberger array field experiment based on user-set parameters
+  - Subscripts:
+    - calculateRho1D: The forward model for resistivity measurements via Schlumberger array. Outputs apparent resisitivity "measurements" given subsurface structure properties
+    - makeLambda: Makes a 'lambda matrix' based on electrode spacings which is required for calculateRho1D
+    - subStructGen: A library of virtual subsurface structures from which to generate synthetic data.
+
+Step 2: Inversion
+
+
+
 calculatedModel: a class made for ease of ensemble analysis and plotting; used in ensembleAnalysis3.
-
-calculateRho1D: the script for the forward model in this inversion. Outputs apparent resistivity "measurements" given depths and 
-resistivities for layers in a subsurface environment
-
-createSyntheticData: Generates synthetic data for a virtual Schlumberger array field experiment given 
-parameters like min and max electrode spacings, number of measurements, etc. Adds a specified amount of random Gaussian noise
 
 doSaving: Just a save statement for when we were generating a lot of large ensembles;
 matlab won't allow you to put a save statement in a parfor loop but if you hide that save statement in a function, it works!
@@ -22,12 +28,4 @@ misfit, etc.
 
 ...to be continued
 
-MillsSeniorThesisMain - the primary script. Follows this structure:
-
-
-
-
-Step 1: Load previous ensemble or create new one. 
-A new ensemble can be created by running an inversion on either synthetic data or actual data loaded in (Note: not set up for this yet)
-
-Step 2: Analyze ensemble with ensembleAnalysis function.
+MillsSeniorThesisMain - the primary script for now
