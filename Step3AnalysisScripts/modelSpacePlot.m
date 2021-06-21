@@ -8,17 +8,17 @@ p = pcolor(xdata(mask),10.^bC{2},nE(mask,:)'); shading flat;
 colormap(flipud(bone))
 set(gca,'XScale','log','YScale','log','ColorScale','log');
 hold on
-for i = 1:size(inModels,2)
+for i = 2:size(inModels,2)
     plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
         inModels{i}.lineStyle,'Color',inModels{i}.color,'DisplayName',...
         inModels{i}.displayName,'LineWidth',1.0);
 end
 ylim = get(gca,'YLim');
-set(gca,'YLim',[ylim(1) ylim(2)*10]);
+set(gca,'YLim',[ylim(1) ylim(2)]);
 c=colorbar();
 c.Label.String = 'Number of solutions';
 set(get(get(p(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-%legend();
+legend();
 set(gca,'YDir','reverse','FontSize',10,'Box','on','Layer','Top');
 k = find(sum(nE')>0);
 
@@ -26,8 +26,8 @@ ax = gca;
 ax.XTickMode = 'manual';
 ax.XTick = xticks;
 xlabel('Resistivity (\Omega-m)'); ylabel('Depth (m)');
-title('Model Space');
-lgd = legend('location','southwest');
+title('Solution Space');
+lgd = legend('location','southeast');
 lgd.FontSize = 7;
-text(0.9,0.95,'C','units','normalized','FontSize',14)
+%text(0.9,0.95,'C','units','normalized','FontSize',14)
 end

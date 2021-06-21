@@ -6,9 +6,9 @@ load(filename,'data','forwardModel','results','measure','pBounds')
 %% Section 0: Parameter setup
 %IF running to generate/save figures, set to true
 % saveFigures = true;
-nxplot=1000; %number of measurement points for evaluating ensemble members
+nxplot=500; %number of measurement points for evaluating ensemble members
 nSavedPlot = 2000; %Number of saved runs to plot
-nzplot = 1000; %number of imaginary layers to divide models into
+nzplot = 500; %number of imaginary layers to divide models into
 
 meanColor = 'b'; medianColor = 'g';
 
