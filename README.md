@@ -2,7 +2,7 @@
 Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Monte Carlo Markov Chain approach
 
 Step 1: Synthetic Data Generation
-  - Master Script: Create Synthetic Data
+  - Master Script: createSyntheticData
     - Generates and saves synthetic data for a virtual Schlumberger array field experiment based on user-set parameters
   - Subscripts:
     - calculateRho1D: The forward model for resistivity measurements via Schlumberger array. Outputs apparent resisitivity "measurements" given subsurface structure properties
@@ -10,6 +10,12 @@ Step 1: Synthetic Data Generation
     - subStructGen: A library of virtual subsurface structures from which to generate synthetic data.
 
 Step 2: Inversion
+  - Master script: inversion
+    - Loads a data file (as generated in step 1) and performs an MCMC inversion on it to produce a solution ensemble 
+  - Subscripts:
+    - chooseOption: Used within mcmcAlgorithm. Controls the choice of what way the proposed solution is edited in a given step.
+    - genericSln: A class that contains all the information about a solution and all the necessary methods to edit itself
+    - mcmcAlgorithm: The overarching file that does the inversion process. The 'inversion' master script is really just a place for a user to change options and parameter bounds, and to save the results after mcmcAlgorithm is done, but mcmcAlgorithm is the bulk of the process.
 
 
 
