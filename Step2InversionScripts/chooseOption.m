@@ -1,31 +1,43 @@
 function output = chooseOption(currentLayers,maxLayers,numOptions)
+%{
+6/21/2021
+A subscript for mcmcAlgorithm. This script is called at each step in the
+main loop. It chooses the way the accepted sln will be edited to form the
+proposed sln: either adding or removing a layer, changing the depth of an
+interface, changing the resistivity of a layer, or changing the variance
+(if that is an allowed option). The probabilities and availabilities of
+different options need to be controlled depending on the state of the
+current accepted Sln (for instance, if the accepted sln is only one layer,
+then deleteLayer should not be available, but also, the probability to add
+a new layer should not be larger than it normally is, or that would bias
+the program toward multi-layer models).
+%}
 if currentLayers == 1 %If one layer model...
-    % prob(remove layer) = prob(perturbDepth) = 0;
-    %numOptions = [4,5] => prob(addLayer) = [25%,20%];
-    %prob(perturbRho) = [75%,48%],prob(changeVar) = [0%,32%]
+    % prob(deleteLayer) = prob(perturbDepth) = 0;
+    % If numOptions = 4, prob(addLayer) = 25%, prob(perturbRho) = 75%;
+    % if numOptions = 5, prob(addLayer) = 20%, prob(perturbRho) = 40%,
+    % prob(changeVar) = 40%;
     tmp = rand(); %uniformly distributed
     if tmp<(1/numOptions)
         output = 3; %Add new layer.
-    elseif (tmp < 1/numOptions + (1-1/numOptions)/(numOptions-3))
-        output = 4; %perturb resistivity
     else
-        output = 5; %var
+        availableOptions = [4:numOptions];
+        output = availableOptions(randi(length(availableOptions)));
     end
-elseif currentLayers >= maxLayers %If at max layers...
-    %prob (addLayer) = 0; numOptions = [4,5] =>
-    %prob(deleteLayer) = [25%,20%]; prob(perturbDepth) = [46.9%,37.3%];
-    %prob(perturbRho) = [28.1%,31.3%], prob(changeVar) = [0%,11.4%]
+elseif currentLayers >= maxLayers %if at max layers...
+    %prob (addLayer) = 0;
+    %if numOptions = 4, prob(deleteLayer) = 25%, prob(perturbDepth) = 38%,
+    %prob(perturbRho = 38%);
+    %if numOptions = 5, prob(deleteLayer) = 20%, prob(perturbDepth) = 27%,
+    %prob(perturbRho) = 27%, prob(changeVar) = 27%;
     tmp = rand(); %uniformly distributed
     if tmp < 1/numOptions
         output = 2; %delete layer
-    elseif (tmp < 1/numOptions + (1-1/numOptions)/(numOptions-2))
-        output = 1; %perturb depth
-    elseif (tmp < 1/numOptions + (2-2/numOptions)/(numOptions-2))
-        output = 4; %perturb resistivity
     else
-        output = 5;
+        availableOptions = [1 4 5];
+        output = availableOptions(randi(length(availableOptions)));
     end
-else %normal circumstances
-    output = randi([1,numOptions]);
+else %If 1 < number of layers < maxLayers...
+    output = randi([1,numOptions]); %All options have equal likelihood
 end
 end

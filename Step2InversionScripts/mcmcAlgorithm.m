@@ -1,18 +1,49 @@
 function results = mcmcAlgorithm(data,model,options,pBounds)
 %{
-    Inputs:data.x and data.y are the observations (electrode spacings,
-apparent resistivities); model is handle to a function calculating
-forward-model given parameters, options contains fields kMax (max number of
-layers); numSteps (number of steps); mLPSCoefficient(int, involved with
-length of burn-in time); saveStart,saveSkip (ints controlling which runs to
-save); samplePrior (bool, accept all proposed Slns or not); intlVar
-(variance); alterVar (bool, controls whether variance varies or not);
-    Output: result is a structure with fields storedDepths; storedRhos;
-storedSavedVars; storedLikelihoods; allMisfits; ensembleMisfits;
-storedProbAccepts; numLayers; maxLayers; storedChoices;
-    External scripts: genericMedium
+6/21/21
+Performs an inversion by Markov-Chain Monte Carlo and generates a solution 
+ensemble. Inputs:
+    data: structure with following fields (may have others, but only these
+    are used):
+        x: array of electrode spacings of virtual measurements
+        y: measured apparent resistivities at each x, with noise added (the
+            'actual data')
+        lambda: lambda matrix associated with x, see makeLambda (needed for
+            forward model)
+        Cd: Covariance matrix
+    model: a function handle for the forward model
+    options: structure containing information governing the mcmc procedure
+        numSteps: how many iterations of the main loop to take
+        mLPSCoefficient: governs the length of the 'burn-in' period
+        saveStart: How far from the end before sampling begins
+        saveSkip: Once saving begins, save every saveSkipth solution
+        alterVar: Controls whether hierarchical or not. 'True' = yes
+            hierarchical and variance will be allowed to change. 'false' =
+            no, constant variance maintained throughout.
+        samplePrior: 'true' will sample prior distribution. Only set to
+            true for testing purposes.
+        pctSteps: Convenience, controls status update frequency
+    pBounds: structure containing parameter bounds/information:
+        intlVar: Initial variance
+        maxLayers: maximum number of layers a sln can have.
+        depthMin,depthMax,rhoMin,rhoMax,varMin,varMax: upper and lower
+            bounds on depths and resistivities of layers in slns, and
+            variance
+        varChange: approximately controls how much the variance can shift
+            if that is an option.
+        numSteps: same as above, included here for the genericSln
+            construction
+        
+    Output: results is a structure with fields:
+        ensembleDepths,ensembleRhos,ensembleVars,ensembleMisfits,...
+            ensembleNumLayers: Recording the properties of the ensemble
+            members
+        allChoices: records the choice picked at each step
+        allLikelihoods,allMisfits,allProbAccepts,allVars,maxLayers: records
+            these properties at each step (not just for ensemble members).
 %}
 %% Initializing
+rng(1); %reproducibility
 numMeasurements = length(data.x);
 if options.alterVar %Sets whether or not variance can be altered
     randomOptions = 5;
@@ -28,17 +59,16 @@ pctSteps = round(totalSteps*options.pctSteps/100); %For printing status
 numSavedRuns = ceil(options.saveStart/saveSkip); %How many runs to save
 
 % Process covariance matrix
-Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data covariance matrix
+Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data 
+%covariance matrix
 
 % Initialize 'solutions.' These are self-contained objects which have all
-% the necessary protocols and information to perform loop steps. 
+% the necessary protocols and information to perform loop steps.
 %See 'genericSln' script
-layersProposed = genericSln(pBounds,numMeasurements);
-layersAccepted = genericSln(pBounds,numMeasurements);
+layersProposed = genericSln(pBounds,numMeasurements,Cdi);
+layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
 residual = data.y - model(depths,rhos,lambda);
-layersAccepted.setCdi(Cdi);
-layersProposed.setCdi(Cdi);
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
 
@@ -92,11 +122,14 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     [depths,rhos] = layersProposed.getSolution();
     residual = data.y - model(depths,rhos,lambda);
     layersProposed.setMisfit(residual);
+    %Step 4: Run proposed sln through forward model to get misfit
     
+    %Step 5: choose whether or not to accept the proposed sln
+    %See my paper for this, or Malinverno 2002
     if options.samplePrior
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
-        probAccept = log(k+1) - log(kPrime+1);
+        probAccept = log(k) - log(kPrime);
     else
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
@@ -106,10 +139,11 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
         probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + log(k+1) - log(kPrime+1);
+            log(sigma2Prime))) + log(k) - log(kPrime);
     end
     
     if ( isfinite(probAccept)&&( probAccept > log(rand)))
+        %Compare probAccept with a random number from uniform dist on (0,1)
         acceptProposedSln(layersAccepted,layersProposed)
         %Proposed sln becomes new accepted sln
     end

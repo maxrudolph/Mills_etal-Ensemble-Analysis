@@ -7,9 +7,9 @@ containing some number of layers, each with a thickness (rather, a depth to
 the top of the layer) and a resistivity (rho). It also contains all
 information for updating itself and checking itself within bounds when a
 step is taken in the markov chain.
-    Set access to private, properties should only be allowed to be changed 
+    Set access to private, properties should only be allowed to be changed
 within this object. If info needs to be retrieved externally, create a
-get function for it. If something needs to be set externally, create a set 
+get function for it. If something needs to be set externally, create a set
 function. Get and set functions are at the end of the methods section.
     %}
     properties (Access = private)
@@ -23,6 +23,9 @@ function. Get and set functions are at the end of the methods section.
         misfit;     % norm of residual ohm-meters
         mahalDist;  % Mahalanobis distance \Phi(G)
         likeProb;   % likelihood
+    end
+    
+    properties(SetAccess = immutable) %Should not be changed once defined
         Cdi;        % inverse of data+forward modeling covariance matrix.
         %%%%%%%%%% The following are bounds on values %%%%%%%%%%
         lDepthMin;   % Minimum log-depth for a layer interface (besides top)
@@ -47,7 +50,7 @@ function. Get and set functions are at the end of the methods section.
         %%%%%%%%%% Core Functions %%%%%%%%%%
         
         %Constructor - initializes with a 1-layer model
-        function obj = genericSln(pBounds,numMeasurements)
+        function obj = genericSln(pBounds,numMeasurements,Cdi)
             %pBounds is a structure containing parameter bounds like min
             %and max values for depths, resistivity, variance; NOT in
             %log-space. numMeasurements is just the number of measurements
@@ -73,7 +76,7 @@ function. Get and set functions are at the end of the methods section.
             obj.mahalDist = 0;
             obj.likeProb = 0;
             obj.misfit = 0;
-            obj.Cdi = 0;
+            obj.Cdi = Cdi;
             obj.badRunsThreshold = ceil(log10(pBounds.numSteps)*20);
             %arbitrary
         end
@@ -84,7 +87,6 @@ function. Get and set functions are at the end of the methods section.
             output.lRhos = obj.lRhos;
             output.var = obj.var;
             output.misfit = obj.misfit;
-            output.Cdi = obj.Cdi;
             output.residual = obj.residual;
         end
         
@@ -93,7 +95,6 @@ function. Get and set functions are at the end of the methods section.
             obj.lDepths = input.lDepths;
             obj.lRhos = input.lRhos;
             obj.numLayers = nnz(~isnan(obj.lDepths));
-            obj.Cdi = input.Cdi;
             obj.residual = input.residual;
             obj.var = input.var;
             obj.misfit = input.misfit;
@@ -123,7 +124,7 @@ function. Get and set functions are at the end of the methods section.
             if (proposedLDepth > obj.lDepthMax-obj.lHMin ||...
                     proposedLDepth < obj.lDepthMin) || ...
                     (min(abs(proposedLDepth - testLDepths)) < obj.lHMin)
-                %First set of criteria is checking depth bounds, second 
+                %First set of criteria is checking depth bounds, second
                 %checks to make sure no layer is made too thin
                 good = false;
             else
@@ -150,10 +151,10 @@ function. Get and set functions are at the end of the methods section.
         end
         
         %%%%%%%%%% RANDOM WALK OPTIONS %%%%%%%%%%%%%%%
-    %Note: once an option is chosen, it will attempt to complete that
-    %option until it succeeds or it hits the number of attempts threshold
-    %(badRunsThreshold). This is by design.
-
+        %Note: once an option is chosen, it will attempt to complete that
+        %option until it succeeds or it hits the number of attempts threshold
+        %(badRunsThreshold). This is by design.
+        
         %Alters proposed sln by changing layer depth, assumes >1 layer
         function perturbDepth(obj)
             success = false;
@@ -283,12 +284,8 @@ function. Get and set functions are at the end of the methods section.
         
         
         %%%%%%%%%%% SET IT %%%%%%%%%%%%
-        %for manually setting things from outside the object
-        function setCdi(obj,inCdi)
-            obj.Cdi = inCdi;
-        end
-
-
+        %for manually setting things from outside the object      
+        
         function setMisfit(obj,residual)
             % input should be (vector) residual and Cdi.
             obj.residual = residual;
@@ -298,7 +295,8 @@ function. Get and set functions are at the end of the methods section.
         
         function calculatePosterior(obj)
             obj.mahalDist = obj.residual'*obj.Cdi*obj.residual/obj.var;
-            %Kolb_Lekic 2014 eq. 3 - ????
+            %Kolb_Lekic 2014 eq. 3, divided by variance, because of the way
+            %we set up the covariance matrix 
             obj.likeProb = exp(-0.5*obj.mahalDist)/...
                 ((sqrt(2*pi*obj.var))^obj.numMeasurements);
             %Kolb Lekic 2014 eq 4

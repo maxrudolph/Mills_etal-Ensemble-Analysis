@@ -2,23 +2,17 @@ function filename = createSyntheticData
 %{
 6/16/21
 Generates synthetic data for subsequent inversion.       
-Outputs:
+Saves in a file these things:
     forwardModel: Function handle of the forward model
-    measure: a structure containing measurement details - 
-        minDist, maxDist: scalars representing minimum and maximum
-            electrode spacings, in meters
-        numMeasurements: integer number of electrode spacings
-        noiseCoef: How noisy you want the data to be, in the form of a
-            coefficient. 0 is no noise, 0.2 is very noisy, etc.
-        subStructChoice: string defining the subsurface structure. see
-            subStructGen, if you want custom structure then add it there
     data: a structure containing data and related information
         x: values of electrode spacings, size numMeasurements, log-spaced 
             from minDist to maxDist, in meters.
         lambda: a 2D array based on x, see makeLambda and calculateRho1D
         fx: the measurements with NO noise
         y: the measurements WITH noise
-        Cd: covariance matrix
+        Cd: covariance matrix, which in our case is 
+Then outputs a filename which can easily be fed into the inversion script,
+which is the next step of the process.
 %}
 addpath(genpath(fileparts(mfilename('fullpath'))))
 %adds subfolders so you can use the scripts in them
@@ -26,7 +20,11 @@ addpath(genpath(fileparts(mfilename('fullpath'))))
 
 %% User Set Options:
 
-forwardModel = @(a,b,c) calculateRho1D(a,b,c);
+filterSize = 19;
+%Choice of filter size for the forward model. Choices are 7,11,19. Based on
+%Guptasarma 1982. This effects both which script is used for the forward
+%model as well as the size of the lambda matrices, so it is an accuracy vs.
+%computational expense tradeoff.
 
 data.subStructChoice = '3LayerA'; %see subStructGen for choices
 
@@ -39,8 +37,17 @@ data.noiseCoef = 0.11; %How "noisy" are the measurements.
 
 %% Calculated Stuff:
 
+switch filterSize
+    case 7
+        forwardModel = @(a,b,c) calculateRho1D07(a,b,c);
+    case 11
+        forwardModel = @(a,b,c) calculateRho1D11(a,b,c);
+    case 19
+        forwardModel = @(a,b,c) calculateRho1D19(a,b,c);
+end %anything else is an invalid choice
+
 [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
-data.lambda = makeLambda(data.x); %lambda matrix for calculateRho1D
+data.lambda = makeLambda(data.x,filterSize); %lambda matrix for calculateRho1D
 data.fx = forwardModel(trueDepths,trueRhos,data.lambda); %'true' output
 noiseVector = data.noiseCoef.*data.fx.*randn(length(data.fx),1);
 %noise is added, Gaussian with mean 0 and std dev = noiseCoef*f(x)
