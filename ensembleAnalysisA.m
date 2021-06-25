@@ -1,6 +1,6 @@
 function ensembleAnalysisA(filename)
 %{
-6 /23/2021 Ensemble Analysis, the last step
+6/23/2021 Ensemble Analysis, the last step
 This script starts the process by setting up parameters, evaluating slns,
 and calculating single-model appraisals.
 Inputs: filename linking to a file produced by the 'inversion' script. 
@@ -8,6 +8,7 @@ Inputs: filename linking to a file produced by the 'inversion' script.
 
 
 %}
+visibility = true;
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds')
@@ -122,7 +123,7 @@ maxLikelihood = calculatedModel(zVals,inRhos,forwardModel(shortDepths,...
     shortRhos,data.lambda),data.y,'#d1b26f','-','MS Max Likelihood');
 
 %Setup true model/solution
-[trueDepths,trueRhos] = modelGen(measure.kMax,measure.modelChoice);
+[trueDepths,trueRhos] = subStructGen(data.subStructChoice);
 trueDepthsPlot = 10.^logDepthPlot(:,1);
 trueRhoPlot = zeros(nzplot,1);
 trueNumLayers = nnz(~isnan(trueDepths));
@@ -133,6 +134,12 @@ end
 trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(...
     trueDepths,trueRhos,data.lambda),data.y,'r','-','Exact solution');
 
+disp('Plotting properties...');
+smallPlots(results,visibility);
+allModels = {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
+bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
+    visibility);
+
 function [outDepths,outRhos] = shortForm(inDepths,inRhos)
 %removes duplicate values
 h = diff(inRhos);
@@ -141,4 +148,5 @@ outRhos = inRhos;
 outDepths = inDepths;
 outRhos(ind+1) = [];
 outDepths(ind+1) = [];
+end
 end

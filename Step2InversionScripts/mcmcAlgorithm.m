@@ -1,7 +1,7 @@
 function results = mcmcAlgorithm(data,model,options,pBounds)
 %{
 6/21/21
-Performs an inversion by Markov-Chain Monte Carlo and generates a solution 
+Performs an inversion by Markov-Chain Monte Carlo and generates a solution
 ensemble. Inputs:
     data: structure with following fields (may have others, but only these
     are used):
@@ -59,7 +59,7 @@ pctSteps = round(totalSteps*options.pctSteps/100); %For printing status
 numSavedRuns = ceil(options.saveStart/saveSkip); %How many runs to save
 
 % Process covariance matrix
-Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data 
+Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data
 %covariance matrix
 
 % Initialize 'solutions.' These are self-contained objects which have all

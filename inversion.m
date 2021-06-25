@@ -1,4 +1,4 @@
-function filenameOut = inversion(filename)
+function filenameOut = inversion(filename,varargin)
 %{
 6/21/21
 Step 2 in the process, after createSyntheticData (or adequately formatted
@@ -20,19 +20,31 @@ The input file linked by filename should contain
         noiseCoef*: how noisy the data was
 (*NOTE: fx,subStructChoice,and noiseCoef aren't used in this step, so they
 are not necessary to run this script, but they will be used in step 3).
+There is an optional input, priorOn, which controls whether or not the
+prior distribution will be sampled during the inversion. Default is false,
+in order to set it to true, call this function like
+inversion(filename,'priorOn',true)
     forwardModel: a function handle for the forward model to be used
 The output will be another filename containing everything that was imported
 as well as the set options and parameter bounds, and a results structure
 containing the results from the inversion.
 %}
 
+%% Part 0 preliminary 
+defaultPriorOn =false;
+p = inputParser;
+addRequired(p,'filename',@ischar);
+addParameter(p,'priorOn',defaultPriorOn,@islogical);
+parse(p,filename,varargin{:});
+
 addpath(genpath(fileparts(mfilename('fullpath'))))
 load(filename)
 
 
+
 %% Set options
 
-options.numSteps = 1e5; %total iterations for loop.
+options.numSteps = 1e7; %total iterations for loop.
 options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
@@ -44,9 +56,9 @@ options.saveSkip = 100; %sample every (saveSkip)th step once sampling begins
 options.alterVar = true; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parameters which can
 %change) or false for not (variance will never change from intlVar.
-options.samplePrior = false; %If true, will base acceptance probability on
+options.samplePrior = p.Results.priorOn; %If true, will base acceptance probability on
 %prior distribution (only set to true for testing purposes)
-options.pctSteps = 3;
+options.pctSteps = 25;
 %once mcmc loop starts, a statement is printed regularly that tells you the
 %algorithm is x% finished. If you set pctSteps = 1, you will be updated at
 %1%,2%,3%... if pctSteps = 5, it will be 5%,10%,15%... if options.numSteps
@@ -89,9 +101,13 @@ end
 results = mcmcAlgorithm(data,forwardModel,options,pBounds);
 
 %% Save
-
-filenameOut = ['Ensemble_', data.subStructChoice, '_',...
-    num2str(data.noiseCoef), '_', date, '.mat'];
+if p.Results.priorOn
+    filenameOut = ['Ensemble_', data.subStructChoice,'_',...
+        num2str(data.noiseCoef),'_PRIOR_',date,'.mat'];
+else    
+    filenameOut = ['Ensemble_', data.subStructChoice, '_',...
+        num2str(data.noiseCoef), '_', date, '.mat'];
+end
 
 save(filenameOut,'results','data','options','forwardModel',...
     'pBounds','-v7.3'); %-v7.3 allows for saving of large files

@@ -1,24 +1,39 @@
-function filename = createSyntheticData
+function filename = createSyntheticData(varargin)
 %{
 6/16/21
-Generates synthetic data for subsequent inversion.       
+Generates synthetic data for subsequent inversion.
+OPTIONAL inputs: noise coefficient (how noisy the data is, as a scalar) and
+parameter subStructChoice, ie which subsurface structure to use (see
+subStructGen script). Neither is necessary, so examples of how to call the 
+script are: createSyntheticData, createSyntheticData(0.11),
+createSyntheticData('subStructChoice','4LayerA'), or
+createSyntheticData(0.11,'subStructChoice','4LayerA').
 Saves in a file these things:
     forwardModel: Function handle of the forward model
     data: a structure containing data and related information
-        x: values of electrode spacings, size numMeasurements, log-spaced 
+        x: values of electrode spacings, size numMeasurements, log-spaced
             from minDist to maxDist, in meters.
         lambda: a 2D array based on x, see makeLambda and calculateRho1D
         fx: the measurements with NO noise
         y: the measurements WITH noise
-        Cd: covariance matrix, which in our case is 
+        Cd: covariance matrix, which in our case is
 Then outputs a filename which can easily be fed into the inversion script,
 which is the next step of the process.
 %}
+%% 0 Preliminary stuff ignore this section
 addpath(genpath(fileparts(mfilename('fullpath'))))
 %adds subfolders so you can use the scripts in them
+defaultNoise = 0.1;
+defaultSubStruct = '3LayerA';
+
+p = inputParser;
+validScalarPosNum = @(x) isnumeric(x) && isscalar(x) && (x>=0);
+addOptional(p,'noise',defaultNoise,validScalarPosNum);
+addParameter(p,'subStructChoice',defaultSubStruct,@ischar);
+parse(p,varargin{:});
 
 
-%% User Set Options:
+%% 1 User Set Options Here:
 
 filterSize = 19;
 %Choice of filter size for the forward model. Choices are 7,11,19. Based on
@@ -26,16 +41,17 @@ filterSize = 19;
 %model as well as the size of the lambda matrices, so it is an accuracy vs.
 %computational expense tradeoff.
 
-data.subStructChoice = '3LayerA'; %see subStructGen for choices
+data.subStructChoice = p.Results.subStructChoice; 
+%see subStructGen for choices
 
 minDist = 0.1; maxDist = 1000; %in meters
 numMeasurements = 21; %how many measurements
 data.x = logspace(log10(minDist),log10(maxDist),numMeasurements);
 % array of electrode spacings
 
-data.noiseCoef = 0.11; %How "noisy" are the measurements.
+data.noiseCoef = p.Results.noise; %How "noisy" are the measurements.
 
-%% Calculated Stuff:
+%% 2 Calculated Stuff:
 
 switch filterSize
     case 7
@@ -55,7 +71,7 @@ data.y =  data.fx+noiseVector; %measurements with noise
 data.Cd = diag(data.y.^2);
 % assume sig_f/f = const (constant relative error).
 
-%% Save
+%% 3 Save
 filename = ['Data_', data.subStructChoice, '_',...
     num2str(data.noiseCoef), '_', date, '.mat'];
 save(filename,'data','forwardModel');
