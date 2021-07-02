@@ -8,6 +8,7 @@ Inputs: filename linking to a file produced by the 'inversion' script.
 
 
 %}
+addpath(genpath(fileparts(mfilename('fullpath'))))
 visibility = true;
 rng(1); %reproducibility
 disp('Loading data...')

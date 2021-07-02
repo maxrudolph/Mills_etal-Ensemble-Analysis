@@ -1,4 +1,4 @@
-function saveEnsemblesLoop
+%function saveEnsemblesLoop
 noiseLevels = [0,0.01,0.02,0.05,0.1,0.2];
 noiseLevels = repmat(noiseLevels,1,3)';
 subStructs = {'1LayerA','3LayerA','4LayerA'};
@@ -9,7 +9,7 @@ subStructs = vertcat(subStructs{:,1},subStructs{:,2},subStructs{:,3});
 
 %Create data files
 tic
-parfor i = 1:length(noiseLevels)+3
+parfor i = 1:length(noiseLevels)+1
     if i>length(noiseLevels)
         a = createSyntheticData(0,'subStructChoice',...
             subStructs((i-length(noiseLevels))*length(subStructs)/3,:))

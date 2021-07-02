@@ -12,6 +12,9 @@ within this object. If info needs to be retrieved externally, create a
 get function for it. If something needs to be set externally, create a set
 function. Get and set functions are at the end of the methods section.
     %}
+    
+%"l-" means log, so "lDepths" is in log-space, etc. Keeps track of what's 
+%log and what isn't
     properties (Access = private)
         %%%%%%%% Solution physical properties %%%%%%%%%%%%%%%%%%%%%%%%
         numLayers;  % number of layers in proposed solution
@@ -68,10 +71,9 @@ function. Get and set functions are at the end of the methods section.
                 nan*zeros(pBounds.maxLayers-1,1)];
             obj.lVarMin = log10(pBounds.varMin);
             obj.lVarMax = log10(pBounds.varMax);
-            obj.lHMin = (obj.lDepthMax - obj.lDepthMin)/...
-                (2*pBounds.maxLayers); %Malinverno 2002, Appendix A1
-            obj.lDepthChange = obj.lHMin;    % Update?
-            obj.lRhoChange = obj.lRhoMax/2;  % Update?
+            obj.lHMin = log10(pBounds.hMin);
+            obj.lDepthChange = log10(pBounds.depthChange);
+            obj.lRhoChange = log10(pBounds.rhoChange);         
             obj.lVarChange = log10(pBounds.varChange);
             obj.mahalDist = 0;
             obj.likeProb = 0;

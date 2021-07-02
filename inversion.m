@@ -75,8 +75,12 @@ options.pctSteps = 25;
 pBounds.maxLayers = 10; % max # of layers in a given model
 pBounds.depthMin = 1e-1; %min depth for layer interface, ie max thickness of top layer
 pBounds.depthMax = max(data.x); % max depth for layer interface
+pBounds.hMin = 10^((log10(pBounds.depthMax) - log10(pBounds.depthMin))/...
+    (2*pBounds.maxLayers)); %min layer thickness. Malinverno 2002 Append A1
+pBounds.depthChange = pBounds.hMin; %Std dev for depth changes btwn steps
 pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters
+pBounds.rhoChange = 1.5; % Std dev for resistivity change btwn steps
 pBounds.varMin = 1e-8; % min variance
 pBounds.varMax = 1e8; % max variance
 pBounds.varChange = 1e-1;  %amount variance can change by if alterVar=true
