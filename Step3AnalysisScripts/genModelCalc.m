@@ -1,0 +1,6 @@
+function outModel = genModelCalc(inRhos,zVals,data,color,...
+            lineStyle,title,forwardModel)
+        
+[shortDepths,shortRhos] = shortForm(zVals,inRhos);
+outModel = calculatedModel(zVals,inRhos,forwardModel(shortDepths,shortRhos,...
+    data.lambda),data.y,color,lineStyle,title);
