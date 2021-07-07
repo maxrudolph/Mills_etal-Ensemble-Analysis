@@ -33,14 +33,13 @@ This will contain structures:
         inversion was
 %}
 addpath(genpath(fileparts(mfilename('fullpath'))))
-%saveFigures = true;
-%visibility = false; %set false if you don't want figures to appear (as in saving)
+%access all necessary other folders for scripts
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds')
 
 if saveFigures
-    visibility = 'off';
+    visibility = 'off'; %Figures won't appear
     ensembleName = filename(10:end-9); %captures most relevant info
     slashpos = find(filename == '/',1,'last');
     ensembleName = filename(slashpos+10:end-9);
@@ -54,12 +53,14 @@ end
 %% Section 0: Parameter setup
 
 nxplot=500; %number of measurement points for evaluating ensemble members
+%nxplot is only used for the ensemble members that get plotted
 nSavedPlot = 2000; %Number of saved runs to plot (not evaluate, just plot)
-nzplot = 500; %number of imaginary layers to divide appraisals into
-%ie, resolution
+nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 1000; %number of resistivity bins in model space histogram
 
+%set colors and line styles for plotting
 meanColor = 'b'; medianColor = 'g'; trueColor = 'r';
-bestFitColor = '#df4ec8'; maxLikelihoodColor = '#df4ec8';
+bestFitColor = '#df4ec8'; maxLikelihoodColor = '#d1b26f';
 msLineStyle = '-'; dsLineStyle = '--';
 
 filterSize = size(data.lambda,1);
@@ -79,6 +80,7 @@ else %... only plot a random subset of them
 end
 yVals = zeros(nxplot,nSavedPlot); %apparent rhos from measuring at xVals
 xVals = logspace(minDistL,maxDistL,nxplot)'; %surface measurement points
+%yVals and xVals are only used for plotting, zVals is used later
 zVals = logspace(minDistL,maxDistL,nzplot)'; %depth values for evaluating
 lambdaForXVals = makeLambda(xVals,filterSize);
 %lambda matrix for forward model
@@ -95,8 +97,9 @@ end
 %% Section 2: Format ensemble solutions for evaluation
 disp('Formatting...');
 logDepthPlot = log10(repmat(zVals,1,numSavedRuns));
-logRhoPlot = generateLogRhoPlot(data.x,results.ensembleDepths,...
-    results.ensembleRhos,nzplot);
+logRhoPlot = generateLogRhoPlot(results.ensembleDepths,...
+    results.ensembleRhos,zVals); 
+%resistivities at each logDepthPlot depth for each ensemble member
 
 %% Section 3: Calculate models
 %Generate Model-Space Mean and Median models
@@ -109,7 +112,6 @@ mMean = genModelCalc(msMeanRhos,zVals,data,meanColor,msLineStyle,...
 msMedianRhos = 10.^(median(logRhoPlot,2));
 mMedian = genModelCalc(msMedianRhos,zVals,data,medianColor,msLineStyle,...
     'MS Median',forwardModel);
-
 
 % Data space median and best fit models
 [~,ind2] = sort(results.ensembleMisfits); %sort all slns by misfit
@@ -124,16 +126,17 @@ bestFit = genModelInd(bestIndex,zVals,data,bestFitColor,dsLineStyle,...
 %Maximum likelihood model (Model Space)
 % compute a bivariate histogram of resitvity values from the
 %posterior ensemble
-numBins = 2*nxplot; %number of resistivity values for histogram
+%numBins = 2*nxplot; %number of resistivity values for histogram
 %Create a bivariate histogram
 [numElements,binCenters]=hist3([logRhoPlot(:),logDepthPlot(:)],...
-    {linspace(-10,10,numBins) log10(zVals)},'CDataMode','auto');
+    {linspace(-10,10,nRhoBins) log10(zVals)},'CDataMode','auto');
 % First linspace is for log(rho), second is for log(depth)
 % at each depth, find the most likely solution (ml_rho)
 maxLikelihoodRho = zeros(nzplot,1);
 ksRho = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e4);
 %Bandwidth issues - possible bug in matlab
-for i=1:nzplot
+%This loop will take up ~85-90% of the runtime
+parfor i=1:nzplot
     % Use ksdensity to approximate the pdf of resistivity at this depth:
     [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(i,:),ksRho,'bandwidth',.05);
     [~,ind1] = max(pdfYVals); %Find index of highest probability
