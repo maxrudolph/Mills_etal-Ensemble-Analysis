@@ -8,7 +8,7 @@ p = pcolor(xdata(mask),10.^bC{2},nE(mask,:)'); shading flat;
 colormap(flipud(bone))
 set(gca,'XScale','log','YScale','log','ColorScale','log');
 hold on
-for i = 2:size(inModels,2)
+for i = 1:size(inModels,2)
     plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
         inModels{i}.lineStyle,'Color',inModels{i}.color,'DisplayName',...
         inModels{i}.displayName,'LineWidth',1.0);

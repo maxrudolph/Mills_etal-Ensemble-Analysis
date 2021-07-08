@@ -6,6 +6,7 @@ with each entry corresponding to resistivity at zVals depth. So output
 would be, if
 zVals = [0.1,0.102,0.104,...,0.97,1.00,1.02,...,24.9,25.4,25.9,....,1000]
 then outLRhos = [10,10,10,....,10,390,390,....,390,10,10,...,10];
+long form makes for more accurate plotting
 %}
 outLRhos = nan(size(zVals));
 nLayer = nnz(~isnan(inRhos));

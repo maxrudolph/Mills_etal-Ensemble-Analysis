@@ -1,4 +1,4 @@
-function allModels = ensembleAnalysisA(filename,saveFigures)
+function ensembleAnalysisA(filename,saveFigures)
 %{
 7/6/2021 Ensemble Analysis, the last step
 This script starts the process by setting up parameters, evaluating slns,
@@ -124,21 +124,22 @@ bestFit = genModelInd(bestIndex,zVals,data,bestFitColor,dsLineStyle,...
     'DS Best Fit',forwardModel,results);
 
 %Maximum likelihood model (Model Space)
-% compute a bivariate histogram of resitvity values from the
-%posterior ensemble
-%numBins = 2*nxplot; %number of resistivity values for histogram
-%Create a bivariate histogram
+% compute a bivariate histogram of depths/resitvity values which will 
+%represent the posterior distribution in model space. This will be used not
+%only to calculate the maxLikelihood model, but also to plot the
+%distribution in model space.
 [numElements,binCenters]=hist3([logRhoPlot(:),logDepthPlot(:)],...
-    {linspace(-10,10,nRhoBins) log10(zVals)},'CDataMode','auto');
+    {linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),nRhoBins) ...
+    log10(zVals)},'CDataMode','auto');
 % First linspace is for log(rho), second is for log(depth)
-% at each depth, find the most likely solution (ml_rho)
+% At each depth, find the most likely solution
 maxLikelihoodRho = zeros(nzplot,1);
 ksRho = linspace(log10(pBounds.rhoMin),log10(pBounds.rhoMax),1e4);
-%Bandwidth issues - possible bug in matlab
-%This loop will take up ~85-90% of the runtime
+%This loop will take up ~85-90% of runtime if not using parallel computing
 parfor i=1:nzplot
     % Use ksdensity to approximate the pdf of resistivity at this depth:
     [pdfYVals,pdfXVals] = ksdensity(logRhoPlot(i,:),ksRho,'bandwidth',.05);
+    %Bandwidth issues - possible bug in matlab?
     [~,ind1] = max(pdfYVals); %Find index of highest probability
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1); %Find associated resistivity
 end
@@ -148,18 +149,18 @@ maxLikelihood = genModelCalc(maxLikelihoodRho,zVals,data,...
 %Setup true model/solution
 [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
 trueDepthsPlot = 10.^logDepthPlot(:,1);
-trueRhoPlot = zeros(nzplot,1);
-trueNumLayers = nnz(~isnan(trueDepths));
-for j = 1:trueNumLayers
-    mask = zVals >= trueDepths(j);
-    trueRhoPlot(mask) = trueRhos(j);
-end
+trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
 trueModel = genModelCalc(trueRhoPlot,trueDepthsPlot,data,trueColor,'-',...
     'Exact solution',forwardModel);
-
-allModels = {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
+%{
+analyzedEnsemble.binCenters = binCenters;
+analyzedEnsemble.numElements = numElements;
+analyzedEnsemble.allModels = ...
+    {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
+analyzedEnsemble.xVals = xVals;
+analyzedEnsemble.yVals = yVals;
+%}
 smallPlots(results,visibility,saveFigures,folderName);
-allModels = {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
     visibility);
 saveFigs(saveFigures,folderName,'4');

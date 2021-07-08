@@ -2,7 +2,7 @@ classdef calculatedModel < handle
     
     %{
     1/5/21 - Chris Mills
-    To be used with the Mills Senior Thesis; ensembleAnalysis3. Purely for 
+    To be used with the Mills Senior Thesis; ensembleAnalysisA. Purely for 
     convenience of analyzing a number of different models.
     %}
     
@@ -16,7 +16,7 @@ classdef calculatedModel < handle
         %%%%%% Plotting properties %%%%%
         color;      %RGB triplet or char or hexadecimal or string
         lineStyle;  %char using standard matlab conventions
-        displayName;      %Title/name of the model
+        displayName;%Title/name of the model as it'll appear in fig legends
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -29,10 +29,9 @@ classdef calculatedModel < handle
         function obj = calculatedModel(inDepths,inRhos,inY,dataY,...
                 colorChoice,lineStyle,title)
             %inDepths, inRhos are arrays containing depths and 
-            %resistivities associated with this model; lineStyle,
+            %resistivities associated with this model. lineStyle,
             %colorChoice,and title are for graphing and follow matlab 
             %plotting conventions for LineStyle, Color, and DisplayName 
-            %respectively
             obj.depths = inDepths;
             obj.rhos = inRhos;
             obj.setY(inY,dataY);

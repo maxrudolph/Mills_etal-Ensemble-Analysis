@@ -10,7 +10,7 @@ i = size(y,2);
 h = plot(x,y(:,i),'Color',ensembleColor,'DisplayName','Ensemble Members');
 
 set(gcf,'Color','w');
-for i = 2:size(inModels,2)
+for i = 1:size(inModels,2)
     plot(data.x,inModels{i}.y,'Color',inModels{i}.color,'LineStyle',...
         inModels{i}.lineStyle,'LineWidth',1.0,...
         'DisplayName',inModels{i}.displayName);
