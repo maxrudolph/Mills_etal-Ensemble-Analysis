@@ -55,8 +55,8 @@ end
 nxplot=500; %number of measurement points for evaluating ensemble members
 %nxplot is only used for the ensemble members that get plotted
 nSavedPlot = 2000; %Number of saved runs to plot (not evaluate, just plot)
-nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 1000; %number of resistivity bins in model space histogram
+nzplot = 500; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 500; %number of resistivity bins in model space histogram
 
 %set colors and line styles for plotting
 meanColor = 'b'; medianColor = 'g'; trueColor = 'r';
@@ -152,21 +152,20 @@ trueDepthsPlot = 10.^logDepthPlot(:,1);
 trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
 trueModel = genModelCalc(trueRhoPlot,trueDepthsPlot,data,trueColor,'-',...
     'Exact solution',forwardModel);
-%{
+
 analyzedEnsemble.binCenters = binCenters;
 analyzedEnsemble.numElements = numElements;
 analyzedEnsemble.allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 analyzedEnsemble.xVals = xVals;
 analyzedEnsemble.yVals = yVals;
-%}
+
     allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 smallPlots(results,visibility,saveFigures,folderName);
 bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
     visibility);
 saveFigs(saveFigures,folderName,'4');
-
 
 
 

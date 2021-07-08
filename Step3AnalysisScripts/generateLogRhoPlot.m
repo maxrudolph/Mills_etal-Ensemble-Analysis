@@ -16,6 +16,6 @@ logRhoPlot = zeros(length(zVals),numSavedRuns);
 % will contain the (log) depths resistivities
 %of every ensemble member, formatted to all be uniform.
 for i = 1:numSavedRuns %for each sln...
-    logRhoPlot(:,i) = longForm(zVals,depths(:,i),rhos(:,i));
+    logRhoPlot(:,i) = log10(longForm(zVals,depths(:,i),rhos(:,i)));
 end
 end

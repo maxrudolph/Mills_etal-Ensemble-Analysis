@@ -17,7 +17,7 @@ values and calculating misfit. And inDepths is the long array of
  %}
 rhos = results.ensembleRhos(:,index);
 depths = results.ensembleDepths(:,index);
-rhoPlot = 10.^longForm(inDepths,depths,rhos);
+rhoPlot = longForm(inDepths,depths,rhos);
 outModel = calculatedModel(inDepths,rhoPlot,...
     forwardModel(depths,rhos,data.lambda),data.y,color,lineStyle,title);
 end

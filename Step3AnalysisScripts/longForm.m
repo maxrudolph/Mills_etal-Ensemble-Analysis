@@ -13,6 +13,6 @@ nLayer = nnz(~isnan(inRhos));
 %...Find the number of layers in the sln...
 for i = 1:nLayer %for each layer...
     mask = zVals >= inDepths(i); %Find all depths in zVals within that or lower layers
-    outLRhos(mask) = log10(inRhos(i)); %set all those depths equal to next resistivity value
+    outLRhos(mask) = inRhos(i); %set all those depths equal to next resistivity value
     %AKA Make an appropriate # of values = to that layers resistivity
 end
