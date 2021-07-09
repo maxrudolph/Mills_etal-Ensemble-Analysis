@@ -55,8 +55,8 @@ end
 nxplot=500; %number of measurement points for evaluating ensemble members
 %nxplot is only used for the ensemble members that get plotted
 nSavedPlot = 2000; %Number of saved runs to plot (not evaluate, just plot)
-nzplot = 500; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 500; %number of resistivity bins in model space histogram
+nzplot = 2000; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 2000; %number of resistivity bins in model space histogram
 
 %set colors and line styles for plotting
 meanColor = 'b'; medianColor = 'g'; trueColor = 'r';
