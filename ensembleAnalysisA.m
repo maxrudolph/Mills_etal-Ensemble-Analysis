@@ -1,4 +1,4 @@
-function ensembleAnalysisA(filename,saveFigures)
+function analyzedEnsemble = ensembleAnalysisA(filename,saveFigures)
 %{
 7/6/2021 Ensemble Analysis, the last step
 This script starts the process by setting up parameters, evaluating slns,
@@ -40,7 +40,6 @@ load(filename,'data','forwardModel','results','pBounds')
 
 if saveFigures
     visibility = 'off'; %Figures won't appear
-    ensembleName = filename(10:end-9); %captures most relevant info
     slashpos = find(filename == '/',1,'last');
     ensembleName = filename(slashpos+10:end-9);
     folderName = ['figures_' ensembleName];
@@ -152,13 +151,6 @@ trueDepthsPlot = 10.^logDepthPlot(:,1);
 trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
 trueModel = genModelCalc(trueRhoPlot,trueDepthsPlot,data,trueColor,'-',...
     'Exact solution',forwardModel);
-
-analyzedEnsemble.binCenters = binCenters;
-analyzedEnsemble.numElements = numElements;
-analyzedEnsemble.allModels = ...
-    {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
-analyzedEnsemble.xVals = xVals;
-analyzedEnsemble.yVals = yVals;
 
     allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};

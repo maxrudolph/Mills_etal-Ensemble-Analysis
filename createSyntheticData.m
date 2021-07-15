@@ -23,7 +23,7 @@ which is the next step of the process.
 %% 0 Preliminary stuff ignore this section
 addpath(genpath(fileparts(mfilename('fullpath'))))
 %adds subfolders so you can use the scripts in them
-defaultNoise = 0.1;
+defaultNoise = 0.11;
 defaultSubStruct = '3LayerA';
 
 p = inputParser;
@@ -35,7 +35,7 @@ parse(p,varargin{:});
 
 %% 1 User Set Options Here:
 
-filterSize = 19;
+filterSize = 7;
 %Choice of filter size for the forward model. Choices are 7,11,19. Based on
 %Guptasarma 1982. This effects both which script is used for the forward
 %model as well as the size of the lambda matrices, so it is an accuracy vs.

@@ -44,7 +44,7 @@ load(filename)
 
 %% Set options
 
-options.numSteps = 5e6; %total iterations for loop.
+options.numSteps = 1e6; %total iterations for loop.
 options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
@@ -58,7 +58,7 @@ options.alterVar = true; %Whether or not the inversion is hierarchical.
 %change) or false for not (variance will never change from intlVar.
 options.samplePrior = p.Results.priorOn; %If true, will base acceptance probability on
 %prior distribution (only set to true for testing purposes)
-options.pctSteps = 25;
+options.pctSteps = 5;
 %once mcmc loop starts, a statement is printed regularly that tells you the
 %algorithm is x% finished. If you set pctSteps = 1, you will be updated at
 %1%,2%,3%... if pctSteps = 5, it will be 5%,10%,15%... if options.numSteps

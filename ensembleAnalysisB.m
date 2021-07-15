@@ -1,5 +1,7 @@
 function ensembleAnalysisB(logRhoPlot)
 
+zVals = logspace(minDistL,maxDistL,nzplot)';
+
 disp('Calculating number of clusters')
 
 addpath(genpath(fileparts(mfilename('fullpath'))))

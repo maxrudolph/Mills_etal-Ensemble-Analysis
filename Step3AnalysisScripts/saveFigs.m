@@ -1,6 +1,6 @@
 function saveFigs(saveFigures,folderName,figNumber)
 if saveFigures
-    disp(['Saving figure' num2str(figNumber)])
+    disp(['Saving figure ' num2str(figNumber)])
     if exist('exportgraphics')
         dpi = get(groot,'ScreenPixelsPerInch');  
         set(gcf,'Units','pixels','Position',[0 0 7*dpi 4.5*dpi]);
