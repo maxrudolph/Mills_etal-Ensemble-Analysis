@@ -11,7 +11,7 @@ if saveFigures
     slashpos = find(filename == '/',1,'last');
     ensembleName = filename(slashpos+10:end-9);
     folderName = ['figures_' ensembleName];
-    filenameOut = ['Analysis_' ensembleName);
+    filenameOut = ['Analysis_' ensembleName];
     mkdir(folderName);
 else
     folderName = ' ';
