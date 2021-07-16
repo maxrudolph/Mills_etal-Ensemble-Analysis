@@ -6,6 +6,10 @@ for i = 1:6
     mkdir(['Allfigure',num2str(i)]);
 end
 
+filename = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/'...
+    'Ensemble_1LayerA_0_PRIOR_02-Jul-2021.mat'];
+ensembleAnalysisMaster(filename,true);
+
 parfor i = 1:length(types)
     for j = 1:length(noiseLevels)
 
@@ -15,7 +19,5 @@ parfor i = 1:length(types)
         
     end
 end
-filename = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/'...
-    'Ensemble_1LayerA_0_PRIOR_02-Jul-2021.mat'];
-ensembleAnalysisMaster(filename,true);
+
 disp('All done');
