@@ -165,7 +165,7 @@ disp('Cluster plotting...')
 bigPlot(binCenters,numElements,KMModelsEuclid,xVals,yVals,data,results,...
     'K-means: Euclidean',saveFigures,folderName,'5');
 bigPlot(binCenters,numElements,KMModelsMan,xVals,yVals,data,results,...
-    'K-means: Manhattan',saveFigures,folderName,'7');
+    'K-means: Manhattan',saveFigures,folderName,'6');
 
 disp('Saving...')
 filenameOut = ['Analysis_',filename(9:end)];
