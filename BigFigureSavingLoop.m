@@ -11,8 +11,11 @@ parfor i = 1:length(types)
 
         filename = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/' 'Ensemble_',types{i},'_',noiseLevels{j},'_02-Jul-2021.mat']
 
-        ensembleAnalysisA(filename,true)
+        ensembleAnalysisMaster(filename,true)
         
     end
 end
+filename = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/'...
+    'Ensemble_1LayerA_0_PRIOR_02-Jul-2021.mat'];
+ensembleAnalysisMaster(filename,true);
 disp('All done');
