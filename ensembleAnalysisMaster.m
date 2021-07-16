@@ -22,8 +22,8 @@ firstThreeFigures(results,saveFigures,folderName)
 
 %% Model space plots (figures 4,5,7)
 disp('Model space...')
-nzplot = 2000; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 2000; %number of resistivity bins in model space histogram
+nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 1000; %number of resistivity bins in model space histogram
 
 %Setup logDepthPlot and logRhoPlot
 numSavedRuns = size(results.ensembleRhos,2);
@@ -39,7 +39,7 @@ for i = 1:numSavedRuns %for each sln...
         results.ensembleRhos(:,i)));
 end
 
-%Compute a bivariate histogram of depths/resitvity values which will 
+%Compute a bivariate histogram of depths/resitvity values which will
 %represent the posterior distribution in model space. This will be used not
 %only to calculate the maxLikelihood model, but also to plot the
 %distribution in model space.
@@ -79,7 +79,7 @@ end
 %% Single-model appraisals for figure 4
 disp('Appraisals...')
 
-%Preliminary 
+%Preliminary
 meanColor = 'b'; medianColor = 'g'; trueColor = 'r';
 bestFitColor = '#df4ec8'; maxLikelihoodColor = '#d1b26f';
 msLineStyle = '-'; dsLineStyle = '--';
@@ -134,90 +134,43 @@ bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
 
 
 %% Clustering for Figures 5 - 6
+
+maxNumClusters = 8;
+
 disp('Clustering Euclidean...')
-maxNumClusters = 2;
-%{
-%Use k-means clustering
-idxEuclids = zeros(numSavedRuns,maxNumClusters);
-CEuclids = zeros(sum(1:maxNumClusters),size(logRhoPlot,1));
-sumdEuclids = zeros(sum(1:maxNumClusters),1);
-%sumdEuclids = 
-stream = RandStream('mlfg6331_64');  % Random number stream
-options = statset('UseParallel',1,'UseSubstreams',1,...
-    'Streams',stream);
-j = 1;
-parfor i = 1:maxNumClusters
-    fprintf('\nCalculating for %d clusters',i)
-    index = j:(j+i-1)
-    [idxEuclids(:,i),CEuclids(j,:),sumdEuclids(j)] = kmeans(logRhoPlot',i,...
-        'Options',options,'Replicates',5,'MaxIter',1000);
-    j = j+i;
+euclidPartition = clusterMSpace(logRhoPlot,maxNumClusters,'sqeuclidean');
+disp('Clustering Manhattan...')
+manPartition = clusterMSpace(logRhoPlot,maxNumClusters,'cityblock');
+
+disp('Calculating Clustering Models...')
+KMModelsEuclid = cell(1,euclidPartition.numClusters+1);
+KMModelsMan = cell(1,manPartition.numClusters+1);
+KMModelsEuclid{1} = trueModel;
+KMModelsMan{1} = trueModel;
+for i = 1:euclidPartition.numClusters
+    KMModelsEuclid{i+1} = genModelCalc(...
+        10.^euclidPartition.centroids(i,:)',zVals,data,rand(1,3),'--',...
+        strcat('Centroid #',num2str(i)),forwardModel);
+end
+for i = 1:manPartition.numClusters
+    KMModelsMan{i+1} = genModelCalc(...
+        10.^manPartition.centroids(i,:)',zVals,data,rand(1,3),'--',...
+        strcat('Centroid #',num2str(i)),forwardModel);
 end
 
-%Step 2: Use results from k-means to determine optimal # of clusters
-eva = evalclusters(logRhoPlot,idxEuclids,'CalinskiHarabasz');
-numClusters = eva.OptimalK;
-
-%Step 4: Find kmeans centroids
-disp('Finding k-means')
-[idxEuclid,CEuclid,sumdEuclid] = kmeans(logRhoPlot',numClusters,...
-    'MaxIter',1000,'Replicates',5);
-[idxMan,CMan,sumdMan] = kmeans(logRhoPlot',numClusters,'MaxIter',1000,...
-    'Distance','cityblock','Replicates',5);
-
-%Step 5: Make models
-disp('Calculating models')
-GMData = cell(1,numClusters+1);
-KMDataEuclid = cell(1,numClusters+1);
-KMDataMan = cell(1,numClusters+1);
-GMData{1} = trueModel;
-KMDataEuclid{1} = trueModel;
-KMDataMan{1} = trueModel;
-for i = 1:numClusters
-    inRhos = 10.^GMModel.mu(i,:)';
-    GMData{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,inRhos,...
-        data.lambda),data.y,rand(1,3),'--',strcat('GM mean ',num2str(i)));
-    inRhos = 10.^CEuclid(i,:)';
-    KMDataEuclid{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,...
-        inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Centroid #',...
-        num2str(i)));
-    inRhos = 10.^CMan(i,:)';
-    KMDataMan{i+1} = calculatedModel(zVals,inRhos,forwardModel(zVals,...
-        inRhos,data.lambda),data.y,rand(1,3),'--',strcat('Cent ',...
-        num2str(i)));
-end
 
 %% 5 Plots of GM and k-means
-disp('Cluster plotting')
+disp('Cluster plotting...')
 
-bigPlot(binCenters,numElements,GMData,xVals,yVals,data,results,...
-    'Gaussian Mixture Models',visibility)
-saveFigs(saveFigures,folderName,'5');
-bigPlot(binCenters,numElements,KMDataEuclid,xVals,yVals,data,results,...
-    'K-means: Euclidean',visibility);
-saveFigs(saveFigures,folderName,'6');
-kMeansPlots('K-means: Euclidean',idxEuclid,sumdEuclid,KMDataEuclid,...
-    visibility);
-saveFigs(saveFigures,folderName,'7');
-bigPlot(binCenters,numElements,KMDataMan,xVals,yVals,data,results,...
-    'K-means: Manhattan',visibility);
-saveFigs(saveFigures,folderName,'8');
-kMeansPlots('K-means: Manhattan',idxMan,sumdMan,KMDataMan,visibility);
-saveFigs(saveFigures,folderName,'9');
+bigPlot(binCenters,numElements,KMModelsEuclid,xVals,yVals,data,results,...
+    'K-means: Euclidean',saveFigures,folderName,'5');
+bigPlot(binCenters,numElements,KMModelsMan,xVals,yVals,data,results,...
+    'K-means: Manhattan',saveFigures,folderName,'7');
 
-%% 6
-if saveFigures
-    stringPart1 = 'Ensemble: %s\nFigures recorded on:%s\nTotal runs: %d';%ensembleName,date,numSavedRuns
-    stringPart2 = '\n\nMISFITS\nBestFit: %f\nDS Median: %f\nMS Max Likelihood: %f\nMS Mean: %f\nMS Median: %f\nExact solution: %f\n'; %bestFit.misfit,dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,trueModel.misfit
-    stringPart3 = '\n\nOptimal number of clusters: %d\nMode of ensembleMisfits: %f\n'; %numClusters
-    h = histogram(results.ensembleMisfits);
-    [~,ind] = max(h.Values);
-    readMe = fopen([folderName, '/info.txt'],'w');
-    fprintf(readMe,[stringPart1,stringPart2,stringPart3],...
-        ensembleName,date,numSavedRuns,bestFit.misfit,...
-        dMedian.misfit,maxLikelihood.misfit,mMean.misfit,mMedian.misfit,...
-        trueModel.misfit,numClusters,h.BinEdges(ind));
-    fclose(readMe);
+disp('Saving...')
+filenameOut = ['Analysis_',filename(9:end)];
+
+save(filenameOut,'allModels','binCenters','euclidPartition',...
+    'KMModelsEuclid','KMModelsMan','logRhoPlot','manPartition',...
+    'nRhoBins','nzplot','zVals','-v7.3'); %-v7.3 allows for saving of large files
 end
-%}
-
