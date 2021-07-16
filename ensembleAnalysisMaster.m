@@ -136,7 +136,7 @@ bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
 
 %% Clustering for Figures 5 - 6
 
-maxNumClusters = 8;
+maxNumClusters = 6;
 
 disp('Clustering Euclidean...')
 euclidPartition = clusterMSpace(logRhoPlot,maxNumClusters,'sqeuclidean');
