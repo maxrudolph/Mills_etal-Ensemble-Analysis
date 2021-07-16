@@ -2,7 +2,7 @@ types = {'1LayerA','3LayerA','4LayerA'};
 noiseLevels = {'0','0.01','0.02','0.05','0.1','0.2'};
 addpath(genpath(fileparts(mfilename('fullpath'))))
 
-for i = 1:4
+for i = 1:6
     mkdir(['Allfigure',num2str(i)]);
 end
 
