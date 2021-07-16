@@ -11,6 +11,7 @@ if saveFigures
     slashpos = find(filename == '/',1,'last');
     ensembleName = filename(slashpos+10:end-9);
     folderName = ['figures_' ensembleName];
+    filenameOut = ['Analysis_' ensembleName);
     mkdir(folderName);
 else
     folderName = ' ';
@@ -168,7 +169,6 @@ bigPlot(binCenters,numElements,KMModelsMan,xVals,yVals,data,results,...
     'K-means: Manhattan',saveFigures,folderName,'6');
 
 disp('Saving...')
-filenameOut = ['Analysis_',filename(9:end)];
 
 save(filenameOut,'allModels','binCenters','euclidPartition',...
     'KMModelsEuclid','KMModelsMan','logRhoPlot','manPartition',...
