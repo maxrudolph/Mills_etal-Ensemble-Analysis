@@ -1,4 +1,4 @@
-function ensembleAnalysisMaster(filename, saveFigures)
+function filenameOut = ensembleAnalysisMaster(filename)
 
 %% Preliminary
 addpath(genpath(fileparts(mfilename('fullpath'))))
@@ -6,20 +6,8 @@ addpath(genpath(fileparts(mfilename('fullpath'))))
 rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds')
+filenameOut = filename(9:end);
 
-if saveFigures
-    slashpos = find(filename == '/',1,'last');
-    ensembleName = filename(slashpos+10:end-9);
-    folderName = ['figures_' ensembleName];
-    filenameOut = ['Analysis_' ensembleName];
-    mkdir(folderName);
-else
-    folderName = ' ';
-end
-
-%% Figures 1 through 3
-disp('Producing first three figures...')
-firstThreeFigures(results,saveFigures,folderName)
 
 %% Model space plots (figures 4,5,7)
 disp('Model space...')
@@ -128,10 +116,7 @@ trueModel = genModelCalc(trueRhoPlot,trueDepthsPlot,data,trueColor,'-',...
 allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 
-%% Figure 4
-disp('Figure 4...')
-bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
-    saveFigures,folderName,'4');
+
 
 
 %% Clustering for Figures 5 - 6
@@ -159,18 +144,11 @@ for i = 1:manPartition.numClusters
         strcat('Centroid #',num2str(i)),forwardModel);
 end
 
-
-%% 5 Plots of GM and k-means
-disp('Cluster plotting...')
-
-bigPlot(binCenters,numElements,KMModelsEuclid,xVals,yVals,data,results,...
-    'K-means: Euclidean',saveFigures,folderName,'5');
-bigPlot(binCenters,numElements,KMModelsMan,xVals,yVals,data,results,...
-    'K-means: Manhattan',saveFigures,folderName,'6');
-
+%% Saving
 disp('Saving...')
 
 save(filenameOut,'allModels','binCenters','euclidPartition',...
     'KMModelsEuclid','KMModelsMan','logRhoPlot','manPartition',...
-    'nRhoBins','nzplot','zVals','-v7.3'); %-v7.3 allows for saving of large files
+    'numElements','nRhoBins','nzplot','xVals','yVals','zVals','-v7.3'); 
+%-v7.3 allows for saving of large files
 end
