@@ -1,9 +1,9 @@
 function figurePlotting(filename, saveFigures)
 addpath(genpath(fileparts(mfilename('fullpath'))))
-filename1 = ['Ensemble_' filename];
-filename2 = ['Analysis_' filename];
+filename1 = ['Ensemble' filename];
+filename2 = ['Analysis' filename];
 load(filename1,'data','results')
-load(filename2,'allModels','binCenters','KMModelsEuclid','KMModelsMan',...
+load(filename2,'allModels','binCenters','allClusterSets',...
     'numElements','xVals','yVals');
 
 if saveFigures
@@ -27,8 +27,10 @@ bigPlot(binCenters,numElements,allModels,xVals,yVals,data,results,' ',...
 %% Figures 5 and 6
 disp('Cluster plotting...')
 
-bigPlot(binCenters,numElements,KMModelsEuclid,xVals,yVals,data,results,...
-    'K-means: Euclidean',saveFigures,folderName,'5');
-bigPlot(binCenters,numElements,KMModelsMan,xVals,yVals,data,results,...
-    'K-means: Manhattan',saveFigures,folderName,'6');
+for i = 1:length(allClusterSets)
+    
+bigPlot(binCenters,numElements,allClusterSets{i},xVals,yVals,data,results,...
+    'K-means: Euclidean',saveFigures,folderName,num2str(i+4));
+end
+
 end
