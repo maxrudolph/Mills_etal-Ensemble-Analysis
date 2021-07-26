@@ -14,7 +14,7 @@ rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds')
 slashpos = find(filename == '/',1,'last');
-filenameOut = filename(slashpos+9:end-4);
+filenameOut = filename(slashpos+9:end);
 
 
 %% Model space plots
