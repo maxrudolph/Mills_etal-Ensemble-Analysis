@@ -8,7 +8,7 @@ load(filename2,'allModels','binCenters','allClusterSets',...
 
 if saveFigures
     slashpos = find(filename == '/',1,'last');
-    ensembleName = filename(slashpos+10:end-9);
+    ensembleName = filename;
     folderName = ['figures_' ensembleName];
     mkdir(folderName);
 else
