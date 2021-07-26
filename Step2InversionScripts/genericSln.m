@@ -179,7 +179,6 @@ function. Get and set functions are at the end of the methods section.
         end
         
         % Delete a layer, NOT the top layer
-        %This concerns me and I should think more on it.
         function deleteLayer(obj)
             indx = randi([2,obj.numLayers]);
             obj.lDepths(indx:end) = [obj.lDepths(indx+1:end); NaN];%shift cells up
@@ -286,7 +285,7 @@ function. Get and set functions are at the end of the methods section.
         
         
         %%%%%%%%%%% SET IT %%%%%%%%%%%%
-        %for manually setting things from outside the object      
+        %can be used to manually set things from outside the object      
         
         function setMisfit(obj,residual)
             % input should be (vector) residual and Cdi.
@@ -301,7 +300,11 @@ function. Get and set functions are at the end of the methods section.
             %we set up the covariance matrix 
             obj.likeProb = exp(-0.5*obj.mahalDist)/...
                 ((sqrt(2*pi*obj.var))^obj.numMeasurements);
-            %Kolb Lekic 2014 eq 4
+            %Kolb Lekic 2014 eq 4. Note that this isn't the actual
+            %likelihood probability, we leave out the determinant of the
+            %covariance matrix which is effectively a constant
+            %Note that likeProb is not used in any calculations, it is just
+            %calculated for storage. 
         end
     end
 end

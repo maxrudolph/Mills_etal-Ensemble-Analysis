@@ -5,15 +5,14 @@ addpath(genpath(fileparts(mfilename('fullpath'))))
 parfor i = 1:length(types)
     for j = 1:length(noiseLevels)
 
-        filename = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/' 'Ensemble_',types{i},'_',noiseLevels{j},'_02-Jul-2021.mat']
+        filename = ['_',types{i},'_',noiseLevels{j},'_02-Jul-2021.mat']
 
-        ensembleAnalysisMaster(filename)
+        figurePlotting(filename,true)
         
     end
 end
 
-filename = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/'...
-    'Ensemble_1LayerA_0_PRIOR_02-Jul-2021.mat'];
-ensembleAnalysisMaster(filename);
+filename = ['_1LayerA_0_PRIOR_02-Jul-2021.mat'];
+figurePlotting(true);
 
 disp('All done');

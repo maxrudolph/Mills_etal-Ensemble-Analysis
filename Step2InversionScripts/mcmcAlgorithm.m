@@ -140,6 +140,8 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         kPrime = layersProposed.getNumLayers();
         probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
             log(sigma2Prime))) + log(k) - log(kPrime);
+        %Note that genericSln has a likeProb property, but it is preferable
+        %to do this this way since its not the 'true' likeProb
     end
     
     if ( isfinite(probAccept)&&( probAccept > log(rand)))

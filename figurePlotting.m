@@ -1,7 +1,7 @@
 function figurePlotting(filename, saveFigures)
 addpath(genpath(fileparts(mfilename('fullpath'))))
-filename1 = ['Ensemble' filename];
-filename2 = ['Analysis' filename];
+filename1 = ['/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/' 'Ensemble' filename];
+filename2 = ['/work/cdmills/Senior-Thesis-stuff/' 'Analysis' filename];
 load(filename1,'data','results')
 load(filename2,'allModels','binCenters','allClusterSets',...
     'numElements','xVals','yVals');
