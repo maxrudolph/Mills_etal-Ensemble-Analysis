@@ -17,6 +17,6 @@ parfor i = 1:length(types)
 end
 
 filename = ['_1LayerA_0_PRIOR_02-Jul-2021.mat'];
-figurePlotting(true);
+figurePlotting(filename,true);
 
 disp('All done');

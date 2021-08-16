@@ -22,8 +22,8 @@ filenameOut = filename(slashpos+9:end);
 %parameter space (y-axis depth, x-axis rho), as a sort of 3D histogram,
 %with any 'appraisals' laid on top.
 disp('Model space...')
-nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 1000; %number of resistivity bins in model space histogram
+nzplot = 400; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 400; %number of resistivity bins in model space histogram
 
 %Setup logDepthPlot and logRhoPlot
 numSavedRuns = size(results.ensembleRhos,2);
@@ -130,7 +130,7 @@ allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 
 %% Clustering
-maxNumClusters = 8;
+maxNumClusters = 3;
 %You don't have to pick how many clusters you want, the script will find
 %the 'best' number on its own, this is just the maximum you want that
 %number to be. Warning that runtime does not scale linearly with
