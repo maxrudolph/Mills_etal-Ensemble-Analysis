@@ -131,7 +131,7 @@ allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 
 %% Clustering
-maxNumClusters = 3;
+maxNumClusters = 5;
 %You don't have to pick how many clusters you want, the script will find
 %the 'best' number on its own, this is just the maximum you want that
 %number to be. Warning that runtime does not scale linearly with
