@@ -33,5 +33,14 @@ Outputs:
     elseif choice == '1LayerA'
         depths = [0]';
         rhos = [100]';
+    elseif choice == '8LayerA'
+        depths = [0,2,7,8,18,35,39,109]';
+        rhos = [48,51,923,6220,2,5,19,10]';
+    elseif choice == '8LayerB'
+        depths = [0,1.6,2.4,3.9,4.1,6.6,18.8,62.6]';
+        rhos = [16,3,14,1190,366,1604,117,9]';
+    elseif choice == '6LayerA'
+        depths = [0,2,8,35,83,202]';
+        rhos = [112,168,888,17,39,109]';
     end
 end

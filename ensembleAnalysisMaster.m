@@ -22,8 +22,8 @@ filenameOut = filename(slashpos+9:end);
 %parameter space (y-axis depth, x-axis rho), as a sort of 3D histogram,
 %with any 'appraisals' laid on top.
 disp('Model space...')
-nzplot = 400; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 400; %number of resistivity bins in model space histogram
+nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 1000; %number of resistivity bins in model space histogram
 
 %Setup logDepthPlot and logRhoPlot
 numSavedRuns = size(results.ensembleRhos,2);
@@ -123,8 +123,9 @@ maxLikelihood = genModelCalc(maxLikelihoodRho,zVals,data,...
 [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
 trueDepthsPlot = 10.^logDepthPlot(:,1);
 trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
-trueModel = genModelCalc(trueRhoPlot,trueDepthsPlot,data,trueColor,'-',...
-    'Exact solution',forwardModel);
+trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(trueDepths,...
+        trueRhos,data.lambda),data.y,trueColor,'-','Exact solution');
+
 
 allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};

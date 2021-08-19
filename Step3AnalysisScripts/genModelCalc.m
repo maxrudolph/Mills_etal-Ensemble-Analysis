@@ -14,6 +14,8 @@ color, lineStyle, and title are the specs for how this model will be
 plotted, they follow standard matlab conventions for the plotting
 parameters Color, LineStyle, and DisplayName.
     %}
+    inDepths(1) = 0; %It is assumed that the resistivity at the minimum depth
+    % is the same as the resistivity at the surface.
     [shortDepths,shortRhos] = shortForm(inDepths,inRhos);
     outModel = calculatedModel(inDepths,inRhos,forwardModel(shortDepths,...
         shortRhos,data.lambda),data.y,color,lineStyle,title);

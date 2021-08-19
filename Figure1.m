@@ -1,75 +1,33 @@
-figure1 = tiledlayout(3,3)
+clear
+filenames = {'3LayerA_0.02_02-Jul-2021.mat';
+    '3LayerA_0.05_02-Jul-2021.mat';
+    '3LayerA_0.1_02-Jul-2021.mat';
+    '3LayerA_0.2_02-Jul-2021.mat'};
+titles = {'0.02','0.05','0.1','0.2'};
+theAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+numEnsembles = length(filenames);
 
-filenames = {'Analysis_3LayerA_0.11_15-Jul-2021.mat';
-    'Analysis_1LayerA_0.05_02-Jul-2021.mat';
-    'Analysis_1LayerA_0_02-Jul-2021.mat'};
-load('Ensemble_3LayerA_0.11_15-Jul-2021.mat')
-xx = zeros(3,2);
+figure1 = tiledlayout(3,numEnsembles);
+figure1.TileSpacing = 'compact';
+figure1.Padding = 'compact';
+set(gcf,'color','white');
 
-for i = 1:3
+for i = 1:numEnsembles
     disp('round')
-    load(filenames{i});
-    nexttile
-    histogram(results.ensembleMisfits,100,'EdgeAlpha',0);
-    hold on;
-    yy=get(gca,'YLim');
-    xx(i,:) = get(gca,'XLim')
-    for iPlot = 2:size(allModels,2)
-    plot(allModels{iPlot}.misfit*[1 1],yy,'LineStyle',...
-        allModels{iPlot}.lineStyle,'Color',allModels{iPlot}.color,...
-        'LineWidth',1.0);
-    end
-    set(gca,'FontSize',10);
-    if i ==2
-        xlabel('Misfit (\Omega-m)');
-    end
-    if i ==1
-        ylabel('# of solutions')
-    end
-    
-    nexttile(i+3,[2 1]);
-    
-    xdata = 10.^binCenters{1};
-    mask = xdata >= min(allModels{1}.rhos)/100 & xdata <= max(allModels{1}.rhos)*100;
-    % xlim([min(allModels{1}.rhos)/100,max(allModels{1}.rhos)*100]);
-    xticks = 10.^(floor(log10(min(xdata))):2:ceil(log10(max(xdata))));
-    p = pcolor(xdata(mask),10.^binCenters{2},numElements(mask,:)'); shading flat;
-
-    colormap(flipud(bone))
-    set(gca,'XScale','log','YScale','log','ColorScale','log');
-    hold on
-for iPlot2 = 1:size(allModels,2)
-    plot(allModels{iPlot2}.rhos,allModels{iPlot2}.depths,'LineStyle',...
-        allModels{iPlot2}.lineStyle,'Color',allModels{iPlot2}.color,'DisplayName',...
-        allModels{iPlot2}.displayName,'LineWidth',1.0);
-end
-ylim = get(gca,'YLim');
-set(gca,'YLim',[ylim(1) ylim(2)]);
-if i==3
-    c=colorbar();
-    c.Label.String = 'Number of solutions';
-end
-set(get(get(p(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-%legend();
-set(gca,'YDir','reverse','FontSize',10,'Box','on','Layer','Top');
-k = find(sum(numElements')>0);
-
-ax = gca;
-ax.XTickMode = 'manual';
-ax.XTick = xticks;
-if i==2
-    xlabel('Resistivity (\Omega-m)');
-end
-if i ==1
-    ylabel('Depth (m)');
-end
-%lgd = legend('location','southeast');
-%lgd.FontSize = 7;
-%text(0.9,0.95,'C','units','normalized','FontSize',14)
-    
-end
-
-for i = 1:3
+    load(['Analysis_' filenames{i}]);
+    load(['Ensemble_' filenames{i}],'results','data','forwardModel');
     nexttile(i)
-    set(gca,'XLim',[min(xx(:,1)) max(xx(:,2)) ]);
+    misfitPanel(results,data,forwardModel,allClusterSets{1},theAlphabet(2*i-1),...
+        titles{i});
+    nexttile(i+numEnsembles,[2 1])
+    modelSpacePanel(binCenters,numElements,allClusterSets{1},theAlphabet(2*i));
 end
+
+
+nexttile(1)
+ylabel('Solutions');
+nexttile(numEnsembles+1);
+ylabel('Depth (m)');
+nexttile(numEnsembles*2)
+c=colorbar();
+c.Label.String = 'Relative normalized probability';
