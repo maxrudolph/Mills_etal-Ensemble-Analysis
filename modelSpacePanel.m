@@ -20,6 +20,6 @@ set(gca,'YDir','reverse','FontSize',10,'Box','on','Layer','Top');
 ax = gca;
 xticks(10.^(floor(log10(min(xdata))):2:ceil(log10(max(xdata)))));
 xlabel('Resistivity (\Omega-m)');
-text(0.05,0.95,letter,'units','normalized','FontSize',14);
+text(0.95,0.95,letter,'units','normalized','FontSize',14);
 
 end

@@ -34,10 +34,18 @@ logDepthPlot = log10(repmat(zVals,1,numSavedRuns));
 logRhoPlot = zeros(length(zVals),numSavedRuns);
 % will contain the (log) depths resistivities
 %of every ensemble member, formatted to all be uniform.
+residuals = zeros(length(data.x),numSavedRuns);
+ewre2n = zeros(1,length(results.ensembleMisfits));
+Cdi = inv(data.Cd);
+denominator = sqrt(data.y'*Cdi*data.y);
 for i = 1:numSavedRuns %for each sln...
     logRhoPlot(:,i) = log10(longForm(zVals,results.ensembleDepths(:,i),...
         results.ensembleRhos(:,i)));
+    residuals(:,i) = data.y - forwardModel(results.ensembleDepths(:,i),...
+        results.ensembleRhos(:,i),data.lambda);
+    ewre2n(i) = sqrt(residuals(:,i)'*Cdi*residuals(:,i))/denominator;
 end
+
 
 %Compute a bivariate histogram of depths/resitvity values which will
 %represent the posterior distribution in model space. This will be used not
@@ -95,7 +103,7 @@ mMedian = genModelCalc(msMedianRhos,zVals,data,medianColor,msLineStyle,...
     'MS Median',forwardModel);
 
 % Data space median and best fit models
-[~,ind2] = sort(results.ensembleMisfits); %sort all slns by misfit
+[~,ind2] = sort(ewre2n); %sort all slns by misfit
 medianIndex= ind2(floor(length(ind2)/2)); %the one with median misfit
 bestIndex = ind2(1);                      %the one with lowest misfit
 %Find their corresponding slns in the ensemble
@@ -156,6 +164,6 @@ disp('Saving...')
 
 save(['Analysis' filenameOut],'allModels','binCenters','allClusterSets','logRhoPlot',...
     'allPartitions','numElements','nRhoBins','nzplot','xVals','yVals',...
-    'zVals','-v7.3'); 
+    'zVals','residuals','ewre2n','-v7.3'); 
 %-v7.3 allows for saving of large files
 end

@@ -13,6 +13,8 @@ classdef calculatedModel < handle
         %%%%%% Data properties %%%%%%%
         y;          %array of data-space output values
         misfit;     %real number: data-space misfit
+        residual;   %
+        wre2n;      %weighted relative error in the 2 norm
         %%%%%% Plotting properties %%%%%
         color;      %RGB triplet or char or hexadecimal or string
         lineStyle;  %char using standard matlab conventions
@@ -55,6 +57,12 @@ classdef calculatedModel < handle
         function setMisfit(obj,dataY)
             %see setY fxn
             obj.misfit = norm(obj.y - dataY);
+        end
+        
+        function setWRE2N(obj,data)
+            obj.residual = obj.y - data.y;
+            obj.wre2n = sqrt(obj.residual'*inv(data.Cd)*obj.residual)/...
+                sqrt(data.y'*inv(data.Cd)*data.y);
         end
     end
 end

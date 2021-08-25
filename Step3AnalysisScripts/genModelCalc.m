@@ -19,4 +19,5 @@ parameters Color, LineStyle, and DisplayName.
     [shortDepths,shortRhos] = shortForm(inDepths,inRhos);
     outModel = calculatedModel(inDepths,inRhos,forwardModel(shortDepths,...
         shortRhos,data.lambda),data.y,color,lineStyle,title);
+    outModel.setWRE2N(data);
 end
