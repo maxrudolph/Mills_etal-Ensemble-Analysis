@@ -133,6 +133,7 @@ trueDepthsPlot = 10.^logDepthPlot(:,1);
 trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
 trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(trueDepths,...
         trueRhos,data.lambda),data.y,trueColor,'-','Exact solution');
+trueModel.setWRE2N(data);
 
 
 allModels = ...

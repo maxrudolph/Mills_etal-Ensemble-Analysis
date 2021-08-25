@@ -19,6 +19,7 @@ classdef calculatedModel < handle
         color;      %RGB triplet or char or hexadecimal or string
         lineStyle;  %char using standard matlab conventions
         displayName;%Title/name of the model as it'll appear in fig legends
+        lineWidth;  %Defaults to 1.0, change it after if you want
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -40,6 +41,7 @@ classdef calculatedModel < handle
             obj.color = colorChoice;
             obj.displayName = title;
             obj.lineStyle = lineStyle;
+            obj.lineWidth = 1.0;
         end
         
 %%%%%%%%%%%%%%% Set functions %%%%%%%%%%%%%%%%%%%%%

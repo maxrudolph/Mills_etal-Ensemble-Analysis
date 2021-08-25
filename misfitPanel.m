@@ -1,4 +1,5 @@
-function outValues = misfitPanel(ewre2n,results,data,forwardModel,allModels,letter,noiseLevel)
+function outValues = misfitPanel(ewre2n,data,allModels,letter,noiseLevel)
+allModels{1}.setWRE2N(data);
 histogram(ewre2n,100,'EdgeAlpha',0);
 outValues = zeros(1,size(allModels,2)+1);
 hold on;

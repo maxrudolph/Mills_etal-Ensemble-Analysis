@@ -3,8 +3,8 @@ noiseLevels = {'0.1','0.05','0.02','0.2','0.01','0'};
 addpath(genpath(fileparts(mfilename('fullpath'))))
 
 
-parfor i = 1:length(types)
-    for j = 1:length(noiseLevels)
+for i = 1:length(types)
+    parfor j = 1:length(noiseLevels)
 
         filename = [...
             '/work/cdmills/Senior-Thesis-stuff/Ensembles_07022021/Ensemble_',...
