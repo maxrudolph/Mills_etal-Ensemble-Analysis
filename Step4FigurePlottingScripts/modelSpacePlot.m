@@ -1,4 +1,4 @@
-function modelSpacePlot(bC,nE,inModels)
+function h = modelSpacePlot(bC,nE,inModels)
 xdata = 10.^bC{1};
 mask = xdata >= min(inModels{1}.rhos)/100 & xdata <= max(inModels{1}.rhos)*100;
 % xlim([min(inModels{1}.rhos)/100,max(inModels{1}.rhos)*100]);
@@ -8,10 +8,12 @@ p = pcolor(xdata(mask),10.^bC{2},nE(mask,:)'); shading flat;
 colormap(flipud(bone))
 set(gca,'XScale','log','YScale','log','ColorScale','log');
 hold on
+h = [];
 for i = 1:size(inModels,2)
-    plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
+    h1 = plot(inModels{i}.rhos,inModels{i}.depths,'LineStyle',...
         inModels{i}.lineStyle,'Color',inModels{i}.color,'DisplayName',...
         inModels{i}.displayName,'LineWidth',1.0);
+    h(end+1) = h;
 end
 ylim = get(gca,'YLim');
 set(gca,'YLim',[ylim(1) ylim(2)]);
