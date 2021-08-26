@@ -17,8 +17,13 @@ outValues(end) = normalizer;
 set(gca,'FontSize',10);
 xlabel('Weighted relative error');
 text(0.9,0.9,char(64+panel_number),'units','normalized','FontSize',14);
+% bounds = get(gca,'XLim');
+% set(gca,'XLim',[bounds])
+set(gca,'XScale','log');
 bounds = get(gca,'XLim');
-set(gca,'XLim',[bounds])
-set(gca,'XScale','log')
+set(gca,'XLim',[min(bounds*0.95) max(bounds*1.05)]);
+% ticks = get(gca,'XTick');
+
+set(gca,'YTick',[]);
 end
 
