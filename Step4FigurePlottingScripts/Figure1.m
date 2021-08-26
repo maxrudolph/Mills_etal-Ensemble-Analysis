@@ -24,7 +24,7 @@ C = [0 0 0;
    colororder()     
     ]
 line_widths = {1.5,1.5,1.5,2,1.5,1.5};
-line_styles = {'-','--','--','-','-','-'};
+line_styles = {'-','--','--','--','-','-'};
 ind = [1,3,4,7,2,4];
 
 
@@ -49,7 +49,9 @@ for i = 1:numEnsembles
         lgd.FontSize = 7;
     end
 end
-
+nexttile(1); xticks([.01 .02 .03 .04]);
+nexttile(2); xticks([.05 .1 .2]);
+nexttile(3); xticks(0.1:0.1:0.4);
 
 nexttile(1)
 ylabel('Probability');
