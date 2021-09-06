@@ -2,12 +2,12 @@ clear;
 close all;
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
-    '3LayerA_0.01_02-Jul-2021.mat';
+    %'3LayerA_0.01_02-Jul-2021.mat';
     '3LayerA_0.02_02-Jul-2021.mat';
     '3LayerA_0.05_02-Jul-2021.mat';
-    '3LayerA_0.1_02-Jul-2021.mat';
-    '3LayerA_0.2_02-Jul-2021.mat'};
-titles = {'0.01','0.02','0.05','0.1', '0.2'};
+    '3LayerA_0.1_02-Jul-2021.mat'};
+    %'3LayerA_0.2_02-Jul-2021.mat'};
+titles = {'0.02','0.05','0.1',};
 numEnsembles = length(filenames);
 
 t = tiledlayout(3,numEnsembles);
@@ -22,23 +22,24 @@ load(['Ensemble_' filenames{1}],'results')
 % 'Exact solution', 'MS Mean','MS Median','MS Max Likelihood'.'DS Best Fit','DS Median'
 C = [0 0 0;
    colororder()     
-    ]
+    ];
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
 line_styles = {'-','-','--','-','--','-'};
 ind = [1,2,2,4,4,2,3,4];
-%displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','k-medians centroid 2',' ',' ',' '};
+displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','k-medians centroid 2',' ',' ',' '};
 
 h=[];
 for i = 1:numEnsembles    
     load(['Analysis_' filenames{i}]);
     load(['Ensemble_' filenames{i}],'results','data','forwardModel');
+    allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
         allModels{j}.lineStyle = line_styles{j};
-   %     if j>1
-  %          allModels{j}.displayName = displayNames{j-1};
-    %    end
+        if j>1
+            allModels{j}.displayName = displayNames{j-1};
+        end
     end
     titles{i}
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
@@ -65,11 +66,11 @@ nexttile(numEnsembles*2)
 c=colorbar();
 c.Label.String = 'Probability (normalized)';
 
-%{
+
 %% Save the figure
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'test.eps');
 set(gcf,'Renderer','opengl');
-%}
+
 set(gcf,'Visible','on');

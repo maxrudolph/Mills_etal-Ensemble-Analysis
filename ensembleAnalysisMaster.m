@@ -151,7 +151,6 @@ euclidPartition = clusterMSpace(logRhoPlot,maxNumClusters,'sqeuclidean');
 disp('Clustering Manhattan...')
 manPartition = clusterMSpace(logRhoPlot,maxNumClusters,'cityblock');
 
-
 disp('Calculating Clustering Models...')
 KMModelsEuclid = setUpClusterCell(trueModel,euclidPartition,zVals,...
     data,forwardModel);
