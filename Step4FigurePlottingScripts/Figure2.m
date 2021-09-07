@@ -33,6 +33,23 @@ for i = 1:numEnsembles
     load(['Analysis_' filenames{i}]);
     load(['Ensemble_' filenames{i}],'results','data','forwardModel');
     allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
+    switch i
+        case 1
+            dummy = allModels{2};
+            allModels{2} = allModels{3};
+            allModels{3} = dummy;
+        case 2
+            dummy = allModels{4};
+            allModels{4} = allModels{5};
+            allModels{5} = dummy;
+            dummy = allModels{2};
+            allModels{2} = allModels{3};
+            allModels{3} = dummy;
+        case 3
+            dummy = allModels{4};
+            allModels{4} = allModels{5};
+            allModels{5} = dummy;
+    end
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
