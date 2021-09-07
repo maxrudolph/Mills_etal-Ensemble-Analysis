@@ -16,7 +16,7 @@ t.Padding = 'compact';
 figure1 = gcf();
 figure1.Position(3:4) = [660 400];
 set(gcf,'color','white');
-load(['Ensembles_07022021/Ensemble_' filenames{1}],'results')
+load(['Ensemble_' filenames{1}],'results')
 
 % Assumes the following order of plots:
 % 'Exact solution', 'MS Mean','MS Median','MS Max Likelihood'.'DS Best Fit','DS Median'
@@ -26,12 +26,12 @@ C = [0 0 0;
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
 line_styles = {'-','-','--','-','--','-'};
 ind = [1,2,2,4,4,2,3,4];
-displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','k-medians centroid 2',' ',' ',' '};
+displayNames = {'k-means centroid 1','k-means centroid 2','k-medians centroid 1','k-medians centroid 2',' ',' ',' '};
 
 h=[];
 for i = 1:numEnsembles    
     load(['Analysis_' filenames{i}]);
-    load(['Ensembles_07022021/Ensemble_' filenames{i}],...
+    load(['Ensemble_' filenames{i}],...
         'results','data','forwardModel');
     allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
     switch i
