@@ -16,7 +16,7 @@ t.Padding = 'compact';
 figure1 = gcf();
 figure1.Position(3:4) = [660 400];
 set(gcf,'color','white');
-load(['Ensemble_' filenames{1}],'results')
+load(['Ensembles_07022021/Ensemble_' filenames{1}],'results')
 
 % Assumes the following order of plots:
 % 'Exact solution', 'MS Mean','MS Median','MS Max Likelihood'.'DS Best Fit','DS Median'
@@ -31,7 +31,8 @@ displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1'
 h=[];
 for i = 1:numEnsembles    
     load(['Analysis_' filenames{i}]);
-    load(['Ensemble_' filenames{i}],'results','data','forwardModel');
+    load(['Ensembles_07022021/Ensemble_' filenames{i}],...
+        'results','data','forwardModel');
     allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
     switch i
         case 1
@@ -87,7 +88,7 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
-exportgraphics(t,'test.eps');
+exportgraphics(t,'Figure2.eps');
 set(gcf,'Renderer','opengl');
 
 set(gcf,'Visible','on');
