@@ -11,7 +11,7 @@ filenames = {
 titles = {'0.01','0.02','0.05','0.1', '0.2'};
 numEnsembles = length(filenames);
 
-t = tiledlayout(3,numEnsembles);
+t = tiledlayout(5,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
@@ -42,10 +42,16 @@ for i = 1:numEnsembles
     %    end
     end
     titles{i}
-    importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
+    importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,[],...
         2*i-1,titles{i},line_widths)
-    nexttile(i+numEnsembles,[2 1])
-    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
+    nexttile(i+numEnsembles)
+    histogram(results.ensembleNumLayers,'BinEdges',0.5:10.5,'FaceColor',0.65*[1 1 1]);
+    set(gca,'YTick',[]);
+    text(0.90,0.95,char(64+2*i),'units','normalized','FontSize',14);
+    set(gca,'XTick',1:10);
+    nexttile(i+2*numEnsembles,[2 1])
+    modelSpacePanel(binCenters,numElements,[],3*i,line_widths);
+    set(gca,'ColorScale','linear');
 %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 1

@@ -1,7 +1,11 @@
 function h = modelSpacePanel(binCenters,numElements,allModels,panel_number,line_widths)
 
 xdata = 10.^binCenters{1};
-mask = xdata >= min(allModels{1}.rhos)/100 & xdata <= max(allModels{1}.rhos)*100;
+if ~isempty(allModels)
+    mask = xdata >= min(allModels{1}.rhos)/100 & xdata <= max(allModels{1}.rhos)*100;
+else
+    mask = xdata >= 5e-1 & xdata <= 5e4;
+end
 % Pseudocolor plot of model-space probability density
 p = pcolor(xdata(mask),10.^binCenters{2},((1/max(max(numElements)))*(numElements(mask,:)')));
 shading flat;
