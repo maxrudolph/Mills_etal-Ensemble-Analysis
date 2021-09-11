@@ -5,22 +5,23 @@ parpool(12);
 
 %function saveEnsemblesLoop
 noiseLevels = [0,0.01,0.02,0.05,0.1,0.2];
-% noiseLevels = repmat(noiseLevels,1,3)';
 % subStructs = {'1LayerA','3LayerA','4LayerA'};
-% subStructs = repmat(subStructs,6,1);
-% subStructs = vertcat(subStructs{:,1},subStructs{:,2},subStructs{:,3});
 subStructs = {'3LayerA'};
-subStructs = repmat(subStructs,6,1);
+nstruct = length(subStructs);
+nnoise = length(noiseLevels);
+noiseLevels = repmat(noiseLevels,1,nstruct)';
+subStructs = repmat(subStructs,nnoise,1);
+% subStructs = vertcat(subStructs{:,1},subStructs{:,2},subStructs{:,3});
+subStructs = {subStructs{:}}';
 
 %Create data files
 tic
-parfor i = 1:length(noiseLevels)+1
-    if i>length(noiseLevels)
-        a = createSyntheticData(0,'subStructChoice',...
-            subStructs((i-length(noiseLevels))*length(subStructs)/3,:))
+for i = 1:length(noiseLevels)+1
+    if i>length(noiseLevels) %sample the prior for one subStruct
+        a = createSyntheticData(0,'subStructChoice','3LayerA');
         b = inversion(a,'priorOn',true);
-    else %do the priors for each subStruct
-        a = createSyntheticData(noiseLevels(i),'subStructChoice',subStructs(i,:));
+    else 
+        a = createSyntheticData(noiseLevels(i),'subStructChoice',subStructs{i});
         b = inversion(a);
     end
 end
