@@ -12,7 +12,7 @@ for i = 1:maxNum
     fprintf('Calculating for %d clusters\n',i)
     index = j:(j+i-1);
     [idxs(:,i),cents(index,:),sumds(index)] = kmeans(lRPlot',i,...
-        'Options',options,'Replicates',5,'MaxIter',1000,'Distance',distMetric);
+        'Options',options,'Replicates',10,'MaxIter',10000,'Distance',distMetric);
     j = j+i;
 end
 
