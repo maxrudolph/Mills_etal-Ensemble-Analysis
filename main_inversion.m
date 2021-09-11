@@ -16,7 +16,7 @@ subStructs = {subStructs{:}}';
 
 %Create data files
 tic
-for i = 1:length(noiseLevels)+1
+parfor i = 1:length(noiseLevels)+1
     if i>length(noiseLevels) %sample the prior for one subStruct
         a = createSyntheticData(0,'subStructChoice','3LayerA');
         b = inversion(a,'priorOn',true);
