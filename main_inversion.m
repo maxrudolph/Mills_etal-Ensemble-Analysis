@@ -1,11 +1,16 @@
+clear;
+close all;
+delete(gcp('nocreate'));
+parpool(12);
+
 %function saveEnsemblesLoop
 noiseLevels = [0,0.01,0.02,0.05,0.1,0.2];
-noiseLevels = repmat(noiseLevels,1,3)';
-subStructs = {'1LayerA','3LayerA','4LayerA'};
+% noiseLevels = repmat(noiseLevels,1,3)';
+% subStructs = {'1LayerA','3LayerA','4LayerA'};
+% subStructs = repmat(subStructs,6,1);
+% subStructs = vertcat(subStructs{:,1},subStructs{:,2},subStructs{:,3});
+subStructs = {'3LayerA'};
 subStructs = repmat(subStructs,6,1);
-subStructs = vertcat(subStructs{:,1},subStructs{:,2},subStructs{:,3});
-
-
 
 %Create data files
 tic
