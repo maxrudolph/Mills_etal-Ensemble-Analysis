@@ -68,7 +68,8 @@ Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data
 layersProposed = genericSln(pBounds,numMeasurements,Cdi);
 layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
-residual = data.y - model(depths,rhos,lambda);
+accepted_Gm = model(depths,rhos,lambda);
+residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
 
@@ -80,6 +81,7 @@ results.ensembleRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
 results.ensembleVars = zeros(1,numSavedRuns);
 results.ensembleMisfits = zeros(1,numSavedRuns);
 results.ensembleNumLayers = zeros(1,numSavedRuns);
+results.ensembleGm = zeros(length(accepted_Gm),numSavedRuns);
 
 results.allChoices = zeros(totalSteps,1);
 results.allLikelihoods=zeros(totalSteps,1);
@@ -120,7 +122,8 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
             layersProposed.perturbVar();
     end
     [depths,rhos] = layersProposed.getSolution();
-    residual = data.y - model(depths,rhos,lambda);
+    proposed_Gm = model(depths,rhos,lambda); % This is the forward model
+    residual = data.y - proposedGm;
     layersProposed.setMisfit(residual);
     %Step 4: Run proposed sln through forward model to get misfit
     
@@ -146,7 +149,8 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     
     if ( isfinite(probAccept)&&( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
-        acceptProposedSln(layersAccepted,layersProposed)
+        acceptProposedSln(layersAccepted,layersProposed);
+        accepted_Gm = proposed_Gm;
         %Proposed sln becomes new accepted sln
     end
     
@@ -162,6 +166,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
             disp(['Saving begun']);
         end
         %Store properties for ensemble
+        results.ensembleG(:,saveStep) = accepted_Gm;
         [results.ensembleDepths(:,saveStep),...
             results.ensembleRhos(:,saveStep)] = layersAccepted.getSolution();
         results.ensembleVars(saveStep) = layersAccepted.getVar();
