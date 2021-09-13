@@ -31,9 +31,8 @@ C = [0 0 0;
     colororder()
     ]
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
-line_styles = {'-','-','--','-','--','-'};
+line_styles = {'-','--','--','--','-','-'};
 ind = [1,3,4,7,2,4];
-%displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','k-medians centroid 2',' ',' ',' '};
 
 h=[];
 for i = 1:numEnsembles
