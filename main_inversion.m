@@ -1,7 +1,7 @@
 clear;
 close all;
-delete(gcp('nocreate'));
-parpool(12);
+% delete(gcp('nocreate'));
+% parpool(4);
 
 %function saveEnsemblesLoop
 noiseLevels = [0,0.01,0.02,0.05,0.1,0.2];
@@ -16,7 +16,7 @@ subStructs = {subStructs{:}}';
 
 %Create data files
 tic
-parfor i = 1:length(noiseLevels)
+for i = 1:length(noiseLevels)
     if i>length(noiseLevels) %sample the prior for one subStruct
         a = createSyntheticData(0,'subStructChoice','3LayerA');
         b = inversion(a,'priorOn',true);

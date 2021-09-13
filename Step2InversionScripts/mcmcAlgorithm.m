@@ -1,4 +1,4 @@
-% function results = mcmcAlgorithm(data,model,options,pBounds)
+function results = mcmcAlgorithm(data,model,options,pBounds)
 %{
 6/21/21
 Performs an inversion by Markov-Chain Monte Carlo and generates a solution
@@ -68,7 +68,7 @@ Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data
 layersProposed = genericSln(pBounds,numMeasurements,Cdi);
 layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
-accepted_Gm = model(depths,rhos,lambda);
+acceptedGm = model(depths,rhos,lambda);
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
@@ -81,7 +81,7 @@ results.ensembleRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
 results.ensembleVars = zeros(1,numSavedRuns);
 results.ensembleMisfits = zeros(1,numSavedRuns);
 results.ensembleNumLayers = zeros(1,numSavedRuns);
-results.ensembleGm = zeros(length(accepted_Gm),numSavedRuns);
+results.ensembleGm = zeros(length(acceptedGm),numSavedRuns);
 
 results.allChoices = zeros(totalSteps,1);
 results.allLikelihoods=zeros(totalSteps,1);
@@ -122,7 +122,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
             layersProposed.perturbVar();
     end
     [depths,rhos] = layersProposed.getSolution();
-    proposed_Gm = model(depths,rhos,lambda); % This is the forward model
+    proposedGm = model(depths,rhos,lambda); % This is the forward model
     residual = data.y - proposedGm;
     layersProposed.setMisfit(residual);
     %Step 4: Run proposed sln through forward model to get misfit
@@ -150,7 +150,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     if ( isfinite(probAccept)&&( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
         acceptProposedSln(layersAccepted,layersProposed);
-        accepted_Gm = proposed_Gm;
+        acceptedGm = proposedGm;
         %Proposed sln becomes new accepted sln
     end
     
@@ -166,7 +166,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
             disp(['Saving begun']);
         end
         %Store properties for ensemble
-        results.ensembleG(:,saveStep) = accepted_Gm;
+        results.ensembleG(:,saveStep) = acceptedGm;
         [results.ensembleDepths(:,saveStep),...
             results.ensembleRhos(:,saveStep)] = layersAccepted.getSolution();
         results.ensembleVars(saveStep) = layersAccepted.getVar();
@@ -183,6 +183,7 @@ end
 %% Wrap up
 %save results to solution structure
 results.ensembleNumLayers = sum(~isnan(results.ensembleDepths),1);
+
 %% Functions
     function resetProposedSln(accepted,proposed)
         proposed.recieveSln(accepted.sendSln());
