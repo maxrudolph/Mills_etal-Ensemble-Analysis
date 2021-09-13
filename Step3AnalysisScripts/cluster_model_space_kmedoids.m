@@ -1,4 +1,4 @@
-function outputPartition = clusterMSpace(lRPlot,maxNum,distMetric)
+function outputPartition = cluster_model_space_kmedoids(lRPlot,maxNum,distMetric)
 % Compute cluster analysis in model space.
 % lRPlot is the logarithm of resistivity and has dimensions:
 %      (number of depths) x (number of solutions).
@@ -14,7 +14,7 @@ j = 1;
 for i = 1:maxNum
     fprintf('Calculating for %d clusters\n',i)
     index = j:(j+i-1);
-    [idxs(:,i),cents(index,:),sumds(index)] = kmeans(lRPlot',i,...
+    [idxs(:,i),cents(index,:),sumds(index)] = kmedoids(lRPlot',i,...
         'Options',options,'Replicates',10,'MaxIter',10000,'Distance',distMetric);
     j = j+i;
 end

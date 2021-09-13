@@ -23,10 +23,11 @@ load(['Ensemble_' filenames{1}],'results')
 C = [0 0 0;
    colororder()     
     ];
-line_widths = {1.5,1.5,1.5,1.5,1.5,1.5,1,1,1,1,1,1};
-line_styles = {'-','-','-','-','--','--','--','--','--','--','--','-','-','-'};
-ind = [1,2,3,4,5,6,7,8,1,2,3,4,2,3,4,2,2,2,2,2,2,2,2];
-displayNames = {'k-means centroid 1','k-means centroid 2','k-medians centroid 1','k-medians centroid 2',' ',' ',' ','',',',',',',',',',',',','};
+
+line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
+line_styles = {'-','-','--','-','--','-'};
+ind = [1,2,2,4,4,2,3,4];
+displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','K-medians centroid 2',' ',' ',' '};
 
 h=[];
 for i = 1:numEnsembles    

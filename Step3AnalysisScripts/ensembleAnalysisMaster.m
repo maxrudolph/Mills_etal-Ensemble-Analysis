@@ -14,8 +14,12 @@ rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds')
 slashpos = find(filename == '/',1,'last');
-filenameOut = filename(slashpos+9:end);
+if isempty(slashpos)
+    slashpos=1;
+end
 
+filenameOut = filename(slashpos+9:end);
+disp(['output will be saved to: ' filenameOut]);
 
 %% Model space plots
 %The 'model space' plots should show the posterior distribution in 
@@ -150,14 +154,24 @@ euclidPartition = clusterMSpace(logRhoPlot,maxNumClusters,'sqeuclidean');
 disp('Clustering Manhattan...')
 manPartition = clusterMSpace(logRhoPlot,maxNumClusters,'cityblock');
 
-disp('Calculating Clustering Models...')
 KMModelsEuclid = setUpClusterCell(trueModel,euclidPartition,zVals,...
     data,forwardModel);
 KMModelsMan = setUpClusterCell(trueModel,manPartition,zVals,...
     data,forwardModel);
 
-allClusterSets = {KMModelsEuclid, KMModelsMan,};
-allPartitions = {euclidPartition, manPartition};
+disp('k-Medoids Euclidean');
+kMedoidsEuclideanPartition = cluster_model_space_kmedoids(logRhoPlot,maxNumClusters,'sqeuclidean');
+disp('k-Medoids Manhattan');
+kMedoidsManhattanPartition = cluster_model_space_kmedoids(logRhoPlot,maxNumClusters,'cityblock');
+
+disp('Calculating Clustering Models...')
+KMedoidsEuclid    = setUpClusterCell(trueModel,kMedoidsEuclideanPartition,zVals,...
+    data,forwardModel);
+KMedoidsManhattan = setUpClusterCell(trueModel,kMedoidsManhattanPartition,zVals,...
+    data,forwardModel);
+
+allClusterSets = {KMModelsEuclid, KMModelsMan, KMedoidsEuclid, KMedoidsManhattan};
+allPartitions = {euclidPartition, manPartition, kMedoidsEuclideanPartition, kMedoidsManhattanPartition};
 %% Saving
 disp('Saving...')
 

@@ -35,7 +35,7 @@ parse(p,varargin{:});
 
 %% 1 User Set Options Here:
 
-filterSize = 7;
+filterSize = 11;
 %Choice of filter size for the forward model. Choices are 7,11,19. Based on
 %Guptasarma 1982. This effects both which script is used for the forward
 %model as well as the size of the lambda matrices, so it is an accuracy vs.
@@ -65,6 +65,7 @@ end %anything else is an invalid choice
 [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
 data.lambda = makeLambda(data.x,filterSize); %lambda matrix for calculateRho1D
 data.fx = forwardModel(trueDepths,trueRhos,data.lambda); %'true' output
+rng(1); %re-seed random number generator for consistent noise pattern.
 noiseVector = data.noiseCoef.*data.fx.*randn(length(data.fx),1);
 %noise is added, Gaussian with mean 0 and std dev = noiseCoef*f(x)
 data.y =  data.fx+noiseVector; %measurements with noise

@@ -1,6 +1,9 @@
 function outValues = misfitPanel(ewre2n,results,data,forwardModel,allModels,panel_number,noiseLevel,line_widths)
 histogram(ewre2n,100,'EdgeAlpha',0,'FaceColor',0.65*[1 1 1]);
-allModels{1}.setWRE2N(data);
+if ~isempty(allModels)
+    allModels{1}.setWRE2N(data);
+end
+
 outValues = zeros(1,size(allModels,2)+1);
 hold on;
 title(['\epsilon_n = ', noiseLevel])
