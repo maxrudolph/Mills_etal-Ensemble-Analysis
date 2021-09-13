@@ -135,7 +135,6 @@ trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(trueDepths,.
         trueRhos,data.lambda),data.y,trueColor,'-','Exact solution');
 trueModel.setWRE2N(data);
 
-
 allModels = ...
     {trueModel,mMean,mMedian,maxLikelihood,bestFit,dMedian};
 

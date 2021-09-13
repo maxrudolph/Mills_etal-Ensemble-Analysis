@@ -1,4 +1,4 @@
-function results = mcmcAlgorithm(data,model,options,pBounds)
+% function results = mcmcAlgorithm(data,model,options,pBounds)
 %{
 6/21/21
 Performs an inversion by Markov-Chain Monte Carlo and generates a solution
