@@ -2,7 +2,7 @@ function KMModels = setUpClusterCell(trueModel,partition,zVals,data,forwardModel
 
 
 C = [0 0 0;
-   colororder()     
+    colororder()
     ];
 KMModels = cell(1,partition.numClusters+1);
 KMModels{1} = trueModel;

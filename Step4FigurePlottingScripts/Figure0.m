@@ -4,15 +4,17 @@ addpath Step3AnalysisScripts
 addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
 
-file_prefix = './';
+file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09102021/';
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
-    '3LayerA_0.01_02-Jul-2021.mat';
-    '3LayerA_0.02_02-Jul-2021.mat';
-    '3LayerA_0.05_02-Jul-2021.mat';
-    '3LayerA_0.1_02-Jul-2021.mat';
-    '3LayerA_0.2_02-Jul-2021.mat'};
-titles = {'0.01','0.02','0.05','0.1', '0.2'};
+%     '3LayerA_0.05.mat';
+     '3LayerA_0.02.mat';
+     '3LayerA_0.05.mat';
+     '3LayerA_0.1.mat';
+%     '3LayerA_0.2_02-Jul-2021.mat'
+};
+titles = {'0.02','0.05','0.2'};
+% titles={'0.05'};
 numEnsembles = length(filenames);
 
 t = tiledlayout(5,numEnsembles);
@@ -30,13 +32,13 @@ C = [0 0 0;
     ]
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
 line_styles = {'-','-','--','-','--','-'};
-ind = [1,2,2,4,4,2,3,4];
+ind = [1,3,4,7,2,4];
 %displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','k-medians centroid 2',' ',' ',' '};
 
 h=[];
 for i = 1:numEnsembles
     figure(figure1);
-    load([file_prefix 'Analysis_' filenames{i}]);
+    load([file_prefix 'AnalysisAnalysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above

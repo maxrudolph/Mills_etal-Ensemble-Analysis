@@ -150,14 +150,24 @@ euclidPartition = clusterMSpace(logRhoPlot,maxNumClusters,'sqeuclidean');
 disp('Clustering Manhattan...')
 manPartition = clusterMSpace(logRhoPlot,maxNumClusters,'cityblock');
 
-disp('Calculating Clustering Models...')
 KMModelsEuclid = setUpClusterCell(trueModel,euclidPartition,zVals,...
     data,forwardModel);
 KMModelsMan = setUpClusterCell(trueModel,manPartition,zVals,...
     data,forwardModel);
 
-allClusterSets = {KMModelsEuclid, KMModelsMan,};
-allPartitions = {euclidPartition, manPartition};
+disp('k-Medoids Euclidean');
+kMedoidsEuclideanPartition = cluster_model_space_kmedoids(logRhoPlot,maxNumClusters,'sqeuclidean');
+disp('k-Medoids Manhattan');
+kMedoidsManhattanPartition = cluster_model_space_kmedoids(logRhoPlot,maxNumClusters,'cityblock');
+
+disp('Calculating Clustering Models...')
+KMedoidsEuclid    = setUpClusterCell(trueModel,kMedoidsEuclideanPartition,zVals,...
+    data,forwardModel);
+KMedoidsManhattan = setUpClusterCell(trueModel,kMedoidsManhattanPartition,zVals,...
+    data,forwardModel);
+
+allClusterSets = {KMModelsEuclid, KMModelsMan, KMedoidsEuclid, KMedoidsManhattan};
+allPartitions = {euclidPartition, manPartition, kMedoidsEuclideanPartition, kMedoidsManhattanPartition};
 %% Saving
 disp('Saving...')
 
