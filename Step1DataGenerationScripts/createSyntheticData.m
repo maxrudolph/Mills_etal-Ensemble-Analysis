@@ -35,7 +35,7 @@ parse(p,varargin{:});
 
 %% 1 User Set Options Here:
 
-filterSize = 7;
+filterSize = 11;
 %Choice of filter size for the forward model. Choices are 7,11,19. Based on
 %Guptasarma 1982. This effects both which script is used for the forward
 %model as well as the size of the lambda matrices, so it is an accuracy vs.

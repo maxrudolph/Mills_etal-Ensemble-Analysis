@@ -14,8 +14,12 @@ rng(1); %reproducibility
 disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds')
 slashpos = find(filename == '/',1,'last');
-filenameOut = filename(slashpos+9:end);
+if isempty(slashpos)
+    slashpos=1;
+end
 
+filenameOut = filename(slashpos+9:end);
+disp(['output will be saved to: ' filenameOut]);
 
 %% Model space plots
 %The 'model space' plots should show the posterior distribution in 
