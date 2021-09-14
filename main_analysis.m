@@ -11,6 +11,6 @@ ensemble_files = {
 };
 
 delete(gcp('nocreate'));
-parfor i=1:length(ensemble_files)
+for i=1:length(ensemble_files)
   ensembleAnalysisMaster( ensemble_files{i} );  
 end
