@@ -10,7 +10,7 @@ ensemble_files = {
 'Ensemble_3LayerA_0.mat'
 };
 
-parpool(12);
+delete(gcp('nocreate'));
 parfor i=1:length(ensemble_files)
   ensembleAnalysisMaster( ensemble_files{i} );  
 end
