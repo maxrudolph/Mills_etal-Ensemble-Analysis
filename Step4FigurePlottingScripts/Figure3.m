@@ -30,7 +30,7 @@ C = [0 0 0;
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
 line_styles = {'-','-','--','-','--','-'};
 ind = [1,2,2,4,4,2,3,4];
-displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','K-medians centroid 2',' ',' ',' '};
+displayNames = {'k-Medoids Euclidian 1','k-Medoids Euclidean 2','k-Medoids Manhattan 1','k-Medoids Manhattan 2',' ',' ',' '};
 
 h=[];
 for i = 1:numEnsembles    
@@ -42,7 +42,7 @@ for i = 1:numEnsembles
         [~,ind] = sort(clusterset_weighted_errors(2:end)); %sort weighted errors in 2nd position through end - 1st position is true solution, 2nd through end are clustering results.
         allClusterSets{j}(2:end) = allClusterSets{j}(ind+1);
     end
-    allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};   
+    allModels = {allClusterSets{3}{:},allClusterSets{4}{2:end}};
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
@@ -65,7 +65,7 @@ for i = 1:numEnsembles
     end
 end
 nexttile(1); xticks([.01 .02 .03 .04 .05 .1]);
-nexttile(2); xticks([.05 .1 .2]);
+nexttile(2); xticks([.05 0.07 .1 .2 .3]);
 nexttile(3); xticks(0.1:0.1:0.4);
 
 nexttile(1)
@@ -80,7 +80,7 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
-exportgraphics(t,'Figure2.eps');
+exportgraphics(t,'Figure3.eps');
 set(gcf,'Renderer','opengl');
 %}
 set(gcf,'Visible','on');

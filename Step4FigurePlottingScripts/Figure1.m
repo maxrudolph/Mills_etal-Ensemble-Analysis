@@ -1,17 +1,17 @@
 clear;
 close all;
 file_prefix = './Ensembles_07022021/';
-file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09102021/';
+file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 
 filenames = {
-    %'3LayerA_0_02-Jul-2021.mat';
     '3LayerA_0.02.mat';
-%     '3LayerA_0.02_02-Jul-2021.mat';
     '3LayerA_0.05.mat';
+    '3LayerA_0.1.mat';
+%   
 %     '3LayerA_0.1_02-Jul-2021.mat';
-     '3LayerA_0.1.mat'
+%      '3LayerA_0.1.mat'
 };
-titles = {'0.02','0.05','0.1'};%,'0.1', '0.2'};
+titles = {'0.02','0.05','0.1'};
 numEnsembles = length(filenames);
 
 t = tiledlayout(3,numEnsembles);
@@ -33,7 +33,7 @@ ind = [1,3,4,7,2,4];%,3,4];
 
 h=[];
 for i = 1:numEnsembles    
-    load([file_prefix 'AnalysisAnalysis_' filenames{i}]);
+    load([file_prefix 'Analysis' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
@@ -72,7 +72,7 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
-exportgraphics(t,'test.eps');
+exportgraphics(t,'Figure1.eps');
 set(gcf,'Renderer','opengl');
 %}
 set(gcf,'Visible','on');
