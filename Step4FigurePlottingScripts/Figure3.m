@@ -8,8 +8,8 @@ filenames = {
     '3LayerA_0.02.mat';
     '3LayerA_0.05.mat';
     '3LayerA_0.1.mat';
-%     '3LayerA_0.2_02-Jul-2021.mat'
-};
+    %     '3LayerA_0.2_02-Jul-2021.mat'
+    };
 titles = {'0.02','0.05','0.1','0.2','-'};
 numEnsembles = length(filenames);
 
@@ -24,7 +24,7 @@ set(gcf,'color','white');
 % Assumes the following order of plots:
 % 'Exact solution', 'MS Mean','MS Median','MS Max Likelihood'.'DS Best Fit','DS Median'
 C = [0 0 0;
-   colororder()     
+    colororder()
     ];
 
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
@@ -33,14 +33,14 @@ ind = [1,2,2,4,4,2,3,4];
 displayNames = {'k-Medoids Euclidian 1','k-Medoids Euclidean 2','k-Medoids Manhattan 1','k-Medoids Manhattan 2',' ',' ',' '};
 
 h=[];
-for i = 1:numEnsembles    
+for i = 1:numEnsembles
     load([file_prefix 'Analysis' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],...
         'results','data','forwardModel');
     for j=1:length(allClusterSets)
         clusterset_weighted_errors = cellfun( @(x) x.wre2n,allClusterSets{j} );
-        [~,ind] = sort(clusterset_weighted_errors(2:end)); %sort weighted errors in 2nd position through end - 1st position is true solution, 2nd through end are clustering results.
-        allClusterSets{j}(2:end) = allClusterSets{j}(ind+1);
+        [~,ind1] = sort(clusterset_weighted_errors(2:end)); %sort weighted errors in 2nd position through end - 1st position is true solution, 2nd through end are clustering results.
+        allClusterSets{j}(2:end) = allClusterSets{j}(ind1+1);
     end
     allModels = {allClusterSets{3}{:},allClusterSets{4}{2:end}};
     nexttile(i)
@@ -56,7 +56,7 @@ for i = 1:numEnsembles
         2*i-1,titles{i},line_widths)
     nexttile(i+numEnsembles,[2 1])
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
-%     colormap(crameri('lajolla'));
+    %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 2
         legend('location','southeast')
@@ -75,12 +75,13 @@ ylabel('Depth (m)');
 nexttile(numEnsembles*2)
 c=colorbar();
 c.Label.String = 'Probability (normalized)';
-%{
+
 
 %% Save the figure
+figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure3.eps');
 set(gcf,'Renderer','opengl');
-%}
+
 set(gcf,'Visible','on');

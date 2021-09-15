@@ -7,10 +7,10 @@ filenames = {
     '3LayerA_0.02.mat';
     '3LayerA_0.05.mat';
     '3LayerA_0.1.mat';
-%   
-%     '3LayerA_0.1_02-Jul-2021.mat';
-%      '3LayerA_0.1.mat'
-};
+    %
+    %     '3LayerA_0.1_02-Jul-2021.mat';
+    %      '3LayerA_0.1.mat'
+    };
 titles = {'0.02','0.05','0.1'};
 numEnsembles = length(filenames);
 
@@ -25,30 +25,30 @@ load([file_prefix 'Ensemble_' filenames{1}],'results')
 % Assumes the following order of plots:
 % 'Exact solution', 'MS Mean','MS Median','MS Max Likelihood'.'DS Best Fit','DS Median'
 C = [0 0 0;
-   colororder()     
+    colororder()
     ]
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
 line_styles = {'-','--','--','--','-','-'};
 ind = [1,3,4,7,2,4];%,3,4];
 
 h=[];
-for i = 1:numEnsembles    
+for i = 1:numEnsembles
     load([file_prefix 'Analysis' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
         allModels{j}.lineStyle = line_styles{j};
-   %     if j>1
-  %          allModels{j}.displayName = displayNames{j-1};
-    %    end
+        %     if j>1
+        %          allModels{j}.displayName = displayNames{j-1};
+        %    end
     end
     titles{i}
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
         2*i-1,titles{i},line_widths)
     nexttile(i+numEnsembles,[2 1])
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
-%     colormap(crameri('lajolla'));
+    %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 1
         legend('location','southeast')
@@ -68,11 +68,12 @@ nexttile(numEnsembles*2)
 c=colorbar();
 c.Label.String = 'Probability (normalized)';
 
-%{
+
 %% Save the figure
+figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure1.eps');
 set(gcf,'Renderer','opengl');
-%}
+
 set(gcf,'Visible','on');
