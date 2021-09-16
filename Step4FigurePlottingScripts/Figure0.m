@@ -50,7 +50,7 @@ for i = 1:numEnsembles
     figure(figure1);
     nexttile(numEnsembles+i)
     histogram(ewre2n,250,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
-    text(0.90,0.90,char(64+2*i),'units','normalized','FontSize',14);
+    text(0.90,0.90,char(64+5*(i-1)+2),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     hold on;
     plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
@@ -65,7 +65,7 @@ for i = 1:numEnsembles
     xvals = logspace(log10(data.x(1)),log10(data.x(end)),nxplot);
     lamplot = makeLambda(xvals,11);
     Gplot = zeros(nxplot,ntot);
-    %     hwb=waitbar(0);
+
     for j=1:size(results.ensembleG,2)
         if ~mod(j,10000)
             disp([num2str(j/ntot*100) ' percent done'])
@@ -73,7 +73,7 @@ for i = 1:numEnsembles
         nlayer = results.ensembleNumLayers(j);
         Gplot(:,j) = forwardModel(results.ensembleDepths(1:nlayer,j),results.ensembleRhos(1:nlayer,j),lamplot);
     end
-    %     close(hwb);
+    
     %% bin data-space values and create a histogram (first row)
     figure(figure1);
     nexttile(i)
@@ -96,7 +96,7 @@ for i = 1:numEnsembles
     set(gca,'XLim',[0.9 1100]);
     set(gca,'XTick',10.^[0 1 2 3]);
     xlabel('Spacing (m)');
-    text(0.90,0.90,char(64+1*i),'units','normalized','FontSize',14);
+    text(0.90,0.90,char(64+(i-1)*5+1),'units','normalized','FontSize',14);
     title(['\epsilon_n = ' titles{i}]);
 
     %
@@ -105,7 +105,7 @@ for i = 1:numEnsembles
     nexttile(i+2*numEnsembles)
     histogram(results.ensembleNumLayers,'BinEdges',0.5:10.5,'FaceColor',0.65*[1 1 1]);
     set(gca,'YTick',[]);
-    text(0.90,0.90,char(64+3*i),'units','normalized','FontSize',14);
+    text(0.90,0.90,char(64+5*(i-1)+3),'units','normalized','FontSize',14);
     set(gca,'XTick',1:10);
     hold on
     plot([3 3],get(gca,'Ylim'),'r');
@@ -118,7 +118,7 @@ for i = 1:numEnsembles
     histogram(results.ensembleVars,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
     plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
-    text(0.90,0.90,char(64+4*i),'units','normalized','FontSize',14);
+    text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     xlabel('Noise Hyperparameter')
     
@@ -169,9 +169,8 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 figure(figure1);
 disp('Saving...');
-set(gcf,'Visible','off');
-set(gcf,'Renderer','painters');
+set(figure1,'Visible','off');
+set(figure1,'Renderer','painters');
 exportgraphics(t,'Figure0.eps');
-set(gcf,'Renderer','opengl');
-
-set(gcf,'Visible','on');
+set(figure1,'Renderer','opengl');
+set(figure1,'Visible','on');
