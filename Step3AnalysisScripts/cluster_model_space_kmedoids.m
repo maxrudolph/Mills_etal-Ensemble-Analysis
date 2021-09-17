@@ -9,13 +9,13 @@ cents = zeros(sum(1:maxNum),size(lRPlot,1));
 sumds = zeros(sum(1:maxNum),1);
 
 stream = RandStream('mlfg6331_64');  % Random number stream
-options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
+options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream,'MaxIter',1000,'Display','iter');
 j = 1;
 for i = 1:maxNum
     fprintf('Calculating for %d clusters\n',i)
     index = j:(j+i-1);
     [idxs(:,i),cents(index,:),sumds(index)] = kmedoids(lRPlot',i,...
-        'Options',options,'Replicates',10,'MaxIter',10000,'Distance',distMetric);
+        'Options',options,'Replicates',10,'Distance',distMetric);
     j = j+i;
 end
 

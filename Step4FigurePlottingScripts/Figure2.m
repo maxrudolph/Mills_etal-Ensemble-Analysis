@@ -1,13 +1,16 @@
 clear;
 close all;
+
+file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
     %'3LayerA_0.01_02-Jul-2021.mat';
-    %'3LayerA_0.02_02-Jul-2021.mat';
-    %'3LayerA_0.05_02-Jul-2021.mat';
-    '3LayerA_0.1_02-Jul-2021.mat';
-    '3LayerA_0.2_02-Jul-2021.mat'};
-titles = {'0.01','0.02','0.05','0.1','0.2','-'};
+    '3LayerA_0.02.mat';
+    '3LayerA_0.05.mat';
+    '3LayerA_0.1.mat';
+    %     '3LayerA_0.2_02-Jul-2021.mat'
+    };
+titles = {'0.02','0.05','0.1','0.2','-'};
 numEnsembles = length(filenames);
 
 t = tiledlayout(3,numEnsembles);
@@ -16,24 +19,29 @@ t.Padding = 'compact';
 figure1 = gcf();
 figure1.Position(3:4) = [660 400];
 set(gcf,'color','white');
-load(['Ensemble_' filenames{1}],'results')
+% load([file_prefix 'Ensemble_' filenames{1}],'results')
 
 % Assumes the following order of plots:
 % 'Exact solution', 'MS Mean','MS Median','MS Max Likelihood'.'DS Best Fit','DS Median'
 C = [0 0 0;
-   colororder()     
+    colororder()
     ];
 
 line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
 line_styles = {'-','-','--','-','--','-'};
 ind = [1,2,2,4,4,2,3,4];
-displayNames = {'K-Means centroid 1','K-Means centroid 2','K-medians centroid 1','K-medians centroid 2',' ',' ',' '};
+displayNames = {'k-Means centroid 1','k-Means centroid 2','k-medians centroid 1','k-medians centroid 2'};
 
 h=[];
-for i = 1:numEnsembles    
-    load(['Analysis_' filenames{i}]);
-    load(['Ensemble_' filenames{i}],...
+for i = 1:numEnsembles
+    load([file_prefix 'Analysis' filenames{i}]);
+    load([file_prefix 'Ensemble_' filenames{i}],...
         'results','data','forwardModel');
+    for j=1:length(allClusterSets)
+        clusterset_weighted_errors = cellfun( @(x) x.wre2n,allClusterSets{j} );
+        [~,ind1] = sort(clusterset_weighted_errors(2:end)); %sort weighted errors in 2nd position through end - 1st position is true solution, 2nd through end are clustering results.
+        allClusterSets{j}(2:end) = allClusterSets{j}(ind1+1);
+    end
     allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
@@ -48,7 +56,7 @@ for i = 1:numEnsembles
         2*i-1,titles{i},line_widths)
     nexttile(i+numEnsembles,[2 1])
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
-%     colormap(crameri('lajolla'));
+    %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 2
         legend('location','southeast')
@@ -56,7 +64,7 @@ for i = 1:numEnsembles
         lgd.FontSize = 7;
     end
 end
-nexttile(1); xticks([.01 .02 .03 .04]);
+nexttile(1); xticks([.01 .02 .03 .04 .05 .1]);
 nexttile(2); xticks([.05 .1 .2]);
 nexttile(3); xticks(0.1:0.1:0.4);
 
@@ -67,12 +75,13 @@ ylabel('Depth (m)');
 nexttile(numEnsembles*2)
 c=colorbar();
 c.Label.String = 'Probability (normalized)';
-%{
+
 
 %% Save the figure
+figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure2.eps');
 set(gcf,'Renderer','opengl');
-%}
+
 set(gcf,'Visible','on');
