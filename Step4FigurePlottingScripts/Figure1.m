@@ -171,6 +171,6 @@ figure(figure1);
 disp('Saving...');
 set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure0.eps');
+exportgraphics(t,'Figure1.eps');
 set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');
