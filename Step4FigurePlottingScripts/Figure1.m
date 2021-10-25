@@ -1,5 +1,6 @@
 clear;
 close all;
+addpath Step1DataGenerationScripts
 addpath Step3AnalysisScripts
 addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
@@ -150,7 +151,7 @@ end
 % nexttile(1); xticks([.01 .02 .03 .04]);
 % nexttile(2); xticks([.05 .1 .2]);
 % nexttile(3); xticks(0.1:0.1:0.4);
-
+figure(figure1);
 nexttile(1)
 ylabel('A.R. (\Omega-m)');
 nexttile(numEnsembles+1);
