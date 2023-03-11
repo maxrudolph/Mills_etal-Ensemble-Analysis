@@ -39,8 +39,8 @@ line_styles = {'-','--','--','--','-','-'};
 ind = [1,3,4,7,2,4];
 
 h=[];
-for i = 1:numEnsembles
-    load([file_prefix 'Analysis' filenames{i}]);
+for i = 1:numEnsembles    
+    load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
