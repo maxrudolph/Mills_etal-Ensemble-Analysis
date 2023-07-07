@@ -65,7 +65,7 @@ end %anything else is an invalid choice
 [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
 data.lambda = makeLambda(data.x,filterSize); %lambda matrix for calculateRho1D
 data.fx = forwardModel(trueDepths,trueRhos,data.lambda); %'true' output
-rng(3); %re-seed random number generator for consistent noise pattern.
+rng(1); %re-seed random number generator for consistent noise pattern.
 noiseVector = data.noiseCoef.*data.fx.*randn(length(data.fx),1);
 %noise is added, Gaussian with mean 0 and std dev = noiseCoef*f(x)
 data.y =  data.fx+noiseVector; %measurements with noise
