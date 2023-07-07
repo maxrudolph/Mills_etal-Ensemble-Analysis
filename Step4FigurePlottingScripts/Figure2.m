@@ -1,8 +1,10 @@
 clear;
 close all;
-file_prefix = './Ensembles_07022021/';
-file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
+% file_prefix = '../Ensembles_09132021/';
+file_prefix = '../Ensembles_02082023/';
 
+% file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
+% file_prefix = '.'
 filenames = {
     '3LayerA_0.02.mat';
     '3LayerA_0.05.mat';
@@ -33,7 +35,7 @@ ind = [1,3,4,7,2,4];%,3,4];
 
 h=[];
 for i = 1:numEnsembles
-    load([file_prefix 'Analysis' filenames{i}]);
+    load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above

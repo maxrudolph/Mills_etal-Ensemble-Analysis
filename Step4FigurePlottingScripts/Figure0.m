@@ -7,6 +7,7 @@ addpath Step4FigurePlottingScripts
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09102021/';
 file_prefix = '../'
 file_prefix='../Ensembles_02082023/'
+% file_prefix = '../Ensembles_09132021/'
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
 %     '3LayerA_0.05.mat';
@@ -15,7 +16,7 @@ filenames = {
      '3LayerA_0.1.mat';
 %     '3LayerA_0.2_02-Jul-2021.mat'
 };
-titles = {'0.02','0.05','0.2'};
+titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};
 numEnsembles = length(filenames);
 
@@ -59,6 +60,7 @@ for i = 1:numEnsembles
     text(0.90,0.95,char(64+2*i),'units','normalized','FontSize',14);
     set(gca,'XTick',1:10);
     
+    % histograms of variance
     nexttile(i+2*numEnsembles);
     histogram(results.ensembleVars,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
@@ -71,6 +73,7 @@ for i = 1:numEnsembles
     set(gca,'ColorScale','linear');
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
+
     % diagnostic plot for misfit
     figure();
     n3mask = results.ensembleNumLayers==3;

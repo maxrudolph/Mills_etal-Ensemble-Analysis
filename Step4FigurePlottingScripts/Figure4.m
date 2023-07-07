@@ -1,7 +1,9 @@
 clear;
 close all;
 
-file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
+% file_prefix = '../Ensembles_09132021/';
+file_prefix = '../Ensembles_02082023/';
+% file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
     %'3LayerA_0.01_02-Jul-2021.mat';
@@ -34,7 +36,7 @@ displayNames = {'k-Medoids Euclidian 1','k-Medoids Euclidean 2','k-Medoids Manha
 
 h=[];
 for i = 1:numEnsembles
-    load([file_prefix 'Analysis' filenames{i}]);
+    load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],...
         'results','data','forwardModel');
     for j=1:length(allClusterSets)

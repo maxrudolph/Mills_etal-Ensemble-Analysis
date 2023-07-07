@@ -5,7 +5,10 @@ addpath Step3AnalysisScripts
 addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
 
-file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
+% file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
+file_prefix = '../Ensembles_02082023/'
+% file_prefix = '../Ensembles_09132021/';
+
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
     %     '3LayerA_0.05.mat';
@@ -53,6 +56,7 @@ for i = 1:numEnsembles
     histogram(ewre2n,250,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     text(0.90,0.90,char(64+5*(i-1)+2),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
+    set(gca,'XLim',[0.0 0.2])
     hold on;
     plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
     xlabel('Weighted Relative Error');
@@ -121,6 +125,7 @@ for i = 1:numEnsembles
     plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
+    set(gca,'XLim',[0.0 0.2]);
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
