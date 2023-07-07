@@ -2,7 +2,7 @@
 Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Monte Carlo Markov Chain approach
 
 Step 1: Synthetic Data Generation
-  - Master Script: createSyntheticData
+  - Main script: main_inversion.m
     - Generates and saves synthetic data for a virtual Schlumberger array field experiment based on user-set parameters
   - Subscripts:
     - calculateRho1D: The forward model for resistivity measurements via Schlumberger array. Outputs apparent resisitivity "measurements" given subsurface structure properties
@@ -10,28 +10,18 @@ Step 1: Synthetic Data Generation
     - subStructGen: A library of virtual subsurface structures from which to generate synthetic data.
 
 Step 2: Inversion
-  - Master script: inversion
+  - Main script: main_inversion.m
     - Loads a data file (as generated in step 1) and performs an MCMC inversion on it to produce a solution ensemble 
   - Subscripts:
     - chooseOption: Used within mcmcAlgorithm. Controls the choice of what way the proposed solution is edited in a given step.
     - genericSln: A class that contains all the information about a solution and all the necessary methods to edit itself
     - mcmcAlgorithm: The overarching file that does the inversion process. The 'inversion' master script is really just a place for a user to change options and parameter bounds, and to save the results after mcmcAlgorithm is done, but mcmcAlgorithm is the bulk of the process.
 
+Step 3: Analysis
+     - Main script: main_analysis.m
+-------
 
-
-calculatedModel: a class made for ease of ensemble analysis and plotting; used in ensembleAnalysis3.
-
-doSaving: Just a save statement for when we were generating a lot of large ensembles;
-matlab won't allow you to put a save statement in a parfor loop but if you hide that save statement in a function, it works!
-
-ensembleAnalysis: outdated, use ensembleAnalysis3 now
-
-
-
-genericMedium is a class which creates a self-contained object used for keeping track of, updating, and checking
-all of the information contained in a proposed earth model (layers with resistivities, that model's associated 
-misfit, etc.
-
-...to be continued
-
-MillsSeniorThesisMain - the primary script for now
+Changes: 
+Ensembles from 9/13/2021:seed=1. Chains were run for 2e8 steps, saving at halfway through, save skip=400
+Ensembles from 2/8/2023: initial random seed=2, 4e8 steps, save skip=800
+Ensembles from 7/6/2023: initial random seed=1, 4e8 steps, save skip=800
