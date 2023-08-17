@@ -19,6 +19,12 @@ Step 2: Inversion
 
 Step 3: Analysis
      - Main script: main_analysis.m
+
+Step 4: Making figures
+     - The figures for Mills, Rudolph, and Lekic can be reproduced using the scripts in Step4FigurePlottingScripts
+
+Sequencing Ensemble Solutions
+     - A Python language jupyter notebook is in the Sequencing/ subdirectory and can be used to sequence a subset of solutions from an ensemble.
 -------
 
 Changes: 
