@@ -106,15 +106,18 @@ msMedianRhos = 10.^(median(logRhoPlot,2));
 mMedian = genModelCalc(msMedianRhos,zVals,data,medianColor,msLineStyle,...
     'MS Median',forwardModel);
 
-% Data space median and best fit models
+% Data space median and best fit models + maximumLikelihood
 [~,ind2] = sort(ewre2n); %sort all slns by misfit
 medianIndex= ind2(floor(length(ind2)/2)); %the one with median misfit
 bestIndex = ind2(1);                      %the one with lowest misfit
+
+
 %Find their corresponding slns in the ensemble
 dMedian = genModelInd(medianIndex,zVals,data,medianColor,dsLineStyle,...
     'DS Median',forwardModel,results);
 bestFit = genModelInd(bestIndex,zVals,data,bestFitColor,dsLineStyle,...
     'DS Best Fit',forwardModel,results);
+maximumLikelihood = genModelInd()
 
 %Maximum likelihood model (Model Space)
 % At each depth, find the most likely solution

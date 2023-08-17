@@ -1,4 +1,8 @@
 function outValues = misfitPanel(ewre2n,results,data,forwardModel,allModels,panel_number,noiseLevel,line_widths)
+% note - outValues is a list of the weighted residual in the 2-norm for
+% each model in allModels. The last entry in outValues is the mode of the
+% weighted relative error (used for normalization)
+
 histogram(ewre2n,100,'EdgeAlpha',0,'FaceColor',0.65*[1 1 1]);
 if ~isempty(allModels)
     allModels{1}.setWRE2N(data);

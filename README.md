@@ -24,4 +24,5 @@ Step 3: Analysis
 Changes: 
 Ensembles from 9/13/2021:seed=1. Chains were run for 2e8 steps, saving at halfway through, save skip=400
 Ensembles from 2/8/2023: initial random seed=2, 4e8 steps, save skip=800
-Ensembles from 7/6/2023: initial random seed=1, 4e8 steps, save skip=800
+Ensembles from 7/6/2023: initial random seed=1, 4e8 steps, save skip=800 (version used in Mills et al. paper)
+

@@ -2,7 +2,9 @@ clear;
 close all;
 
 % file_prefix = '../Ensembles_09132021/';
-file_prefix = '../Ensembles_02082023/';
+% file_prefix = '../Ensembles_02082023/';
+file_prefix = './';
+
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
@@ -55,7 +57,9 @@ for i = 1:numEnsembles
     end
     titles{i}
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
-        2*i-1,titles{i},line_widths)
+        2*i-1,titles{i},line_widths);
+    cellfun( @(x) x.displayName,allModels,'UniformOutput',false)
+    round(importantNumbers,2)
     nexttile(i+numEnsembles,[2 1])
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
     %     colormap(crameri('lajolla'));

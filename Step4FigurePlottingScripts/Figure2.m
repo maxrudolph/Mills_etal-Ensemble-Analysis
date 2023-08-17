@@ -1,7 +1,8 @@
 clear;
 close all;
 % file_prefix = '../Ensembles_09132021/';
-file_prefix = '../Ensembles_02082023/';
+% file_prefix = '../Ensembles_02082023/';
+file_prefix = './';
 
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 % file_prefix = '.'
@@ -41,13 +42,18 @@ for i = 1:numEnsembles
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
         allModels{j}.lineStyle = line_styles{j};
+        if strcmp(allModels{j}.displayName, 'MS Max Likelihood')
+            allModels{j}.displayName = 'MS Mode';
+        end
         %     if j>1
         %          allModels{j}.displayName = displayNames{j-1};
         %    end
     end
-    titles{i}
+    titles{i}    
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
-        2*i-1,titles{i},line_widths)
+        2*i-1,titles{i},line_widths);
+    cellfun(@(x) x.displayName,allModels,'UniformOutput',false)
+    round(importantNumbers,2)
     nexttile(i+numEnsembles,[2 1])
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
     %     colormap(crameri('lajolla'));
@@ -58,7 +64,7 @@ for i = 1:numEnsembles
         lgd.FontSize = 7;
     end
 end
-nexttile(1); xticks([.01 .02 .03 .04]);
+nexttile(1); xticks([.01 .02 .03 .04 .05]);
 nexttile(2); xticks([.05 .1 .2]);
 nexttile(3); xticks(0.1:0.1:0.4);
 

@@ -3,7 +3,8 @@ close all;
 
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 % file_prefix = '../Ensembles_09132021/';
-file_prefix = '../Ensembles_02082023/';
+% file_prefix = '../Ensembles_02082023/';
+file_prefix = './';
 
 filenames = {
     %'3LayerA_0_02-Jul-2021.mat';
@@ -46,7 +47,7 @@ for i = 1:numEnsembles
         allClusterSets{j}(2:end) = allClusterSets{j}(ind1+1);
     end
     allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
-    cellfun( @(x) x.displayName,allModels,'UniformOutput',false)
+    % 
 
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
@@ -57,8 +58,11 @@ for i = 1:numEnsembles
         end
     end
     titles{i}
+    cellfun( @(x) x.displayName,allModels,'UniformOutput',false)
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
-        2*i-1,titles{i},line_widths)
+        2*i-1,titles{i},line_widths);
+    round(importantNumbers,2)
+
     nexttile(i+numEnsembles,[2 1])
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
     %     colormap(crameri('lajolla'));
