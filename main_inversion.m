@@ -1,7 +1,7 @@
 clear;
 close all;
 delete(gcp('nocreate'));
-parpool(6);
+parpool(3);
 
 %function saveEnsemblesLoop
 noiseLevels = [0,0.01,0.02,0.05,0.1,0.2];
