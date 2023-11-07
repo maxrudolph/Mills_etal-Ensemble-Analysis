@@ -15,32 +15,35 @@ Outputs:
     formatted appropriately for the other functions that will use them.
 %}
 
-    if choice == '3LayerA'
+    if strcmp(choice,'3LayerA')
         depths = [0,1,25]';
         rhos = [10,390,10]';
-    elseif choice == '4LayerA'
+    elseif strcmp(choice,'4LayerA')
         depths = [0,5,30,200]';
         rhos = [100,10,250,1]';
-    elseif choice == '4LayerB'
+    elseif strcmp(choice,'4LayerB')
         depths = [0,5,30,200]';
         rhos = [100,10,250,1e-2]';
-    elseif choice == '4LayerC'
+    elseif strcmp(choice,'4LayerC')
         depths = [0,5,30,200]';
         rhos = [100,10,250,1e2]';
-    elseif choice == '4LayerD'
+    elseif strcmp(choice,'4LayerD')
         depths = [0,5,30,200]';
         rhos = [100,10,250,1e4]';
-    elseif choice == '1LayerA'
+    elseif strcmp(choice,'1LayerA')
         depths = [0]';
         rhos = [100]';
-    elseif choice == '8LayerA'
+    elseif strcmp(choice,'8LayerA')
         depths = [0,2,7,8,18,35,39,109]';
         rhos = [48,51,923,6220,2,5,19,10]';
-    elseif choice == '8LayerB'
+    elseif strcmp(choice,'8LayerB')
         depths = [0,1.6,2.4,3.9,4.1,6.6,18.8,62.6]';
         rhos = [16,3,14,1190,366,1604,117,9]';
-    elseif choice == '6LayerA'
+    elseif strcmp(choice,'6LayerA')
         depths = [0,2,8,35,83,202]';
         rhos = [112,168,888,17,39,109]';
+    else
+        depths = [];
+        rhos = [];
     end
 end
