@@ -28,8 +28,8 @@ disp(['output will be saved to: ' filenameOut]);
 %parameter space (y-axis depth, x-axis rho), as a sort of 3D histogram,
 %with any 'appraisals' laid on top.
 disp('Model space...')
-nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 1000; %number of resistivity bins in model space histogram
+nzplot = 100%1000; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 100%1000; %number of resistivity bins in model space histogram
 
 %Setup logDepthPlot and logRhoPlot
 numSavedRuns = size(results.ensembleRhos,2);
