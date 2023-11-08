@@ -29,12 +29,12 @@ disp(['output will be saved to: ' filenameOut]);
 %with any 'appraisals' laid on top.
 disp('Model space...')
 nzplot = 100%1000; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 100%1000; %number of resistivity bins in model space histogram
+nRhoBins = 101%1000; %number of resistivity bins in model space histogram
 
 %Setup logDepthPlot and logRhoPlot
 numSavedRuns = size(results.ensembleRhos,2);
-minDistL = log10(min(data.x));
-maxDistL = log10(max(data.x));
+minDistL = -1;%log10(min(data.x));
+maxDistL = 5;%log10(max(data.x));
 zVals = logspace(minDistL,maxDistL,nzplot)'; %depth values for evaluating
 logDepthPlot = log10(repmat(zVals,1,numSavedRuns));
 logRhoPlot = zeros(length(zVals),numSavedRuns);

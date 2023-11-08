@@ -6,12 +6,13 @@ addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
 
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
+% file_prefix = './Results_11072023/'
 file_prefix = './'
 % file_prefix = '../Ensembles_02082023/'
 % file_prefix = '../Ensembles_09132021/';
 
 filenames = {
-    'Constable1984'
+    'Constable1984_1'
     %'3LayerA_0_02-Jul-2021.mat';
     %     '3LayerA_0.05.mat';
     % '3LayerA_0.02.mat';
@@ -67,7 +68,7 @@ for i = 1:numEnsembles
     
     %% make 2D histogram of forward model predictions
     % generate high-resolution data space values
-    nxplot = 1001;
+    nxplot = 101;
     ntot = size(results.ensembleG,2);
     xvals = logspace(log10(data.x(1)),log10(data.x(end)),nxplot);
     lamplot = makeLambda(xvals,11);
@@ -85,7 +86,7 @@ for i = 1:numEnsembles
     figure(figure1);
     nexttile(i)
     
-    yvals = logspace(0,3,1001);
+    yvals = logspace(0,4,1001);
     N = zeros(length(yvals)-1,nxplot);
     xplot = repmat(xvals',[1 ntot]);
     for j=1:nxplot
@@ -95,13 +96,13 @@ for i = 1:numEnsembles
     yc = 10.^((log10(yvals(1:end-1)) + log10(yvals(2:end)))/2);
     imagesc(xvals,yc,N); hold on;
     set(gca,'YDir','normal');
-    set(gca,'YLim',[5 max(data.y)*1.1]);
+    set(gca,'YLim',[5 max(data.y)*2]);
     colormap(flipud(gray));
     set(gca,'XScale','log','YScale','log');
     hold on
     plot(data.x,data.y,'.','MarkerFaceColor',observations_color,'MarkerEdgeColor',observations_color)
-    set(gca,'XLim',[0.9 max(data.x)]);
-    set(gca,'XTick',10.^[0 1 2 3]);
+    set(gca,'XLim',[0.9 max(data.x)*2]);
+    set(gca,'XTick',10.^[0 1 2 3 4]);
     xlabel('Spacing (m)');
     text(0.90,0.90,char(64+(i-1)*5+1),'units','normalized','FontSize',14);
     title(['\epsilon_n = ' titles{i}]);
@@ -110,10 +111,10 @@ for i = 1:numEnsembles
     %% histogram of number of layers
     %
     nexttile(i+2*numEnsembles)
-    histogram(results.ensembleNumLayers,'BinEdges',0.5:10.5,'FaceColor',0.65*[1 1 1]);
+    histogram(results.ensembleNumLayers,'BinEdges',0.5:30.5,'FaceColor',0.65*[1 1 1]);
     set(gca,'YTick',[]);
     text(0.90,0.90,char(64+5*(i-1)+3),'units','normalized','FontSize',14);
-    set(gca,'XTick',1:10);
+    set(gca,'XTick',1:2:30);
     hold on
     plot([3 3],get(gca,'Ylim'),'r');
     xlabel('Number of Layers');
@@ -128,7 +129,7 @@ for i = 1:numEnsembles
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     % set(gca,'XLim',[0.0 0.2]);
-    set(gca,'XLim',[1e-4 2e-1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1]);
+    set(gca,'XLim',[1e-2 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1]);
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
@@ -175,11 +176,11 @@ c=colorbar();
 c.Label.String = 'Probability (normalized)';
 
 
-%% Save the figure
-figure(figure1);
-disp('Saving...');
-set(figure1,'Visible','off');
-set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1.eps');
-set(figure1,'Renderer','opengl');
-set(figure1,'Visible','on');
+% %% Save the figure
+% figure(figure1);
+% disp('Saving...');
+% set(figure1,'Visible','off');
+% set(figure1,'Renderer','painters');
+% exportgraphics(t,'Figure1.eps');
+% set(figure1,'Renderer','opengl');
+% set(figure1,'Visible','on');

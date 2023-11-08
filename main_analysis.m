@@ -10,7 +10,7 @@ close all;
 % 'Ensemble_3LayerA_0.mat'
 % };
 ensemble_files = {
-  'Ensemble_Constable1984_1_06-Nov-2023.mat',
+  'Ensemble_Constable1984_1.mat',
 };
 
 % delete(gcp('nocreate'));
