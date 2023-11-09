@@ -9,7 +9,7 @@ file_prefix = './'
 % file_prefix='../Ensembles_02082023/'
 % file_prefix = '../Ensembles_09132021/'
 filenames = {
-    'Constable1984_1'
+    'Constable1984_1_PRIOR_09-Nov-2023.mat'
     %'3LayerA_0_02-Jul-2021.mat';
 %     '3LayerA_0.05.mat';
      % '3LayerA_0.02.mat';
@@ -41,7 +41,7 @@ ind = [1,3,4,7,2,4];
 h=[];
 for i = 1:numEnsembles
     figure(figure1);
-    load([file_prefix 'Analysis_' filenames{i}]);
+    % load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above

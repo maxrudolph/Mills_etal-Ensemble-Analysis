@@ -201,7 +201,8 @@ function. Get and set functions are at the end of the methods section.
                 %Propose new depth and resistivity within bounds
                 dummyLDepth = obj.lDepthMin +...
                     rand*(obj.lDepthMax - obj.lDepthMin);
-                dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
+                % dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
+                dummyLRho = 3 + randn;
                 if obj.checkDepthProperties(dummyLDepth,indx)
                     success = true;
                 end
@@ -224,7 +225,11 @@ function. Get and set functions are at the end of the methods section.
                 if(nbad>obj.badRunsThreshold)
                     error('nbad exceeded max ,perturbRho');
                 end
-                dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
+                % note - this assigns rho from a normal distribution with
+                % 95% CI between 1-5
+                dummy = 3 + randn;% sigma = 1, 2*sigma=2...
+                % this assigns rho from a flat prior.
+                % dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
                 success = obj.checkRhoProperties(dummy); %check
             end
             obj.lRhos(indx) = dummy; %actually change it
