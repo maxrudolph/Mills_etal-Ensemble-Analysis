@@ -16,7 +16,8 @@ yy = get(gca,'YLim');
 [~,ind] = max(f);
 normalizer = xi(ind);
 for iPlot = 1:size(allModels,2)
-    if isfield(allModels{iPlot},'wre2n')
+        if (isfield(allModels{iPlot},'wre2n')) ...
+            || (isobject(allModels{iPlot}) && isprop(allModels{iPlot},'wre2n'))
         plot(allModels{iPlot}.wre2n*[1 1],yy,'LineStyle',allModels{iPlot}.lineStyle,...
             'Color',allModels{iPlot}.color,'LineWidth',line_widths{iPlot});
         outValues(iPlot) = allModels{iPlot}.wre2n/normalizer;
