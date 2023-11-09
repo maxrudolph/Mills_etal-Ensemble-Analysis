@@ -16,7 +16,7 @@ t = tiledlayout(3,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [275 400];
+figure1.Position(3:4) = [275 400]*162/72;
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
 
@@ -69,6 +69,8 @@ for i = 1:numEnsembles
     end
 end
 % nexttile(1); xticks([.01 .02 .03 .04 .05 .1]);
+nexttile(1); set(gca,'XTick',10.^[-1 0 1 2]);
+
 % nexttile(2); xticks([.05 .1 .2]);
 % nexttile(3); xticks(0.1:0.1:0.4);
 
@@ -84,8 +86,8 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 figure(figure1);
 set(gcf,'Visible','off');
-% set(gcf,'Renderer','painters');
-exportgraphics(t,'Figure3.eps');
-% set(gcf,'Renderer','opengl');
+set(gcf,'Renderer','painters');
+exportgraphics(t,'Figure3_field.pdf');
+set(gcf,'Renderer','opengl');
 
 set(gcf,'Visible','on');

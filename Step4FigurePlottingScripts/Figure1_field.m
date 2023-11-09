@@ -25,7 +25,7 @@ t = tiledlayout(6,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [275 720];
+figure1.Position(3:4) = [275 720]*162/72;
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
 
@@ -65,9 +65,9 @@ for i = 1:numEnsembles
     
     %% make 2D histogram of forward model predictions
     % generate high-resolution data space values
-    nxplot = 101;
+    nxplot = 1001;
     ntot = size(results.ensembleG,2);
-    xvals = logspace(log10(data.x(1)),log10(data.x(end)),nxplot);
+    xvals = logspace(0,5,nxplot);
     lamplot = makeLambda(xvals,11);
     Gplot = zeros(nxplot,ntot);
 
@@ -113,7 +113,7 @@ for i = 1:numEnsembles
     text(0.90,0.90,char(64+5*(i-1)+3),'units','normalized','FontSize',14);
     set(gca,'XTick',1:2:30);
     hold on
-    plot([3 3],get(gca,'Ylim'),'r');
+    %plot([3 3],get(gca,'Ylim'),'r');
     xlabel('Number of Layers');
     
     %
@@ -122,11 +122,11 @@ for i = 1:numEnsembles
     nexttile(i+3*numEnsembles);
     histogram(results.ensembleVars,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
-    plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
+    %plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     % set(gca,'XLim',[0.0 0.2]);
-    set(gca,'XLim',[1e-2 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1]);
+    set(gca,'XLim',[1e-1 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
@@ -173,11 +173,11 @@ c=colorbar();
 c.Label.String = 'Probability (normalized)';
 
 
-% %% Save the figure
+%% Save the figure
 figure(figure1);
 disp('Saving...');
 set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1.eps');
+exportgraphics(t,'Figure1_field.pdf');
 set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');
