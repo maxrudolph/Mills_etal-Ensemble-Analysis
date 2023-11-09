@@ -17,7 +17,7 @@ t = tiledlayout(3,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [660 400];
+figure1.Position(3:4) = [275 400];
 set(gcf,'color','white');
 load([file_prefix 'Ensemble_' filenames{1}],'results')
 
@@ -75,9 +75,9 @@ c.Label.String = 'Probability (normalized)';
 
 %% Save the figure
 figure(figure1);
-% set(gcf,'Visible','off');
-% set(gcf,'Renderer','painters');
-% exportgraphics(t,'Figure2_field.eps');
-% set(gcf,'Renderer','opengl');
+set(gcf,'Visible','off');
+set(gcf,'Renderer','painters');
+exportgraphics(t,'Figure2_field.eps');
+set(gcf,'Renderer','opengl');
 
-% set(gcf,'Visible','on');
+set(gcf,'Visible','on');

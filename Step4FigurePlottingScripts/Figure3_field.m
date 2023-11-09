@@ -82,10 +82,10 @@ c.Label.String = 'Probability (normalized)';
 
 
 %% Save the figure
-% figure(figure1);
-% set(gcf,'Visible','off');
+figure(figure1);
+set(gcf,'Visible','off');
 % set(gcf,'Renderer','painters');
-% exportgraphics(t,'Figure3.eps');
+exportgraphics(t,'Figure3.eps');
 % set(gcf,'Renderer','opengl');
-% 
-% set(gcf,'Visible','on');
+
+set(gcf,'Visible','on');

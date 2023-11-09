@@ -5,11 +5,8 @@ addpath Step3AnalysisScripts
 addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
 
-% file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
-% file_prefix = './Results_11072023/'
 file_prefix = './'
-% file_prefix = '../Ensembles_02082023/'
-% file_prefix = '../Ensembles_09132021/';
+
 
 filenames = {
     'Constable1984_1'
@@ -28,7 +25,7 @@ t = tiledlayout(6,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [600 720];
+figure1.Position(3:4) = [275 720];
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
 
@@ -177,10 +174,10 @@ c.Label.String = 'Probability (normalized)';
 
 
 % %% Save the figure
-% figure(figure1);
-% disp('Saving...');
-% set(figure1,'Visible','off');
-% set(figure1,'Renderer','painters');
-% exportgraphics(t,'Figure1.eps');
-% set(figure1,'Renderer','opengl');
-% set(figure1,'Visible','on');
+figure(figure1);
+disp('Saving...');
+set(figure1,'Visible','off');
+set(figure1,'Renderer','painters');
+exportgraphics(t,'Figure1.eps');
+set(figure1,'Renderer','opengl');
+set(figure1,'Visible','on');
