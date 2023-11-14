@@ -16,7 +16,7 @@ t = tiledlayout(3,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [275 400]*162/72;
+figure1.Position(3:4) = [275 400]*get(groot,'ScreenPixelsPerInch')/72;
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
 
