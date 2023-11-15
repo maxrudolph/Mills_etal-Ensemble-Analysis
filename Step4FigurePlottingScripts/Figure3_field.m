@@ -68,6 +68,8 @@ for i = 1:numEnsembles
         lgd.FontSize = 7;
     end
 end
+set(gca,'XLim',[1e-1 1e7]);
+
 % nexttile(1); xticks([.01 .02 .03 .04 .05 .1]);
 nexttile(1); set(gca,'XTick',10.^[-1 0 1 2]);
 

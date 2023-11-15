@@ -63,6 +63,8 @@ end
 % nexttile(1); xticks([.01 .02 .03 .04 .05]);
 % nexttile(2); xticks([.05 .1 .2]);
 % nexttile(3); xticks(0.1:0.1:0.4);
+set(gca,'XLim',[1e-1 1e7]);
+
 nexttile(1); set(gca,'XTick',10.^[-1 0 1 2]);
 
 

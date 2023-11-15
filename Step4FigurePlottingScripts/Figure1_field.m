@@ -67,7 +67,7 @@ for i = 1:numEnsembles
     % generate high-resolution data space values
     nxplot = 1001;
     ntot = size(results.ensembleG,2);
-    xvals = logspace(0,5,nxplot);
+    xvals = logspace(0,log10(2e5),nxplot);
     lamplot = makeLambda(xvals,11);
     Gplot = zeros(nxplot,ntot);
 
@@ -98,8 +98,8 @@ for i = 1:numEnsembles
     set(gca,'XScale','log','YScale','log');
     hold on
     plot(data.x,data.y,'.','MarkerFaceColor',observations_color,'MarkerEdgeColor',observations_color)
-    set(gca,'XLim',[0.9 max(data.x)*2]);
-    set(gca,'XTick',10.^[0 1 2 3 4]);
+    set(gca,'XLim',[1 max(data.x)*2]);
+    set(gca,'XTick',10.^[0 1 2 3 4 5]);
     xlabel('Spacing (m)');
     text(0.90,0.90,char(64+(i-1)*5+1),'units','normalized','FontSize',14);
     title(['\epsilon_n = ' titles{i}]);
@@ -137,6 +137,7 @@ for i = 1:numEnsembles
     set(gca,'ColorScale','linear');
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
+    set(gca,'XLim',[1e-1 1e7]);
     
     
     % diagnostic plot for misfit
