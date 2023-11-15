@@ -32,9 +32,11 @@ containing the results from the inversion.
 
 %% Part 0 preliminary 
 defaultPriorOn =false;
+defaultHierarchical=true;
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
+addParameter(p,'hierarchical',defaultHierarchical,@islogical);
 parse(p,filename,varargin{:});
 
 addpath(genpath(fileparts(mfilename('fullpath'))))
@@ -52,7 +54,7 @@ options.saveStart = floor(options.numSteps/2);
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
 options.saveSkip = 800; %sample every (saveSkip)th step once sampling begins
-options.alterVar = true; %Whether or not the inversion is hierarchical.
+options.alterVar = p.Results.hierarchical; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parameters which can
 %change) or false for not (variance will never change from intlVar.
 options.samplePrior = p.Results.priorOn; %If true, will base acceptance probability on
@@ -66,7 +68,7 @@ options.pctSteps = 5;
 %set pctSteps = 10 or 20 since the loop will finish quickly and you might
 %not want a flood of print statements. This is purely for convenience so
 %there is no 'wrong' setting
-
+options
 %% Set parameter bounds
 % Create bounds on parameter values. Some bounds are based on Appendix A
 % in Malinverno 2002. See also the "genericMedium" constructor function

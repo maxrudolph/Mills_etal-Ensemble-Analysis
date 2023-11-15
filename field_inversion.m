@@ -15,11 +15,11 @@ subStructs = {subStructs{:}}';
 tic
 for i = 1:length(noiseLevels)
     if i>length(noiseLevels) %sample the prior for one subStruct
-        a = loadFieldData('subStructChoice',subStructs{1});
-        b = inversion(a,'priorOn',true);
+        filename = loadFieldData('subStructChoice',subStructs{1});
+        b = inversion(filename,'priorOn',true);
     else
-        a = loadFieldData('subStructChoice',subStructs{i});        
-        b = inversion(a);
+        filename = loadFieldData('subStructChoice',subStructs{i});       
+        b = inversion(filename,'hierarchical',false);
     end
 end
 toc

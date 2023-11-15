@@ -37,7 +37,7 @@ data.subStructChoice = 'Constable1984';
 %see subStructGen for choices
 
 % minDist = 0.1; maxDist = 1000; %in meters
-numMeasurements = 21; %how many measurements
+%numMeasurements = 21; %how many measurements
 % data.x = logspace(log10(minDist),log10(maxDist),numMeasurements);
 % array of electrode spacings
 
