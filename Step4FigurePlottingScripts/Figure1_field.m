@@ -8,15 +8,8 @@ addpath Step4FigurePlottingScripts
 file_prefix = './'
 
 
-filenames = {  
-    'Constable1984_1_15-Nov-2023'
-    % 'Constable1984_1'
-    %'3LayerA_0_02-Jul-2021.mat';
-    %     '3LayerA_0.05.mat';
-    % '3LayerA_0.02.mat';
-    % '3LayerA_0.05.mat';
-    % '3LayerA_0.1.mat';
-    %     '3LayerA_0.2_02-Jul-2021.mat'
+filenames = {      
+    'Constable1984_1'    
     };
 titles = {'1'};
 % titles={'0.05'};
