@@ -19,7 +19,7 @@ for i = 2:2%1:length(noiseLevels)
         b = inversion(filename,'priorOn',true);
     else
         filename = loadFieldData('subStructChoice',subStructs{i});       
-        b = inversion(filename,'hierarchical',false);
+        b = inversion(filename,'hierarchical',true);
     end
 end
 toc
