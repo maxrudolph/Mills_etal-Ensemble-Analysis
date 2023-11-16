@@ -66,8 +66,8 @@ for i = 1:numEnsembles
     end
 end
 set(gca,'XLim',[1e-1 1e7]);
+nexttile(1); set(gca,'XTick',0:0.1:0.4,'XLim',[0.0 0.4],'XScale','linear');
 
-nexttile(1); xticks([.01 .02 .03 .04 .05 .1 0.15 0.2]);
 % nexttile(2); xticks([.05 0.07 .1 .2 .3]);
 % nexttile(3); xticks(0.1:0.1:0.4);
 
