@@ -101,6 +101,7 @@ for i = 1:numEnsembles
     plot(data.x,data.y,'.','MarkerFaceColor',observations_color,'MarkerEdgeColor',observations_color)
     set(gca,'XLim',[1 max(data.x)*2]);
     set(gca,'XTick',10.^[0 1 2 3 4 5]);
+    set(gca,'YTick',10.^[0 1 2 3 4 5]);
     xlabel('Spacing (m)');
     text(0.90,0.90,char(64+(i-1)*5+1),'units','normalized','FontSize',14);
     title(['\epsilon_n = ' titles{i}]);
@@ -180,6 +181,6 @@ figure(figure1);
 disp('Saving...');
 set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1_field.pdf');
+exportgraphics(t,'Figure1_field.eps');
 set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');

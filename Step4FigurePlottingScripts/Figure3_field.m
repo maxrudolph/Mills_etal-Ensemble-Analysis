@@ -89,7 +89,7 @@ c.Label.String = 'Probability (normalized)';
 figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
-exportgraphics(t,'Figure3_field.pdf');
+exportgraphics(t,'Figure3_field.eps');
 set(gcf,'Renderer','opengl');
 
 set(gcf,'Visible','on');
