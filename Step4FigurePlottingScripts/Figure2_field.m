@@ -65,7 +65,7 @@ end
 % nexttile(3); xticks(0.1:0.1:0.4);
 set(gca,'XLim',[1e-1 1e7]);
 
-nexttile(1); set(gca,'XTick',10.^[-1 0 1 2]);
+nexttile(1); set(gca,'XTick',0.1:0.4,'XLim',[0.05 0.4]);
 
 
 nexttile(1)
