@@ -7,7 +7,7 @@ close all;
 file_prefix = './';
 
 filenames = {
-    'Constable1984_1_15-Nov-2023'
+    'Constable1984_1'
     };
 titles = {'1.0'};
 numEnsembles = length(filenames);
