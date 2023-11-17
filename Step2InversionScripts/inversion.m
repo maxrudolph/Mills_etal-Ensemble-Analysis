@@ -33,12 +33,12 @@ containing the results from the inversion.
 %% Part 0 preliminary 
 defaultPriorOn =false;
 defaultHierarchical=true;
-defaultRhoPrior = 1;% 1=flat, 2=Malinverno-type (95%
+defaultRhoPrior = 1; % 1=flat, 2=Malinverno-type (95% CI on log10(rho) between 1-5)
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
 addParameter(p,'hierarchical',defaultHierarchical,@islogical);
-addParameter(p,'defaultRhoPrior',defaultRhoPrior,@isinteger);
+addParameter(p,'rhoPrior',defaultRhoPrior,@isinteger);
 parse(p,filename,varargin{:});
 
 addpath(genpath(fileparts(mfilename('fullpath'))))
@@ -47,7 +47,7 @@ load(filename)
 
 
 %% Set options
-options.numSteps = 4e8; %total iterations for loop.
+options.numSteps = 1e7%4e8; %total iterations for loop.
 options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
@@ -55,7 +55,7 @@ options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 800; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 100%800; %sample every (saveSkip)th step once sampling begins
 options.alterVar = p.Results.hierarchical; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parameters which can
 %change) or false for not (variance will never change from intlVar.
@@ -84,6 +84,7 @@ pBounds.depthChange = pBounds.hMin; %Std dev for depth changes btwn steps
 pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters
 pBounds.rhoChange = 1.5; % Std dev for resistivity change btwn steps
+pBounds.rhoPrior = p.Results.rhoPrior; % integer selecting prior on rho - see genericSln for details.
 pBounds.varMin = 1e-8; % min variance
 pBounds.varMax = 1e8; % max variance
 pBounds.varChange = 1e-1;  %amount variance can change by if alterVar=true

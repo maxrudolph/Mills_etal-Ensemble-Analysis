@@ -72,6 +72,8 @@ acceptedGm = model(depths,rhos,lambda);
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
+layersProposed.calculateRhoPrior();
+layersAccepted.calculateRhoPrior();
 
 % Pre-allocate memory for saving runs. Fields starting with 'ensemble...'
 % only store information from saved solutions, which is toward the end of
@@ -125,6 +127,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     proposedGm = model(depths,rhos,lambda); % This is the forward model
     residual = data.y - proposedGm;
     layersProposed.setMisfit(residual);
+    layersProposed.calculateRhoPrior();
     %Step 4: Run proposed sln through forward model to get misfit
     
     %Step 5: choose whether or not to accept the proposed sln
@@ -132,7 +135,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     if options.samplePrior
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
-        probAccept = log(k) - log(kPrime);
+        probAccept = log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();
     else
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
@@ -142,7 +145,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
         probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + log(k) - log(kPrime);
+            log(sigma2Prime))) + log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();
         %Note that genericSln has a likeProb property, but it is preferable
         %to do this this way since its not the 'true' likeProb
     end

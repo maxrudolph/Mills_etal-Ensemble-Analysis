@@ -13,7 +13,7 @@ subStructs = {subStructs{:}}';
 
 %Create data files
 tic
-for i = 1:length(noiseLevels)
+for i = 2:2%1:length(noiseLevels)
     if i>length(noiseLevels) %sample the prior for one subStruct
         filename = loadFieldDataRenner('subStructChoice',subStructs{1});
         b = inversion(filename,'priorOn',true);

@@ -26,6 +26,7 @@ function. Get and set functions are at the end of the methods section.
         misfit;     % norm of residual ohm-meters
         mahalDist;  % Mahalanobis distance \Phi(G)
         likeProb;   % likelihood
+        prior;      % Prior probability (log10(prior(rho))
     end
     
     properties(SetAccess = immutable) %Should not be changed once defined
@@ -35,6 +36,7 @@ function. Get and set functions are at the end of the methods section.
         lDepthMax;   % Maximum log-depth for a layer interface
         lRhoMin;     % Minimum log-resistivity
         lRhoMax;     % Maximum log-resistivity
+        rhoPrior;    % integer selecting prior on resitivity
         lHMin;       % Minimum log-thickness
         lVarMin;     % in LOG
         lVarMax;     % in LOG
@@ -67,6 +69,7 @@ function. Get and set functions are at the end of the methods section.
             obj.lDepthMax = log10(pBounds.depthMax);
             obj.lRhoMin = log10(pBounds.rhoMin);
             obj.lRhoMax = log10(pBounds.rhoMax);
+            obj.rhoPrior = pBounds.rhoPrior;
             obj.lRhos = [0.5*(obj.lRhoMin+obj.lRhoMax);... %average of bounds
                 nan*zeros(pBounds.maxLayers-1,1)];
             obj.lVarMin = log10(pBounds.varMin);
@@ -78,6 +81,7 @@ function. Get and set functions are at the end of the methods section.
             obj.mahalDist = 0;
             obj.likeProb = 0;
             obj.misfit = 0;
+            obj.prior = 0; % log(p(proposed)/p(accepted)) = log(0) = 1
             obj.Cdi = Cdi;
             obj.badRunsThreshold = ceil(log10(pBounds.numSteps)*20);
             %arbitrary
@@ -90,6 +94,7 @@ function. Get and set functions are at the end of the methods section.
             output.var = obj.var;
             output.misfit = obj.misfit;
             output.residual = obj.residual;
+            output.prior = obj.prior;
         end
         
         %This is meant to recieve properties from another genericSln object
@@ -101,6 +106,7 @@ function. Get and set functions are at the end of the methods section.
             obj.var = input.var;
             obj.misfit = input.misfit;
             obj.calculatePosterior();
+            obj.prior = input.prior;
             if nnz(~isnan(obj.lDepths)) ~= nnz(~isnan(obj.lRhos))
                 fprintf('Error: accepted solution # of layers dont match');
             end
@@ -186,6 +192,23 @@ function. Get and set functions are at the end of the methods section.
             obj.numLayers = nnz(~isnan(obj.lDepths));
         end
         
+        % Compute the prior on rho
+        % Case 1 - assumes a flat prior on Rho
+        % Case 2 - assumes a gaussian prior centered on log10(rho) = 3
+        % with sigma = 1 (in log rho units)
+        function calculateRhoPrior(obj)                 
+            switch obj.rhoPrior
+                case 1
+                    obj.prior = 0;
+                case 2              
+                    log_depths = [obj.lDepthMin; obj.lDepths(2:obj.numLayers); obj.lDepthMax];
+                    log_thicknesses = log_depths(2:end) - log_depths(1:end-1);
+                    % prior on each layer rho is normal distribution with
+                    % sigma=1 centered at log10(rho) = 3                   
+                    obj.prior = log10( sum(normpdf(obj.lRhos(1:nlayer),3,1).*log_thicknesses) / (obj.lDepthMax-obj.lDepthMin) );
+            end
+        end
+        
         %
         function addLayer(obj)
             success = false;
@@ -201,10 +224,8 @@ function. Get and set functions are at the end of the methods section.
                 %Propose new depth and resistivity within bounds
                 dummyLDepth = obj.lDepthMin +...
                     rand*(obj.lDepthMax - obj.lDepthMin);
-                % Prior - Flat between RhoMin-RhoMax
-                dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
-                % PRIOR - 95% CI between 10^1 to 10^5 (Malinverno 2002)
-                % dummyLRho = 3 + randn;
+                % Propose a new log(rho), chosen at random:
+                dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);                
                 if obj.checkDepthProperties(dummyLDepth,indx)
                     success = true;
                 end
@@ -232,6 +253,7 @@ function. Get and set functions are at the end of the methods section.
                 % dummy = 3 + randn;% sigma = 1, 2*sigma=2...
                 % this assigns rho from a flat prior.
                 dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
+                
                 success = obj.checkRhoProperties(dummy); %check
             end
             obj.lRhos(indx) = dummy; %actually change it
@@ -290,6 +312,9 @@ function. Get and set functions are at the end of the methods section.
             output = obj.Cdi;
         end
         
+        function output = getPrior(obj)
+            output = obj.prior;
+        end
         
         %%%%%%%%%%% SET IT %%%%%%%%%%%%
         %can be used to manually set things from outside the object      
