@@ -33,7 +33,7 @@ filterSize = 11;
 %model as well as the size of the lambda matrices, so it is an accuracy vs.
 %computational expense tradeoff.
 
-data.subStructChoice = 'Constable1984'; 
+data.subStructChoice = 'Constable1984_Renner'; 
 %see subStructGen for choices
 
 % minDist = 0.1; maxDist = 1000; %in meters
@@ -101,7 +101,7 @@ relative_error = (error_bar(:,2)-apparent_resistivity_data(:,2))./apparent_resis
 % The paper states that the relative error is at least 20% and this appears
 % to be the value adopted for most of the data.
 relative_error(1:end-2) = 0.2;
-
+data.relative_error = relative_error;
 %% 2 Calculated Stuff:
 
 switch filterSize

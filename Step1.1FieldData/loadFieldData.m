@@ -17,7 +17,7 @@ which is the next step of the process.
 addpath(genpath(fileparts(mfilename('fullpath'))))
 %adds subfolders so you can use the scripts in them
 defaultNoise = 1.0;
-defaultSubStruct = 'Constable1984';
+defaultSubStruct = 'Constable1984_Wauchope';
 
 p = inputParser;
 validScalarPosNum = @(x) isnumeric(x) && isscalar(x) && (x>=0);
@@ -33,7 +33,7 @@ filterSize = 11;
 %model as well as the size of the lambda matrices, so it is an accuracy vs.
 %computational expense tradeoff.
 
-data.subStructChoice = 'Constable1984'; 
+data.subStructChoice = 'Constable1984_Wauchope'; 
 %see subStructGen for choices
 
 % minDist = 0.1; maxDist = 1000; %in meters
@@ -113,7 +113,7 @@ relative_error = (error_bar(:,2)-apparent_resistivity_data(:,2))./apparent_resis
 % The paper states that the relative error is at least 10% and this appears
 % to be the value adopted for most of the data.
 relative_error(1:end-1) = 0.1;
-
+data.relative_error = relative_error;
 %% 2 Calculated Stuff:
 
 switch filterSize

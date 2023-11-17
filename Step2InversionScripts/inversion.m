@@ -33,10 +33,12 @@ containing the results from the inversion.
 %% Part 0 preliminary 
 defaultPriorOn =false;
 defaultHierarchical=true;
+defaultRhoPrior = 1;% 1=flat, 2=Malinverno-type (95%
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
 addParameter(p,'hierarchical',defaultHierarchical,@islogical);
+addParameter(p,'defaultRhoPrior',defaultRhoPrior,@isinteger);
 parse(p,filename,varargin{:});
 
 addpath(genpath(fileparts(mfilename('fullpath'))))
