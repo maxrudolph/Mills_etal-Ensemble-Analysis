@@ -204,8 +204,9 @@ function. Get and set functions are at the end of the methods section.
                     log_depths = [obj.lDepthMin; obj.lDepths(2:obj.numLayers); obj.lDepthMax];
                     log_thicknesses = log_depths(2:end) - log_depths(1:end-1);
                     % prior on each layer rho is normal distribution with
-                    % sigma=1 centered at log10(rho) = 3                   
-                    obj.prior = log10( sum(normpdf(obj.lRhos(1:nlayer),3,1).*log_thicknesses) / (obj.lDepthMax-obj.lDepthMin) );
+                    % sigma=1 centered at log10(rho) = 3                                       
+                    % achieved close to the right distribution:
+                    obj.prior = sum( log_thicknesses.*log( normpdf(obj.lRhos(1:obj.numLayers),3,1)) )/ (obj.lDepthMax-obj.lDepthMin) ;
             end
         end
         

@@ -9,9 +9,12 @@ file_prefix = './'
 
 
 filenames = {      
-    'Constable1984_1'    
+    'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_18-Nov-2023.mat',
+    'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1_18-Nov-2023.mat',
+    'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_18-Nov-2023.mat',
+    'Constable1984_Renner__hierarchical-0_rhoPrior-2_1_18-Nov-2023.mat'   
     };
-titles = {'1'};
+titles = {'wauchope-1','wauchope-0','renner-1','renner-0'};
 % titles={'0.05'};
 numEnsembles = length(filenames);
 
@@ -19,7 +22,7 @@ t = tiledlayout(6,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [275 720]*get(groot,'ScreenPixelsPerInch')/72;
+figure1.Position(3:4) = [275*4 720]*get(groot,'ScreenPixelsPerInch')/72;
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
 
@@ -147,7 +150,7 @@ for i = 1:numEnsembles
     
     set(gca,'XScale','log')
     title(titles{i});
-    
+    drawnow();
     
 end
 % nexttile(1); xticks([.01 .02 .03 .04]);
