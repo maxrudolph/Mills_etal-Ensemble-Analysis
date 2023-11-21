@@ -11,7 +11,7 @@ filenames = {
 'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
     };
 
-titles = {'1.0'};
+titles = {'1.0','1.0'};
 numEnsembles = length(filenames);
 
 t = tiledlayout(3,numEnsembles);
