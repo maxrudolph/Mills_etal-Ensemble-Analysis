@@ -7,12 +7,11 @@ addpath Step4FigurePlottingScripts
 
 file_prefix = './'
 
-
 filenames = {      
 'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1.mat',
 'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
-
     };
+
 titles = {'wauchope-1','wauchope-0','renner-1','renner-0'};
 % titles={'0.05'};
 numEnsembles = length(filenames);

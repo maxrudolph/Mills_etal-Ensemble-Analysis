@@ -6,8 +6,9 @@ close all;
 % file_prefix = '../Ensembles_02082023/';
 file_prefix = './';
 
-filenames = {
-    'Constable1984_1'
+filenames = {    
+'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1.mat',
+'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
     };
 titles = {'1.0'};
 numEnsembles = length(filenames);
@@ -16,7 +17,7 @@ t = tiledlayout(3,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
-figure1.Position(3:4) = [275 400]*get(groot,'ScreenPixelsPerInch')/72;
+figure1.Position(3:4) = [275*2 400]*get(groot,'ScreenPixelsPerInch')/72;
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
 
