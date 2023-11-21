@@ -9,10 +9,7 @@ file_prefix = './'
 
 
 filenames = {      
-    'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_18-Nov-2023.mat',
-    'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1_18-Nov-2023.mat',
-    'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_18-Nov-2023.mat',
-    'Constable1984_Renner__hierarchical-0_rhoPrior-2_1_18-Nov-2023.mat'   
+'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1.mat'
     };
 titles = {'wauchope-1','wauchope-0','renner-1','renner-0'};
 % titles={'0.05'};
