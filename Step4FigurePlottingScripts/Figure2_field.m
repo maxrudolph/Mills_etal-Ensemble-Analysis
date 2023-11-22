@@ -83,6 +83,7 @@ figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure2_field.eps');
+savefig(gcf,'Figure2_field.fig');
 set(gcf,'Renderer','opengl');
 
 set(gcf,'Visible','on');
