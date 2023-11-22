@@ -67,7 +67,10 @@ for i = 1:numEnsembles
     end
 end
 set(gca,'XLim',[1e-1 1e7]);
-nexttile(1); set(gca,'XTick',0:0.1:0.4,'XLim',[0.0 0.4],'XScale','linear');
+nexttile(1); 
+%set(gca,'XTick',0:0.1:0.4,'XLim',[0.0 0.4],'XScale','linear');
+set(gca,'XLim',[5e-2 3],'XScale','log')
+
 
 % nexttile(2); xticks([.05 0.07 .1 .2 .3]);
 % nexttile(3); xticks(0.1:0.1:0.4);
@@ -86,7 +89,8 @@ figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure4_field.eps');
-savefig(gcf,'Figure4_field.fig');
 set(gcf,'Renderer','opengl');
 % 
 set(gcf,'Visible','on');
+savefig(gcf,'Figure4_field.fig');
+
