@@ -14,8 +14,10 @@ prior = int32([2 2 2 2]);%1=flat 2=gaussian on rho
 % subStructs = {subStructs{:}}';
 
 % Create data files
+
 % delete(gcp('nocreate'));
 % parpool(4);
+
 tic
 for i = 5:5%1:length(noiseLevels)
     if i>length(noiseLevels) %sample the prior for one subStruct

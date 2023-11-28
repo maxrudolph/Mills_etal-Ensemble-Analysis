@@ -10,14 +10,15 @@ close all;
 % 'Ensemble_3LayerA_0.mat'
 % };
 ensemble_files = {
-  'Ensemble_Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1_19-Nov-2023.mat',
- 'Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_19-Nov-2023.mat',
- 'Ensemble_Constable1984_Renner__hierarchical-0_rhoPrior-2_1_19-Nov-2023.mat',
- 'Ensemble_Constable1984_Renner__hierarchical-1_rhoPrior-2_1_19-Nov-2023.mat'
+ % 'Ensemble_Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1_19-Nov-2023.mat',
+ %'Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_19-Nov-2023.mat',
+ %'Ensemble_Constable1984_Renner__hierarchical-0_rhoPrior-2_1_19-Nov-2023.mat',
+ %'Ensemble_Constable1984_Renner__hierarchical-1_rhoPrior-2_1_19-Nov-2023.mat'
+'Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_PRIOR_27-Nov-2023.mat'
 };
 
 delete(gcp('nocreate'));
 parpool(3);
 for i=1:length(ensemble_files)
-  ensembleAnalysisMaster( ensemble_files{i},false);
+  ensembleAnalysisMaster_noclustering( ensemble_files{i},false);
 end
