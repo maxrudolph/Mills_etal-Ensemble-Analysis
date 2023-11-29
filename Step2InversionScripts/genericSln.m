@@ -164,20 +164,20 @@ function. Get and set functions are at the end of the methods section.
         %(badRunsThreshold). This is by design.
         
         %Alters proposed sln by changing layer depth, assumes >1 layer
-        function perturbDepth(obj)
-            success = false;
-            nbad = 0;
-            while ~success
-                nbad=nbad+1;
-                if(nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max,perturbDepth');
-                end
+        function success = perturbDepth(obj)
+            %success = false;
+            %nbad = 0;
+            %while ~success
+            %    nbad=nbad+1;
+            %    if(nbad>obj.badRunsThreshold)
+            %        error('nbad exceeded max,perturbDepth');
+            %    end
                 indx = randi([2,obj.numLayers]); %Don't touch first layer
                 %Once layer is chosen, change depth and check to make sure
                 %bounds aren't violated
                 dummy = obj.lDepths(indx) + obj.lDepthChange*randn;
                 success = obj.checkDepthProperties(dummy,indx);
-            end
+            %end
             obj.lDepths(indx) = dummy; %Make the change
             if ~issorted(obj.lDepths) %Layers may now be out of order
                 obj.sortLayers();
@@ -185,11 +185,12 @@ function. Get and set functions are at the end of the methods section.
         end
         
         % Delete a layer, NOT the top layer
-        function deleteLayer(obj)
+        function success = deleteLayer(obj)
             indx = randi([2,obj.numLayers]);
             obj.lDepths(indx:end) = [obj.lDepths(indx+1:end); NaN];%shift cells up
             obj.lRhos(indx:end) = [obj.lRhos(indx+1:end); NaN];
             obj.numLayers = nnz(~isnan(obj.lDepths));
+            success = true;
         end
         
         % Compute the prior on rho
@@ -211,26 +212,24 @@ function. Get and set functions are at the end of the methods section.
         end
         
         %
-        function addLayer(obj)
-            success = false;
-            nbad = 0;
+        function success = addLayer(obj)
+            %success = false;
+            %nbad = 0;
             indx = obj.numLayers+1; %Index of the new layer
             %This does NOT mean newest layer will be lowest. depth is
             %randomly chosen, layers then sorted afterwards
-            while ~success
-                nbad=nbad+1;
-                if(nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max,addLayer');
-                end
+            %while ~success
+            %    nbad=nbad+1;
+            %    if(nbad>obj.badRunsThreshold)
+            %        error('nbad exceeded max,addLayer');
+            %    end
                 %Propose new depth and resistivity within bounds
                 dummyLDepth = obj.lDepthMin +...
                     rand*(obj.lDepthMax - obj.lDepthMin);
                 % Propose a new log(rho), chosen at random:
                 dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);                
-                if obj.checkDepthProperties(dummyLDepth,indx)
-                    success = true;
-                end
-            end
+                success = obj.checkDepthProperties(dummyLDepth,indx);
+            %end
             obj.lDepths(indx) = dummyLDepth;
             obj.lRhos(indx) = dummyLRho;
             obj.numLayers = nnz(~isnan(obj.lDepths));
@@ -240,15 +239,15 @@ function. Get and set functions are at the end of the methods section.
         end
         
         %
-        function perturbRho(obj)
-            success = false;
-            nbad = 0;
+        function success = perturbRho(obj)
+            %success = false;
+            %nbad = 0;
             indx = randi([1,obj.numLayers]); %choose layer
-            while ~success
-                nbad=nbad+1;
-                if(nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max ,perturbRho');
-                end
+%             while ~success
+%                 nbad=nbad+1;
+%                 if(nbad>obj.badRunsThreshold)
+%                     error('nbad exceeded max ,perturbRho');
+%                 end
                 % note - this assigns rho from a normal distribution with
                 % 95% CI between 1-5
                 % dummy = 3 + randn;% sigma = 1, 2*sigma=2...
@@ -256,24 +255,24 @@ function. Get and set functions are at the end of the methods section.
                 dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
                 
                 success = obj.checkRhoProperties(dummy); %check
-            end
+%             end
             obj.lRhos(indx) = dummy; %actually change it
         end
         
         %
-        function perturbVar(obj)
+        function success = perturbVar(obj)
             %Var not in log-space so convert before updating
-            success = false;
-            nbad = 0;
-            while ~success
-                nbad = nbad+1;
-                if (nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max, perturbVar')
-                end
+            %success = false;
+            %nbad = 0;
+            %while ~success
+             %   nbad = nbad+1;
+              %  if (nbad>obj.badRunsThreshold)
+               %     error('nbad exceeded max, perturbVar')
+                %end
                 lvar = log10(obj.var);
                 dummy = lvar+(obj.lVarChange*randn);
                 success = obj.checkVarProperties(dummy);
-            end
+            %end
             obj.var = 10^dummy;
         end
         

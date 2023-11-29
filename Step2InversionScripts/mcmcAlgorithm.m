@@ -111,23 +111,26 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     choice = chooseOption(layersProposed.getNumLayers(),...
         maxLayersPerStep(iter),randomOptions);
     %Step 2: choose how proposed sln will be edited
+    success = false;
     switch choice %Step 3: Edit proposed sln
         case 1 % Random option 1: Change the interface depth
-            layersProposed.perturbDepth();
+            success = layersProposed.perturbDepth();
         case 2 %Random option 2: Delete a layer
-            layersProposed.deleteLayer();
+            success = layersProposed.deleteLayer();
         case 3 % Random option 3: Add a new layer
-            layersProposed.addLayer();
+            success = layersProposed.addLayer();
         case 4 %Random option 4: Change a layer's resistivity
-            layersProposed.perturbRho();
+            success = layersProposed.perturbRho();
         case 5 % Random option 5: Change noise variance
-            layersProposed.perturbVar();
+            success = layersProposed.perturbVar();
     end
-    [depths,rhos] = layersProposed.getSolution();
-    proposedGm = model(depths,rhos,lambda); % This is the forward model
-    residual = data.y - proposedGm;
-    layersProposed.setMisfit(residual);
-    layersProposed.calculateRhoPrior();
+    if success
+        [depths,rhos] = layersProposed.getSolution();
+        proposedGm = model(depths,rhos,lambda); % This is the forward model
+        residual = data.y - proposedGm;
+        layersProposed.setMisfit(residual);
+        layersProposed.calculateRhoPrior();
+    end
     %Step 4: Run proposed sln through forward model to get misfit
     
     %Step 5: choose whether or not to accept the proposed sln
@@ -150,7 +153,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         %to do this this way since its not the 'true' likeProb
     end
     
-    if ( isfinite(probAccept)&&( probAccept > log(rand)))
+    if ( success && isfinite(probAccept) &&( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
         acceptProposedSln(layersAccepted,layersProposed);
         acceptedGm = proposedGm;
