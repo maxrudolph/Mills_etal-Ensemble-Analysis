@@ -109,17 +109,18 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     choice = chooseOption(layersProposed.getNumLayers(),...
         maxLayersPerStep(iter),randomOptions);
     %Step 2: choose how proposed sln will be edited
+    
     switch choice %Step 3: Edit proposed sln
         case 1 % Random option 1: Change the interface depth
-            layersProposed.perturbDepth();
+            success = layersProposed.perturbDepth();
         case 2 %Random option 2: Delete a layer
-            layersProposed.deleteLayer();
+            success = layersProposed.deleteLayer();
         case 3 % Random option 3: Add a new layer
-            layersProposed.addLayer();
+            success = layersProposed.addLayer();
         case 4 %Random option 4: Change a layer's resistivity
-            layersProposed.perturbRho();
+            success = layersProposed.perturbRho();
         case 5 % Random option 5: Change noise variance
-            layersProposed.perturbVar();
+            success = layersProposed.perturbVar();
     end
     [depths,rhos] = layersProposed.getSolution();
     proposedGm = model(depths,rhos,lambda); % This is the forward model
@@ -132,7 +133,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     if options.samplePrior
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
-        probAccept = log(k) - log(kPrime);
+        probAccept = log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();
     else
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
@@ -142,7 +143,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
         probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + log(k) - log(kPrime);
+            log(sigma2Prime))) + log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();;
         %Note that genericSln has a likeProb property, but it is preferable
         %to do this this way since its not the 'true' likeProb
     end

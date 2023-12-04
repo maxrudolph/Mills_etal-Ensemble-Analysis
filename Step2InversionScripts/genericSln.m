@@ -26,6 +26,7 @@ function. Get and set functions are at the end of the methods section.
         misfit;     % norm of residual ohm-meters
         mahalDist;  % Mahalanobis distance \Phi(G)
         likeProb;   % likelihood
+        prior;      % prior probability for the model
     end
     
     properties(SetAccess = immutable) %Should not be changed once defined
@@ -152,13 +153,39 @@ function. Get and set functions are at the end of the methods section.
             end
         end
         
+        % Compute the prior on rho
+        % Case 1 - assumes a flat prior on Rho
+        % Case 2 - assumes a gaussian prior centered on log10(rho) = 3
+        % with sigma = 1 (in log rho units)
+        function calculatePrior(obj)                 
+            % switch obj.rhoPrior
+            % case 1
+            % obj.prior = 0;
+            % case 2              
+            
+            % prior on each layer rho is normal distribution with
+            % sigma=1 centered at log10(rho) = 3                                       
+            % achieved close to the right distribution:
+            if ~obj.checkVarProperties(obj.var)
+                obj.prior = log(0);
+            elseif min(obj.lRhos(1:obj.numLayers)) < obj.lRhoMin || max(obj.lRhos(1:obj.numLayers)) > obj.lRhoMax
+                obj.prior = log(0);
+            elseif min(diff(obj.lDepths(1:obj.numLayers))) < obj.lHMin
+                obj.prior = log(0);
+            else
+                log_depths = [obj.lDepthMin; obj.lDepths(2:obj.numLayers); obj.lDepthMax];
+                log_thicknesses = log_depths(2:end) - log_depths(1:end-1);
+                obj.prior = sum( log_thicknesses.*log( normpdf(obj.lRhos(1:obj.numLayers),3,1)) )/ (obj.lDepthMax-obj.lDepthMin) ;
+            end
+        end
+
         %%%%%%%%%% RANDOM WALK OPTIONS %%%%%%%%%%%%%%%
         %Note: once an option is chosen, it will attempt to complete that
         %option until it succeeds or it hits the number of attempts threshold
         %(badRunsThreshold). This is by design.
         
         %Alters proposed sln by changing layer depth, assumes >1 layer
-        function perturbDepth(obj)
+        function success = perturbDepth(obj)
             success = false;
             nbad = 0;
             while ~success
@@ -179,20 +206,24 @@ function. Get and set functions are at the end of the methods section.
         end
         
         % Delete a layer, NOT the top layer
-        function deleteLayer(obj)
+        function success = deleteLayer(obj)
             indx = randi([2,obj.numLayers]);
+            rhotmp = obj.lRhos(indx);
             obj.lDepths(indx:end) = [obj.lDepths(indx+1:end); NaN];%shift cells up
             obj.lRhos(indx:end) = [obj.lRhos(indx+1:end); NaN];
+            obj.lRhos(indx) = 0.5*(obj.lRhos(indx) + rhotmp); % average per Malinverno 2002 Appendix.
             obj.numLayers = nnz(~isnan(obj.lDepths));
+            success = true;
         end
         
         %
-        function addLayer(obj)
+        function success = addLayer(obj)
             success = false;
             nbad = 0;
             indx = obj.numLayers+1; %Index of the new layer
             %This does NOT mean newest layer will be lowest. depth is
             %randomly chosen, layers then sorted afterwards
+            
             while ~success
                 nbad=nbad+1;
                 if(nbad>obj.badRunsThreshold)
@@ -201,8 +232,11 @@ function. Get and set functions are at the end of the methods section.
                 %Propose new depth and resistivity within bounds
                 dummyLDepth = obj.lDepthMin +...
                     rand*(obj.lDepthMax - obj.lDepthMin);
+                ind = find(obj.lDepths < dummyLDepth,1,"last");
+
                 % dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
-                dummyLRho = 3 + randn;
+                dummyLRho = obj.lRhos(ind);
+                % dummyLRho = 3 + randn;
                 if obj.checkDepthProperties(dummyLDepth,indx)
                     success = true;
                 end
@@ -216,39 +250,39 @@ function. Get and set functions are at the end of the methods section.
         end
         
         %
-        function perturbRho(obj)
-            success = false;
-            nbad = 0;
+        function success = perturbRho(obj)
+            % success = false;
+            % nbad = 0;
             indx = randi([1,obj.numLayers]); %choose layer
-            while ~success
-                nbad=nbad+1;
-                if(nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max ,perturbRho');
-                end
+            % while ~success
+                % nbad=nbad+1;
+                % if(nbad>obj.badRunsThreshold)
+                    % error('nbad exceeded max ,perturbRho');
+                % end
                 % note - this assigns rho from a normal distribution with
                 % 95% CI between 1-5
-                dummy = 3 + randn;% sigma = 1, 2*sigma=2...
+                % dummy = 3 + randn;% sigma = 1, 2*sigma=2...
                 % this assigns rho from a flat prior.
-                % dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
+                dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
                 success = obj.checkRhoProperties(dummy); %check
-            end
+            % end
             obj.lRhos(indx) = dummy; %actually change it
         end
         
         %
-        function perturbVar(obj)
+        function success = perturbVar(obj)
             %Var not in log-space so convert before updating
-            success = false;
-            nbad = 0;
-            while ~success
-                nbad = nbad+1;
-                if (nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max, perturbVar')
-                end
+            % success = false;
+            % nbad = 0;
+            % while ~success
+                % nbad = nbad+1;
+                % if (nbad>obj.badRunsThreshold)
+                    % error('nbad exceeded max, perturbVar')
+                % end
                 lvar = log10(obj.var);
                 dummy = lvar+(obj.lVarChange*randn);
                 success = obj.checkVarProperties(dummy);
-            end
+            % end
             obj.var = 10^dummy;
         end
         
@@ -288,6 +322,10 @@ function. Get and set functions are at the end of the methods section.
             output = obj.Cdi;
         end
         
+        function output = getPrior(obj)
+            obj.calculatePrior();
+            output = obj.prior;
+        end
         
         %%%%%%%%%%% SET IT %%%%%%%%%%%%
         %can be used to manually set things from outside the object      
