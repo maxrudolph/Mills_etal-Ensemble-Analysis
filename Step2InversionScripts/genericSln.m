@@ -45,6 +45,8 @@ function. Get and set functions are at the end of the methods section.
         lRhoChange;  % standard deviation for rho changes in log space
         lVarChange;  % log, standard deviation for var changes
         badRunsThreshold; % how many bad runs you can have before it errors
+        %% The type of prior used.
+        priorChoice;
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,6 +83,7 @@ function. Get and set functions are at the end of the methods section.
             obj.misfit = 0;
             obj.Cdi = Cdi;
             obj.badRunsThreshold = ceil(log10(pBounds.numSteps)*20);
+            obj.priorChoice = pBounds.priorChoice;
             %arbitrary
         end
         
@@ -124,7 +127,7 @@ function. Get and set functions are at the end of the methods section.
             if indx <= length(testLDepths) %if perturbDepth
                 testLDepths(indx) = []; %remove old depth before comparing
             end
-            if (proposedLDepth > obj.lDepthMax-obj.lHMin ||...
+            if (proposedLDepth > obj.lDepthMax ||...
                     proposedLDepth < obj.lDepthMin) || ...
                     (min(abs(proposedLDepth - testLDepths)) < obj.lHMin)
                 %First set of criteria is checking depth bounds, second
@@ -166,16 +169,25 @@ function. Get and set functions are at the end of the methods section.
             % prior on each layer rho is normal distribution with
             % sigma=1 centered at log10(rho) = 3                                       
             % achieved close to the right distribution:
-            if ~obj.checkVarProperties(obj.var)
+            if ~obj.checkVarProperties(log10(obj.var))
                 obj.prior = log(0);
             elseif min(obj.lRhos(1:obj.numLayers)) < obj.lRhoMin || max(obj.lRhos(1:obj.numLayers)) > obj.lRhoMax
                 obj.prior = log(0);
             elseif min(diff(obj.lDepths(1:obj.numLayers))) < obj.lHMin
                 obj.prior = log(0);
             else
-                log_depths = [obj.lDepthMin; obj.lDepths(2:obj.numLayers); obj.lDepthMax];
-                log_thicknesses = log_depths(2:end) - log_depths(1:end-1);
-                obj.prior = sum( log_thicknesses.*log( normpdf(obj.lRhos(1:obj.numLayers),3,1)) )/ (obj.lDepthMax-obj.lDepthMin) ;
+                switch obj.priorChoice
+                    case 1
+                        obj.prior = -log(obj.numLayers);
+                    case 2
+                        %log_depths = [obj.lDepthMin; obj.lDepths(2:obj.numLayers); obj.lDepthMax];
+                        %log_thicknesses = log_depths(2:end) - log_depths(1:end-1);
+                        %obj.prior = sum( log_thicknesses.*log( normpdf(obj.lRhos(1:obj.numLayers),3,1)) )/ (obj.lDepthMax-obj.lDepthMin) ;
+                        sig_rho = 1.0; % standard deviation of rho prior.
+                        rho_bar = 3.0;
+                        phi = -0.5*sum( (obj.lRhos(1:obj.numLayers)-rho_bar).^2 )/sig_rho^2;
+                        obj.prior = -0.5*obj.numLayers*(log(2*pi) + log(sig_rho^2)) + phi;
+                end
             end
         end
 
@@ -186,19 +198,19 @@ function. Get and set functions are at the end of the methods section.
         
         %Alters proposed sln by changing layer depth, assumes >1 layer
         function success = perturbDepth(obj)
-            success = false;
-            nbad = 0;
-            while ~success
-                nbad=nbad+1;
-                if(nbad>obj.badRunsThreshold)
-                    error('nbad exceeded max,perturbDepth');
-                end
+%             success = false;
+            %nbad = 0;
+            %while ~success
+            %    nbad=nbad+1;
+            %    if(nbad>obj.badRunsThreshold)
+            %        error('nbad exceeded max,perturbDepth');
+            %    end
                 indx = randi([2,obj.numLayers]); %Don't touch first layer
                 %Once layer is chosen, change depth and check to make sure
                 %bounds aren't violated
                 dummy = obj.lDepths(indx) + obj.lDepthChange*randn;
                 success = obj.checkDepthProperties(dummy,indx);
-            end
+            %end
             obj.lDepths(indx) = dummy; %Make the change
             if ~issorted(obj.lDepths) %Layers may now be out of order
                 obj.sortLayers();
@@ -207,12 +219,15 @@ function. Get and set functions are at the end of the methods section.
         
         % Delete a layer, NOT the top layer
         function success = deleteLayer(obj)
-            indx = randi([2,obj.numLayers]);
+            indx = randi([1,obj.numLayers]);
             rhotmp = obj.lRhos(indx);
             obj.lDepths(indx:end) = [obj.lDepths(indx+1:end); NaN];%shift cells up
             obj.lRhos(indx:end) = [obj.lRhos(indx+1:end); NaN];
             obj.lRhos(indx) = 0.5*(obj.lRhos(indx) + rhotmp); % average per Malinverno 2002 Appendix.
             obj.numLayers = nnz(~isnan(obj.lDepths));
+            if indx == 1
+                obj.lDepths(1) = log(0);
+            end
             success = true;
         end
         

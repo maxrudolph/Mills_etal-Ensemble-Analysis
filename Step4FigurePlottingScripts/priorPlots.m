@@ -1,7 +1,8 @@
 clear;
 close all;
 
-filename = 'Ensemble_Constable1984_1_03-Dec-2023.mat'
+filename = 'Ensemble_Constable1984_1_PRIOR_03-Dec-2023.mat'
+filename = 'Ensemble_Constable1984_1_PRIOR_04-Dec-2023.mat'
 % Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR_30-Nov-2023.mat
 load(filename)
 %%
@@ -15,8 +16,8 @@ hold on
 cc = zeros(size(c));
 cc(1) = c(1);
 for i=2:30
-    % cc(i) = cc(1)/i;
-    cc(i) = cc(i-1)*(i-1)/(i);
+    cc(i) = cc(1)/(i-1+1);
+%     cc(i) = cc(i-1)*(i-1)/(i);
 end
 plot(cc)
 %% Histogram of layer depths

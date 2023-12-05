@@ -32,9 +32,11 @@ containing the results from the inversion.
 
 %% Part 0 preliminary 
 defaultPriorOn =false;
+defaultPriorChoice = int64(1); % 1 = flat prior, 2 = malinverno prior on rho
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
+addParameter(p,'priorChoice',defaultPriorChoice,@isinteger);
 parse(p,filename,varargin{:});
 
 addpath(genpath(fileparts(mfilename('fullpath'))))
@@ -43,15 +45,15 @@ load(filename)
 
 
 %% Set options
-options.numSteps = 2e8; %4e8; %total iterations for loop.
-options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
+options.numSteps = 2e6; %4e8; %total iterations for loop.
+options.mLPSCoefficient = 1e3; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
 options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 40;%800; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 5;%800; %sample every (saveSkip)th step once sampling begins
 options.alterVar = true; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parameters which can
 %change) or false for not (variance will never change from intlVar.
@@ -79,6 +81,7 @@ pBounds.hMin = 10^((log10(pBounds.depthMax) - log10(pBounds.depthMin))/...
 pBounds.depthChange = pBounds.hMin; %Std dev for depth changes btwn steps
 pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters
+pBounds.priorChoice = p.Results.priorChoice;
 pBounds.rhoChange = 1.5; % Std dev for resistivity change btwn steps
 pBounds.varMin = 1e-8; % min variance
 pBounds.varMax = 1e8; % max variance
@@ -106,9 +109,13 @@ results = mcmcAlgorithm(data,forwardModel,options,pBounds);
 %% Save
 if p.Results.priorOn
     filenameOut = ['Ensemble_', data.subStructChoice,'_',...
+        '_hierarchical-',num2str(options.alterVar),...
+        '_rhoPrior-',num2str(pBounds.priorChoice),'_',...
         num2str(data.noiseCoef),'_PRIOR_',date,'.mat'];
 else    
     filenameOut = ['Ensemble_', data.subStructChoice, '_',...
+        '_hierarchical-',num2str(options.alterVar),...
+        '_rhoPrior-',num2str(pBounds.priorChoice),'_',...
         num2str(data.noiseCoef), '_', date, '.mat'];
 end
 

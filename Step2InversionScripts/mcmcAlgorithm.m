@@ -122,18 +122,25 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         case 5 % Random option 5: Change noise variance
             success = layersProposed.perturbVar();
     end
-    [depths,rhos] = layersProposed.getSolution();
-    proposedGm = model(depths,rhos,lambda); % This is the forward model
-    residual = data.y - proposedGm;
-    layersProposed.setMisfit(residual);
+    if success && ~options.samplePrior
+        [depths,rhos] = layersProposed.getSolution();
+        proposedGm = model(depths,rhos,lambda); % This is the forward model
+        residual = data.y - proposedGm;
+        layersProposed.setMisfit(residual);
+    elseif options.samplePrior
+        proposedGm = acceptedGm;
+        residual = data.y;
+    end
     %Step 4: Run proposed sln through forward model to get misfit
     
     %Step 5: choose whether or not to accept the proposed sln
     %See my paper for this, or Malinverno 2002
-    if options.samplePrior
+    if ~success
+        probAccept = log(0);
+    elseif options.samplePrior
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
-        probAccept = log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();
+        probAccept = layersProposed.getPrior() - layersAccepted.getPrior();
     else
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
@@ -143,12 +150,12 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
         probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();;
+            log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior();
         %Note that genericSln has a likeProb property, but it is preferable
         %to do this this way since its not the 'true' likeProb
     end
     
-    if ( isfinite(probAccept)&&( probAccept > log(rand)))
+    if (success && isfinite(probAccept)&&( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
         acceptProposedSln(layersAccepted,layersProposed);
         acceptedGm = proposedGm;
