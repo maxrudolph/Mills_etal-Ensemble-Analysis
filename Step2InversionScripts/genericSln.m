@@ -219,7 +219,7 @@ function. Get and set functions are at the end of the methods section.
         
         % Delete a layer, NOT the top layer
         function success = deleteLayer(obj)
-            indx = randi([1,obj.numLayers]);
+            indx = randi([2,obj.numLayers]);
             rhotmp = obj.lRhos(indx);
             obj.lDepths(indx:end) = [obj.lDepths(indx+1:end); NaN];%shift cells up
             obj.lRhos(indx:end) = [obj.lRhos(indx+1:end); NaN];
