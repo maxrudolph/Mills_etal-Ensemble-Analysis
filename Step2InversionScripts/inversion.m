@@ -45,8 +45,8 @@ load(filename)
 
 
 %% Set options
-options.numSteps = 2e6; %4e8; %total iterations for loop.
-options.mLPSCoefficient = 1e3; %max layers per step, controls 'burn-in' length
+options.numSteps = 2e7; %4e8; %total iterations for loop.
+options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
 options.saveStart = floor(options.numSteps/2);
