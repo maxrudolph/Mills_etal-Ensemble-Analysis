@@ -1,8 +1,8 @@
 clear;
 close all;
 
-filename = 'Ensemble_Constable1984_1_PRIOR_03-Dec-2023.mat'
-filename = 'Ensemble_Constable1984_1_PRIOR_04-Dec-2023.mat'
+filename = 'Ensemble_Constable1984__hierarchical-1_rhoPrior-1_1_PRIOR_04-Dec-2023.mat';
+% filename = 'Ensemble_Constable1984_1_PRIOR_04-Dec-2023.mat'
 % Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR_30-Nov-2023.mat
 load(filename)
 %%
