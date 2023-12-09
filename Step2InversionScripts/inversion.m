@@ -77,7 +77,7 @@ pBounds.maxLayers = 30; % max # of layers in a given model
 pBounds.depthMin = 1e-1; %min depth for layer interface, ie max thickness of top layer
 pBounds.depthMax = 1e5;%max(data.x); % max depth for layer interface
 pBounds.hMin = 10^((log10(pBounds.depthMax) - log10(pBounds.depthMin))/...
-    (2*pBounds.maxLayers)); %min layer thickness. Malinverno 2002 Append A1
+    (4*pBounds.maxLayers)); %min layer thickness. Malinverno 2002 Append A1
 pBounds.depthChange = pBounds.hMin; %Std dev for depth changes btwn steps
 pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters

@@ -112,6 +112,59 @@ function. Get and set functions are at the end of the methods section.
         
         %%%%%%%%%%%%%% Bound Checks %%%%%%%%%%%%%%%%%%%%
         
+        % Compute available depth intervals
+        function [validDepths,availDepth] = getValidDepths(obj)
+            % This function computes the available depth ranges.
+            % validDepths is a 2xN vector that contains the starting and
+            % ending depth values of each available range.
+            % availDepth is the total log10-depth range in which a layer
+            % interface may be placed.
+            %
+            % if there are k layers, there are k-1 control points in the
+            % valid depth range and therefore up to (k-1)+1 valid ranges
+            % for placement
+            if obj.numLayers == 1
+                validDepths = {[obj.lDepthMin obj.lDepthMax]};
+                availDepth = obj.lDepthMax-obj.lDepthMin;
+            else                
+                validDepths = zeros(2,obj.numLayers);
+                ind=1;
+                if obj.lDepths(2)-obj.lHMin < obj.lDepthMin
+                    % range overlaps with start of interval  
+                    
+                else
+                    % range does not overlap with start of interval
+                    validDepths(:,ind) = [obj.lDepthMin, obj.lDepths(2)-obj.lHMin]; ind=ind+1;
+                end
+                for i=3:(obj.numLayers-1)
+                    validDepths(:,ind) = [obj.lDepths(i-1)+obj.lHMin, obj.lDepths(i)-obj.lHMin]; ind=ind+1;
+                end
+                % for last layer - consider whether it overlaps with
+                % endpoint of interval.
+                i=obj.numLayers;
+                if obj.lDepths(i)+obj.lHMin > obj.lDepthMax
+                    % no interval below this depth
+                else
+                    validDepths(:,ind) = [obj.lDepths(i)+obj.lHMin, obj.lDepthMax]; ind = ind+1;
+                end
+                validDepths = validDepths(:,1:ind-1);
+                availDepth = sum( validDepths(2,:)-validDepths(1,:) );
+            end          
+        end
+
+        % function perturbWithinValidRange(obj,zstart,dz,validDepths)
+        %     % this function computes a perturbation of depth starting at
+        %     % zstart and ending at dz, skipping over any excluded zones
+        %     % due to the presence of other control points.
+        %     % find starting 'cell' within valid depths
+        %     ind = find(zstart > validDepths(2,:),1,'first');
+        %     distance_remaining = dz;
+        %     while 
+        % 
+        % 
+        % 
+        % end
+
         % Sorts layers of proposed change. Should be called before
         % accepting sln or checking properties
         function sortLayers(obj)
@@ -177,16 +230,12 @@ function. Get and set functions are at the end of the methods section.
                 obj.prior = log(0);
             else
                 switch obj.priorChoice
-                    case 1
-                        obj.prior = -log(obj.numLayers);
+                    case 1                     
+                        obj.prior = log(1);%-log(obj.numLayers); %prior on k is 1/k
                     case 2
-                        %log_depths = [obj.lDepthMin; obj.lDepths(2:obj.numLayers); obj.lDepthMax];
-                        %log_thicknesses = log_depths(2:end) - log_depths(1:end-1);
-                        %obj.prior = sum( log_thicknesses.*log( normpdf(obj.lRhos(1:obj.numLayers),3,1)) )/ (obj.lDepthMax-obj.lDepthMin) ;
-                        sig_rho = 1.0; % standard deviation of rho prior.
-                        rho_bar = 3.0;
-                        phi = -0.5*sum( (obj.lRhos(1:obj.numLayers)-rho_bar).^2 )/sig_rho^2;
-                        obj.prior = -0.5*obj.numLayers*(log(2*pi) + log(sig_rho^2)) + phi;
+                        % flat prior on number of layers. Prior on rho gets
+                        % wrapped up in proposal ratios below.
+                        obj.prior = log(1);
                 end
             end
         end
@@ -197,19 +246,39 @@ function. Get and set functions are at the end of the methods section.
         %(badRunsThreshold). This is by design.
         
         %Alters proposed sln by changing layer depth, assumes >1 layer
-        function success = perturbDepth(obj)
-%             success = false;
-            %nbad = 0;
-            %while ~success
-            %    nbad=nbad+1;
-            %    if(nbad>obj.badRunsThreshold)
-            %        error('nbad exceeded max,perturbDepth');
-            %    end
+        function priorRatio = perturbDepth(obj)
+            success = false;
+            nbad = 0;
+
+            [oldValidRanges,oldValidDepth] = obj.getValidDepths();
+
+            while ~success
+                nbad=nbad+1;
+                if(nbad>obj.badRunsThreshold)
+                    error('nbad exceeded max,perturbDepth');
+                end
                 indx = randi([2,obj.numLayers]); %Don't touch first layer
                 %Once layer is chosen, change depth and check to make sure
                 %bounds aren't violated
-                dummy = obj.lDepths(indx) + obj.lDepthChange*randn;
-                success = obj.checkDepthProperties(dummy,indx);
+                dummy = obj.lDepths(indx) + obj.lDepthChange*(2*rand()-1);
+                if dummy > obj.lDepthMax || dummy < obj.lDepthMin
+                    priorRatio = log(0.0); % make a proposal but with zero probability of acceptance
+                    break;
+                else
+                    layer_indices = 2:obj.numLayers;
+                    not_perturbed = setdiff(layer_indices,indx);
+                    [validRanges,validDepth] = obj.getValidDepths();
+
+                    if isempty(not_perturbed)
+                        priorRatio = log(1.0);
+                        break
+                    elseif min( abs(obj.lDepths(not_perturbed)-dummy)) >= obj.lHMin 
+                        priorRatio = log(1.0);
+                        break                    
+                    end
+                end
+            end
+            % success = obj.checkDepthProperties(dummy,indx);
             %end
             obj.lDepths(indx) = dummy; %Make the change
             if ~issorted(obj.lDepths) %Layers may now be out of order
@@ -218,28 +287,35 @@ function. Get and set functions are at the end of the methods section.
         end
         
         % Delete a layer, NOT the top layer
-        function success = deleteLayer(obj)
+        function priorRatio = deleteLayer(obj)
             indx = randi([2,obj.numLayers]);
-            rhotmp = obj.lRhos(indx);
+            rhotmp = obj.lRhos(indx); % log-resistivity of the killed layer
             obj.lDepths(indx:end) = [obj.lDepths(indx+1:end); NaN];%shift cells up
             obj.lRhos(indx:end) = [obj.lRhos(indx+1:end); NaN];
-            obj.lRhos(indx) = 0.5*(obj.lRhos(indx) + rhotmp); % average per Malinverno 2002 Appendix.
+            % obj.lRhos(indx) = 0.5*(obj.lRhos(indx) + rhotmp); % average per Malinverno 2002 Appendix.
             obj.numLayers = nnz(~isnan(obj.lDepths));
             if indx == 1
                 obj.lDepths(1) = log(0);
             end
-            success = true;
+            % success = true;
+            if obj.priorChoice == 1
+                priorRatio = log(1.0);
+            else
+                sig_rho = 1.0;
+                rho_bar = 3.0;
+                priorRatio = 0.5*log(2*pi*sig_rho^2) - log(obj.lRhoMax-obj.lRhoMin) + 0.5/sig_rho^2*(rhotmp-rho_bar)^2;
+            end
         end
         
         %
-        function success = addLayer(obj)
+        function priorRatio = addLayer(obj)
             success = false;
             nbad = 0;
             indx = obj.numLayers+1; %Index of the new layer
             %This does NOT mean newest layer will be lowest. depth is
             %randomly chosen, layers then sorted afterwards
             
-            while ~success
+            while ~success % keep trying depths until we succeeed in adding a layer
                 nbad=nbad+1;
                 if(nbad>obj.badRunsThreshold)
                     error('nbad exceeded max,addLayer');
@@ -247,11 +323,13 @@ function. Get and set functions are at the end of the methods section.
                 %Propose new depth and resistivity within bounds
                 dummyLDepth = obj.lDepthMin +...
                     rand*(obj.lDepthMax - obj.lDepthMin);
-                ind = find(obj.lDepths < dummyLDepth,1,"last");
-
-                % dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
-                dummyLRho = obj.lRhos(ind);
-                % dummyLRho = 3 + randn;
+                % ind = find(obj.lDepths < dummyLDepth,1,"last");
+                % dummyLRho = obj.lRhos(ind);
+                % if obj.priorChoice == 1
+                    dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
+                % else
+                    % dummyLRho = 3 + randn;
+                % end
                 if obj.checkDepthProperties(dummyLDepth,indx)
                     success = true;
                 end
@@ -262,10 +340,18 @@ function. Get and set functions are at the end of the methods section.
             if ~issorted(obj.lDepths)
                 obj.sortLayers();
             end
+            if obj.priorChoice == 1
+                priorRatio = log(1.0);
+            else
+                sig_rho = 1.0;
+                rho_bar = 3.0;
+                priorRatio = log(obj.lRhoMax-obj.lRhoMin) - 0.5*log(2*pi*sig_rho^2) - 0.5*(dummyLRho-rho_bar)^2/sig_rho^2;
+            end
+
         end
         
         %
-        function success = perturbRho(obj)
+        function priorRatio = perturbRho(obj)
             % success = false;
             % nbad = 0;
             indx = randi([1,obj.numLayers]); %choose layer
@@ -278,14 +364,26 @@ function. Get and set functions are at the end of the methods section.
                 % 95% CI between 1-5
                 % dummy = 3 + randn;% sigma = 1, 2*sigma=2...
                 % this assigns rho from a flat prior.
+                oldRho = obj.lRhos(indx);
                 dummy = obj.lRhos(indx) + obj.lRhoChange*randn; %propose new rho
                 success = obj.checkRhoProperties(dummy); %check
             % end
             obj.lRhos(indx) = dummy; %actually change it
+            if success
+                if obj.priorChoice == 1
+                    priorRatio = log(1);
+                else
+                    rho_bar = 3.0;
+                    sig_rho = 1.0;
+                    priorRatio = -0.5*(dummy-rho_bar)^2/sig_rho^2 - -0.5*(oldRho-rho_bar)^2/sig_rho^2;
+                end
+            else
+                priorRatio = log(0);
+            end
         end
         
         %
-        function success = perturbVar(obj)
+        function priorRatio = perturbVar(obj)
             %Var not in log-space so convert before updating
             % success = false;
             % nbad = 0;
@@ -299,6 +397,11 @@ function. Get and set functions are at the end of the methods section.
                 success = obj.checkVarProperties(dummy);
             % end
             obj.var = 10^dummy;
+            if success
+                priorRatio = log(1);
+            else 
+                priorRatio = log(0);
+            end
         end
         
         %%%%%%%%%% GET IT %%%%%%%%%%%%%%%%%%%%

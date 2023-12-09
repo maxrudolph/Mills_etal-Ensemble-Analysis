@@ -88,7 +88,7 @@ results.allLikelihoods=zeros(totalSteps,1);
 results.allMisfits = zeros(totalSteps,1);
 results.allProbAccepts = zeros(totalSteps,1);
 results.allVars = zeros(totalSteps,1);
-
+results.allNumLayers = zeros(totalSteps,1);
 % Sets up a 'burn-in' period. Sets the maximum allowed # of layers for a
 % sln at each step to gradually increase
 maxLayersPerStep = []; %This will be the max layers in any given step.
@@ -112,22 +112,22 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     
     switch choice %Step 3: Edit proposed sln
         case 1 % Random option 1: Change the interface depth
-            success = layersProposed.perturbDepth();
+            proposalRatio = layersProposed.perturbDepth();
         case 2 %Random option 2: Delete a layer
-            success = layersProposed.deleteLayer();
+            proposalRatio = layersProposed.deleteLayer();
         case 3 % Random option 3: Add a new layer
-            success = layersProposed.addLayer();
+            proposalRatio = layersProposed.addLayer();
         case 4 %Random option 4: Change a layer's resistivity
-            success = layersProposed.perturbRho();
+            proposalRatio = layersProposed.perturbRho();
         case 5 % Random option 5: Change noise variance
-            success = layersProposed.perturbVar();
+            proposalRatio = layersProposed.perturbVar();
     end
-    if success && ~options.samplePrior
+    if ~options.samplePrior
         [depths,rhos] = layersProposed.getSolution();
         proposedGm = model(depths,rhos,lambda); % This is the forward model
         residual = data.y - proposedGm;
         layersProposed.setMisfit(residual);
-    elseif options.samplePrior
+    else
         proposedGm = acceptedGm;
         residual = data.y;
     end
@@ -135,12 +135,11 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     
     %Step 5: choose whether or not to accept the proposed sln
     %See my paper for this, or Malinverno 2002
-    if ~success
-        probAccept = log(0);
-    elseif options.samplePrior
+    
+    if options.samplePrior
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
-        probAccept = layersProposed.getPrior() - layersAccepted.getPrior();
+        probAccept = layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
     else
         %probAccept is calculated in ln space
         phi = layersAccepted.getMahalDist();
@@ -150,12 +149,12 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         k = layersAccepted.getNumLayers();
         kPrime = layersProposed.getNumLayers();
         probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior();
+            log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
         %Note that genericSln has a likeProb property, but it is preferable
         %to do this this way since its not the 'true' likeProb
     end
     
-    if (success && isfinite(probAccept)&&( probAccept > log(rand)))
+    if (isfinite(probAccept) && ( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
         acceptProposedSln(layersAccepted,layersProposed);
         acceptedGm = proposedGm;
@@ -186,6 +185,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     results.allChoices(iter) = choice;
     results.allProbAccepts(iter) = probAccept;
     results.allVars(iter) = layersAccepted.getVar();
+    results.allNumLayers(iter) = layersAccepted.getNumLayers();
 end
 
 %% Wrap up
