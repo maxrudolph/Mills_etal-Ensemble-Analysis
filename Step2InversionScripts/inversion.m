@@ -45,7 +45,7 @@ load(filename)
 
 
 %% Set options
-options.numSteps = 2e7; %4e8; %total iterations for loop.
+options.numSteps = 2e8; %4e8; %total iterations for loop.
 options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
@@ -53,7 +53,7 @@ options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 5;%800; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 400;%800; %sample every (saveSkip)th step once sampling begins
 options.alterVar = true; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parameters which can
 %change) or false for not (variance will never change from intlVar.
@@ -77,7 +77,7 @@ pBounds.maxLayers = 30; % max # of layers in a given model
 pBounds.depthMin = 1e-1; %min depth for layer interface, ie max thickness of top layer
 pBounds.depthMax = 1e5;%max(data.x); % max depth for layer interface
 pBounds.hMin = 10^((log10(pBounds.depthMax) - log10(pBounds.depthMin))/...
-    (4*pBounds.maxLayers)); %min layer thickness. Malinverno 2002 Append A1
+    (2*pBounds.maxLayers))/5; %min layer thickness. Malinverno 2002 Append A1
 pBounds.depthChange = pBounds.hMin; %Std dev for depth changes btwn steps
 pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters

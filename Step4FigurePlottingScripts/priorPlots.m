@@ -1,7 +1,7 @@
 clear;
 close all;
 
-filename = 'Ensemble_Constable1984__hierarchical-1_rhoPrior-1_1_08-Dec-2023.mat';
+filename = 'Ensemble_Constable1984__hierarchical-1_rhoPrior-2_1_PRIOR_17-Dec-2023.mat';
 % filename = 'Ensemble_Constable1984_1_PRIOR_04-Dec-2023.mat'
 % Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR_30-Nov-2023.mat
 load(filename)
@@ -65,10 +65,11 @@ for k=2:10
     % m1 = true(size(nlayer));
     tmp = thicknesses(:,m1);
 
-    hist((tmp(~isnan(tmp))),100); xlabel(['thickness (' num2str(k) '-layer)'])
+    hist(tmp(~isnan(tmp)),100); 
+    xlabel(['thickness (' num2str(k) '-layer)'])
 end
 
-%% histograms of layer thicknesses for each model complexity
+%% histograms of log depths for each model complexity
 figure();
 t = tiledlayout(2,5)
 
@@ -78,7 +79,8 @@ for k=2:10
     % m1 = true(size(nlayer));
     tmp = logDepths(2:end,m1);
 
-    hist((tmp(~isnan(tmp))),100); xlabel(['log(depth) (' num2str(k) '-layer)'])
+    hist((tmp(~isnan(tmp))),100); 
+    xlabel(['log(depth) (' num2str(k) '-layer)'])
 end
 
 %% get the ensemble in long-form

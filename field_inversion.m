@@ -17,7 +17,7 @@ delete(gcp('nocreate'));
 parpool(4);
 %Create data files
 tic
-parfor i = 1:2%1:length(noiseLevels)
+parfor i = 1:4%1:length(noiseLevels)
    
         a = loadFieldData('subStructChoice',subStructs{i});        
         b = inversion(a,'priorOn',sample_prior(i),'priorChoice',priors(i));

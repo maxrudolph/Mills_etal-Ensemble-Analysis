@@ -231,11 +231,11 @@ function. Get and set functions are at the end of the methods section.
             else
                 switch obj.priorChoice
                     case 1                     
-                        obj.prior = log(1);%-log(obj.numLayers); %prior on k is 1/k
+                        obj.prior = -log(obj.numLayers); %prior on k is 1/k
                     case 2
                         % flat prior on number of layers. Prior on rho gets
                         % wrapped up in proposal ratios below.
-                        obj.prior = log(1);
+                        obj.prior = -log(obj.numLayers);
                 end
             end
         end
@@ -250,7 +250,7 @@ function. Get and set functions are at the end of the methods section.
             success = false;
             nbad = 0;
 
-            [oldValidRanges,oldValidDepth] = obj.getValidDepths();
+            % [oldValidRanges,oldValidDepth] = obj.getValidDepths();
 
             while ~success
                 nbad=nbad+1;
@@ -266,15 +266,18 @@ function. Get and set functions are at the end of the methods section.
                     break;
                 else
                     layer_indices = 2:obj.numLayers;
-                    not_perturbed = setdiff(layer_indices,indx);
-                    [validRanges,validDepth] = obj.getValidDepths();
+                    not_perturbed = setdiff(layer_indices,indx); % list of unperturbed layers.
+                    % [validRanges,validDepth] = obj.getValidDepths();
 
-                    if isempty(not_perturbed)
+                    % if isempty(not_perturbed)
+                    %     priorRatio = log(1.0);
+                    %     break
+                    if min( abs(obj.lDepths(not_perturbed)-dummy)) <= obj.lHMin % proposed layer is too thin.
+                        priorRatio = log(0.0);
+                        break                    
+                    else
                         priorRatio = log(1.0);
                         break
-                    elseif min( abs(obj.lDepths(not_perturbed)-dummy)) >= obj.lHMin 
-                        priorRatio = log(1.0);
-                        break                    
                     end
                 end
             end
@@ -322,14 +325,9 @@ function. Get and set functions are at the end of the methods section.
                 end
                 %Propose new depth and resistivity within bounds
                 dummyLDepth = obj.lDepthMin +...
-                    rand*(obj.lDepthMax - obj.lDepthMin);
-                % ind = find(obj.lDepths < dummyLDepth,1,"last");
-                % dummyLRho = obj.lRhos(ind);
-                % if obj.priorChoice == 1
-                    dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
-                % else
-                    % dummyLRho = 3 + randn;
-                % end
+                    rand*(obj.lDepthMax - obj.lDepthMin);                
+                dummyLRho = obj.lRhoMin + rand*(obj.lRhoMax - obj.lRhoMin);
+
                 if obj.checkDepthProperties(dummyLDepth,indx)
                     success = true;
                 end
