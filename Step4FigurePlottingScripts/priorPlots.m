@@ -1,7 +1,7 @@
 clear;
 close all;
 
-filename = 'Ensemble_Constable1984__hierarchical-1_rhoPrior-2_1_PRIOR_17-Dec-2023.mat';
+filename = 'Ensemble_Constable1984__hierarchical-1_rhoPrior-2_1_18-Dec-2023.mat';
 % filename = 'Ensemble_Constable1984_1_PRIOR_04-Dec-2023.mat'
 % Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR_30-Nov-2023.mat
 load(filename)
@@ -85,8 +85,8 @@ end
 
 %% get the ensemble in long-form
 disp('Model space...')
-nzplot = 100; %number of imaginary (depth)layers to divide appraisals into
-nRhoBins = 101; %number of resistivity bins in model space histogram
+nzplot = 1000; %number of imaginary (depth)layers to divide appraisals into
+nRhoBins = 1001; %number of resistivity bins in model space histogram
 
 %Setup logDepthPlot and logRhoPlot
 numSavedRuns = size(results.ensembleRhos,2);
