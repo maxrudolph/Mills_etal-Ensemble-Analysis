@@ -7,7 +7,7 @@ close all;
 file_prefix = './';
 
 filenames = {
-    'Constable1984_1'
+    'Constable1984__hierarchical-1_rhoPrior-2_1_18-Dec-2023'
     };
 titles = {'1.0'};
 numEnsembles = length(filenames);
