@@ -73,7 +73,7 @@ options.pctSteps = 5;
 % Create bounds on parameter values. Some bounds are based on Appendix A
 % in Malinverno 2002. See also the "genericMedium" constructor function
 %Bound parameters. Bounds based on Appendix A, Malinverno 2002
-pBounds.maxLayers = 10; % max # of layers in a given model
+pBounds.maxLayers = 30; % max # of layers in a given model
 pBounds.depthMin = 1e-1; %min depth for layer interface, ie max thickness of top layer
 pBounds.depthMax = 1e5;%max(data.x); % max depth for layer interface
 pBounds.hMin = 10^((log10(pBounds.depthMax) - log10(pBounds.depthMin))/...

@@ -3,7 +3,7 @@ close all;
 
 %function saveEnsemblesLoop
 noiseLevels = [0]; % no additional noise.
-subStructs = {'field','field','field','field'};
+subStructs = {'Constable1984_Renner','Constable1984_Renner','Constable1984_Renner','Constable1984_Renner'};
 nstruct = length(subStructs);
 nnoise = length(noiseLevels);
 % noiseLevels = repmat(noiseLevels,1,nstruct)';
