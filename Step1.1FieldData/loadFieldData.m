@@ -184,7 +184,7 @@ end
 switch filterSize
     case 7
         forwardModel = @(a,b,c) calculateRho1D07(a,b,c);
-    case 11s
+    case 11
         forwardModel = @(a,b,c) calculateRho1D11(a,b,c);
     case 19
         forwardModel = @(a,b,c) calculateRho1D19(a,b,c);
