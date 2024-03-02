@@ -7,7 +7,7 @@ close all;
 file_prefix = './';
 
 filenames = {
-    'Constable1984_Renner__hierarchical-1_rhoPrior-1_1_22-Feb-2024'
+    'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024'
     };
 titles = {'1.0'};
 numEnsembles = length(filenames);

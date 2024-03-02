@@ -9,7 +9,7 @@ file_prefix = './'
 
 
 filenames = {    
-    'Constable1984_Renner__hierarchical-1_rhoPrior-1_1_22-Feb-2024'
+    'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024'
     %'3LayerA_0_02-Jul-2021.mat';
     %     '3LayerA_0.05.mat';
     % '3LayerA_0.02.mat';
