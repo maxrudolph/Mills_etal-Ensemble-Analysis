@@ -17,7 +17,7 @@ which is the next step of the process.
 addpath(genpath(fileparts(mfilename('fullpath'))))
 %adds subfolders so you can use the scripts in them
 defaultNoise = 1.0;
-defaultSubStruct = '';%Constable1984_Wauchope';
+defaultSubStruct = 'Constable1984_Wauchope';
 
 p = inputParser;
 validScalarPosNum = @(x) isnumeric(x) && isscalar(x) && (x>=0);
