@@ -52,4 +52,5 @@ for i = 1:size(lambda,2) %for each electrode spacing...
     end
     apparentResistivity(i) = sum(T.*filter); %...the measured resist is:
 end
+
 end

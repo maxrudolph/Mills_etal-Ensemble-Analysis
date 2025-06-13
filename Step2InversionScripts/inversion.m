@@ -32,11 +32,13 @@ containing the results from the inversion.
 
 %% Part 0 preliminary 
 defaultPriorOn =false;
+defaultLinear = false;
 defaultPriorChoice = int64(1); % 1 = flat prior, 2 = malinverno prior on rho
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
 addParameter(p,'priorChoice',defaultPriorChoice,@isinteger);
+addParameter(p,'piecewiseLinear',defaultLinear,@islogical); % whether to use linear (true) or piecewise constant resistivity
 parse(p,filename,varargin{:});
 
 addpath(genpath(fileparts(mfilename('fullpath'))))
@@ -45,21 +47,22 @@ load(filename)
 
 
 %% Set options
-options.numSteps = 2e8; %4e8; %total iterations for loop.
-options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
+options.numSteps = 1e6;%2e8; %4e8; %total iterations for loop.
+options.mLPSCoefficient = 1e3;%1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
 options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 400;%800; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 100 %400;%800; %sample every (saveSkip)th step once sampling begins
 options.alterVar = true; %Whether or not the inversion is hierarchical.
-%Set to true for hierarchical (variance is one of the parameters which can
+%Set to true for hierarchical (variance is one of the parame`ters which can
 %change) or false for not (variance will never change from intlVar.
 options.samplePrior = p.Results.priorOn; %If true, will base acceptance probability on
 %prior distribution (only set to true for testing purposes)
 options.pctSteps = 5;
+options.piecewiseLinear = p.Results.piecewiseLinear;
 %once mcmc loop starts, a statement is printed regularly that tells you the
 %algorithm is x% finished. If you set pctSteps = 1, you will be updated at
 %1%,2%,3%... if pctSteps = 5, it will be 5%,10%,15%... if options.numSteps

@@ -2,8 +2,9 @@ clear
 close all
 
 % uncomment one of the models below:
-% g1 = @(m) (m-2).*(m+2).*(m+2)/8; m_true=-3; label = 'tworoot';% nonlinear model with two roots
-g1 = @(m) (m-2).*(m-2).*(m-2)/8; m_true=1; label='oneroot'; % nonlinear model, one root
+g1 = @(m) (m-2).*(m+2).*(m+2)/8; label = 'tworoot';% nonlinear model with two roots
+% g1 = @(m) (m-2).*(m-2).*(m-2)/8; m_true=1; label='oneroot'; % nonlinear model, one root
+% g1 = @(m) (m-0).*(m-2.5).*(m-3); m_true=1; label='threeroot';
 %  g1 = @(m) tanh(m); m_true = 0; label='tanh';
 % g1 = @(m) m; m_true = 1; label='linear';% linear model, one root
 % g1 = @(m) 1; m_true=0; label='constant';
@@ -13,7 +14,7 @@ g1 = @(m) (m-2).*(m-2).*(m-2)/8; m_true=1; label='oneroot'; % nonlinear model, o
 % plot(mplot,g(mplot));
 
 % introduce an outer loop over m-values
-all_m = [1 -0.5];
+all_m = [2.5 2.0];
 plotcolors = colororder;
 
 for im = 1:length(all_m)
@@ -50,7 +51,7 @@ for im = 1:length(all_m)
             m_proposed = m_accepted;
             
             % perturb m
-            m_proposed = m_proposed + randn()*0.01;
+            m_proposed = m_proposed + randn()*0.1;
             % alternatively, pick m randomly across entire allowable range:
             %         m_proposed = -10 + 20*rand();
             
@@ -111,7 +112,11 @@ for im = 1:length(all_m)
     
     nsamples = 1e7;
     tmp = rand(nsamples,1);
-    m_samples = interp1(cdf(mask),mvals(mask),tmp);
+    [cdf_tmp,ind] = unique(cdf(mask));
+    mvals_tmp = mvals(mask);
+    mvals_tmp = mvals_tmp(ind);
+
+    m_samples = interp1(cdf_tmp,mvals_tmp,tmp);
     
     figure();
     subplot(2,1,1);
@@ -121,7 +126,7 @@ for im = 1:length(all_m)
     hold on
     plot(mvals,posterior,'r--');
     
-    xlabel('m');
+    xlabel('m (parameter)');
     subplot(2,1,2);
     histogram(g(m_samples),'Normalization','pdf');
     xlabel('g');
@@ -130,8 +135,8 @@ for im = 1:length(all_m)
     if im == 1
         f=figure(901);
         clf();
-        f.Position(3:4) = [560 600];
-        t = tiledlayout(4,3,'TileSpacing','none');
+        f.Position(3:4) = [720 600];
+        t = tiledlayout(4,4,'TileSpacing','tight');
     else
         f=figure(901);
     end
@@ -141,7 +146,7 @@ for im = 1:length(all_m)
     m_center = (m_edges(1:end-1)+m_edges(2:end))/2;
     g_center = (g_edges(1:end-1)+g_edges(2:end))/2;
     
-    nexttile(5,[2 2]);
+    nexttile(6,[2 2]);
     nplot=1e4;
     indplot = randperm(length(m_store),nplot);
     
@@ -154,20 +159,20 @@ for im = 1:length(all_m)
     colors = interp1([min(-likeprob_store) max(-likeprob_store)],colors,-likeprob_store(indplot));
     sizes = interp1([min(-likeprob_store) max(-likeprob_store)],[20 0],-likeprob_store(indplot));
     lw=1; % line width
-    m_mean = mean(m_store); m_mean_style = ':';
+    m_mean = mean(m_store); m_mean_style = '--';
     r_mean = sqrt( (g(m_mean) - g_obs).^2 );
-    m_median = median(m_store); m_median_style = '--';
+    m_median = median(m_store); m_median_style = ':';
     r_median = sqrt( (g(m_median) - g_obs).^2 );
     r_true = sqrt( (g(m_true) - g_obs).^2 ); m_true_style = '-';
     
     hs=scatter(m_store(indplot),g_store(indplot),sizes,colors,'filled',...
         'Marker','o','MarkerEdgeColor','none','MarkerFaceAlpha',.01);
     hold on;
-    set(gca,'XLim',[-1 4],'YLim',[-4 1]);
+    set(gca,'XLim',[-4 4],'YLim',[-1 3]);
     plot(get(gca,'XLim'),g(m_true)*[1 1],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw);
     plot(m_true*[1 1],get(gca,'YLim'),m_true_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(get(gca,'XLim'),g(m_median)*[1 1],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(m_median*[1 1],get(gca,'YLim'),m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(get(gca,'XLim'),g(m_median)*[1 1],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(m_median*[1 1],get(gca,'YLim'),m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
     plot(get(gca,'XLim'),g(m_mean)*[1 1],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
     plot(m_mean*[1 1],get(gca,'YLim'),m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
     
@@ -180,175 +185,75 @@ for im = 1:length(all_m)
     
     
     %
-    % Panel D - Plot of m
-    %
-    ymax = 3.2;
-    nexttile(8+3,[1 2]);
-    % [f,xi] = ksdensity(m_store);
-    histogram(m_store,m_edges,'EdgeColor','none','FaceColor',plotcolors(im,:),'Normalization','pdf','FaceAlpha',alpha);
-    % plot(xi,f);
-    hold on
-    [f,xi] = ksdensity(m_samples);
-    plot(xi,f,'Color',plotcolors(im,:));
-    plot(m_mean*[1 1],[0 ymax],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(m_median*[1 1],[0 ymax],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(m_true*[1 1],[0 ymax],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    set(gca,'YLim',[0 ymax]);
-    xlabel('m');
-    ylabel('p(m|d)');
-    set(gca,'FontSize',12,'FontName','Helvetica');
-    text(0.05,0.80,'D','Units','normalized','FontSize',16,'FontName','Helvetica');
-    ax1 = gca();
+    % Panel A,E - Plot of m
+    %    
+    % ymax = 3.2;
     
-    %
-    % Pabel B - plot of g(m)
-    %
-    nexttile(1+3,[2 1]);
-    % [n,c] = histcounts( (g_store-g_obs).^2/noise_coefficient );
-    % barh(n,c);
-    histogram(g_store,g_edges,'Orientation','horizontal','FaceColor',plotcolors(im,:),'EdgeColor','none','Normalization','pdf','FaceAlpha',alpha);
-    %     [f,xi] = ksdensity(g_store);
-    %     plot(f,xi);
-    hold on
-    % histogram(g(m_samples),'Orientation','horizontal','FaceColor',0.65*[0 0 1],'EdgeColor','none','Normalization','pdf');
-    [f,xi] = ksdensity(g(m_samples));
-    plot(f,xi,'Color',plotcolors(im,:),'LineWidth',lw);
-    ylabel('g(m)')
-    hold on
-    % plot(g_obs.^2*[1 1],get(gca,'YLim'),'k--');
-    plot(get(gca,'XLim'),g(m_mean)*[1 1],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(get(gca,'XLim'),g(m_median)*[1 1],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(get(gca,'XLim'),g(m_true)*[1 1],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
-    set(gca,'FontSize',12,'FontName','Helvetica');
-    text(0.1,0.9,'B','Units','normalized','FontSize',16,'FontName','Helvetica');
-    % xlabel('p(g(m)|d)');
-    ax3 = gca();
-    set(ax3,'YTick',get(ax2,'YTick'));
-    set(ax3,'YLim', get(ax2,'YLim'));
-    set(ax1,'XTick',get(ax2,'XTick'));
-    set(ax1,'XLim', get(ax2,'XLim'));
-    % set(ax2,'XTickLabel',[]);
-    % set(ax2,'YTickLabel',[]);
-    set(gcf,'Color','w');
-    
-    % cumulative distribution
-    nexttile(1,[1 3]);
-    histogram(sqrt(misfit_store.^2),1000,'Normalization','cdf','EdgeColor','none','FaceColor',plotcolors(im,:),'FaceAlpha',alpha);
-    hold on
-    plot(r_true*[1 1],get(gca,'YLim'),m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
-    plot(r_mean*[1 1],get(gca,'YLim'),m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(r_median*[1 1],get(gca,'YLim'),m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    [f,xi] = ksdensity( sqrt((g(m_samples)-g_obs).^2 ),linspace(0,3,1000),'Function','cdf');
-    plot(xi,f,'Color',plotcolors(im,:));
-    xlabel('||d-g(m)||_2');%,'interpreter','latex');
-    ylabel('cum. prob.');
-    set(gca,'FontSize',12,'FontName','helvetica');
-    set(gca,'XLim',[-.05 1]);
-    text(0.025,0.85,'A','Units','normalized','FontSize',16,'FontName','Helvetica');
-    
-    
-    %% plotting - second figure shows k-medoids (k=2)
     if im == 1
-        f=figure(902);
-        clf();
-        f.Position(3:4) = [560 600];
-        t2 = tiledlayout(4,3,'TileSpacing','none');
+        nexttile(2,[1 2]);
     else
-        f=figure(902);
+        nexttile(14,[1 2]);
     end
-    alpha = 0.15;
-    
-    [N,m_edges,g_edges] = histcounts2(m_store,g_store,linspace(-5,5,200),linspace(-5,5,201),'Normalization','pdf');
-    m_center = (m_edges(1:end-1)+m_edges(2:end))/2;
-    g_center = (g_edges(1:end-1)+g_edges(2:end))/2;
-    
-    nexttile(5,[2 2]);
-    
-    indplot = randperm(length(m_store),nplot);
-    
-    if im==1
-        mtmp = linspace(-1,4,201);
-        plot(mtmp,g(mtmp),'Color','k');
-        hold on
-    end
-    colors = [plotcolors(im,:); 1 1 1];
-    colors = interp1([min(-likeprob_store) max(-likeprob_store)],colors,-likeprob_store(indplot));
-    sizes = interp1([min(-likeprob_store) max(-likeprob_store)],[20 0],-likeprob_store(indplot));
-    hs=scatter(m_store(indplot),g_store(indplot),sizes,colors,'filled',...
-        'Marker','o','MarkerEdgeColor','none','MarkerFaceAlpha',0.25);
-    hold on;
-    set(gca,'XLim',[-1 4],'YLim',[-4 1]);
-    set(gca,'FontSize',12,'FontName','Helvetica');
-    set(gca,'Box','on');
-    text(0.05,0.90,'C','Units','normalized','FontSize',16,'FontName','Helvetica');
-    ax2 = gca();
-    
-    lw=1; % line width
-    % k-medoids values computed using the algorithm in sklearn_extra
-    % with cityblock distance
-    all_m_medoids = [2.53786867, 1.09447745;
-        -0.38164543, -0.56871973 ];
-    m_medoids = all_m_medoids(im,:);
-    r_medoids = sqrt( (g(m_medoids) - g_obs).^2 );
-    g_medoids = g(m_medoids);
-    medoid_1_style = ':';
-    medoid_2_style = '--';
-    
-    r_true = sqrt( (g(m_true) - g_obs).^2 ); m_true_style = '-';
-    
-    %
-    % Panel D - Plot of m
-    %
-    ymax = 3.2;
-    nexttile(8+3,[1 2]);
     % [f,xi] = ksdensity(m_store);
     histogram(m_store,m_edges,'EdgeColor','none','FaceColor',plotcolors(im,:),'Normalization','pdf','FaceAlpha',alpha);
     % plot(xi,f);
     hold on
     [f,xi] = ksdensity(m_samples);
     plot(xi,f,'Color',plotcolors(im,:));
-    %     plot(m_mean*[1 1],[0 ymax],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    %     plot(m_median*[1 1],[0 ymax],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    ymax = max(f)*1.1;
+    plot(m_mean*[1 1],[0 ymax],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(m_median*[1 1],[0 ymax],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
     plot(m_true*[1 1],[0 ymax],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    % plot the two medians
-    plot(m_medoids(1)*[1 1],[0 ymax],medoid_1_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(m_medoids(2)*[1 1],[0 ymax],medoid_2_style,'Color',plotcolors(im,:),'LineWidth',lw);
     set(gca,'YLim',[0 ymax]);
-    xlabel('m');
-    ylabel('p(m|d)');
+    if im == 1
+        set(gca,'XTick',[]);
+
+    else
+        xlabel('m');
+    end
+    ylabel('p(m|d) (posterior)');
     set(gca,'FontSize',12,'FontName','Helvetica');
-    text(0.05,0.80,'D','Units','normalized','FontSize',16,'FontName','Helvetica');
+    if im==1
+        text(0.05,0.80,'A','Units','normalized','FontSize',16,'FontName','Helvetica');
+    else
+        text(0.05,0.80,'E','Units','normalized','FontSize',16,'FontName','Helvetica');
+    end
     ax1 = gca();
     
     %
-    % Pabel B - plot of g(m)
+    % Pabel B,D - plot of g(m)
     %
-    nexttile(1+3,[2 1]);
+    if im==1
+        nexttile(5,[2 1]);
+    else
+        nexttile(8,[2 1]);
+    end
     % [n,c] = histcounts( (g_store-g_obs).^2/noise_coefficient );
     % barh(n,c);
-    histogram(g_store,g_edges,'Orientation','horizontal','FaceColor',plotcolors(im,:),'EdgeColor','none','Normalization','pdf','FaceAlpha',alpha);
+    histogram(g_store-g(m_true),g_edges-g(m_true),'Orientation','horizontal','FaceColor',plotcolors(im,:),'EdgeColor','none','Normalization','pdf','FaceAlpha',alpha);
     %     [f,xi] = ksdensity(g_store);
     %     plot(f,xi);
     hold on
     % histogram(g(m_samples),'Orientation','horizontal','FaceColor',0.65*[0 0 1],'EdgeColor','none','Normalization','pdf');
-    [f,xi] = ksdensity(g(m_samples));
+    [f,xi] = ksdensity(g(m_samples)-g(m_true));
     plot(f,xi,'Color',plotcolors(im,:),'LineWidth',lw);
-    ylabel('g(m)')
+    ylabel('g(m)-d (misfit)')
     hold on
     % plot(g_obs.^2*[1 1],get(gca,'YLim'),'k--');
-    %     plot(get(gca,'XLim'),g(m_mean)*[1 1],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    %     plot(get(gca,'XLim'),g(m_median)*[1 1],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(get(gca,'XLim'),g_medoids(1)*[1 1],medoid_1_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(get(gca,'XLim'),g_medoids(2)*[1 1],medoid_2_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    
-    
-    plot(get(gca,'XLim'),g(m_true)*[1 1],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
+    plot(get(gca,'XLim'),(g(m_mean)-g(m_true))*[1 1],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(get(gca,'XLim'),g(m_median)*[1 1],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    plot(get(gca,'XLim'),(g(m_true)-g(m_true))*[1 1],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
     set(gca,'FontSize',12,'FontName','Helvetica');
-    text(0.1,0.9,'B','Units','normalized','FontSize',16,'FontName','Helvetica');
+    if im == 1
+        text(0.1,0.9,'B','Units','normalized','FontSize',16,'FontName','Helvetica');
+    else
+        text(0.1,0.9,'D','Units','normalized','FontSize',16,'FontName','Helvetica');
+        set(gca,'YAxisLocation','right');
+    end
     % xlabel('p(g(m)|d)');
     ax3 = gca();
-    set(ax3,'YTick',get(ax2,'YTick'));
-    set(ax3,'YLim', get(ax2,'YLim'));
+    % set(ax3,'YTick',get(ax2,'YTick'));
+    set(ax3,'YLim', get(ax2,'YLim')-g(m_true));
     set(ax1,'XTick',get(ax2,'XTick'));
     set(ax1,'XLim', get(ax2,'XLim'));
     % set(ax2,'XTickLabel',[]);
@@ -356,38 +261,162 @@ for im = 1:length(all_m)
     set(gcf,'Color','w');
     
     % cumulative distribution
-    nexttile(1,[1 3]);
-    histogram(sqrt(misfit_store.^2),1001,'Normalization','cdf','EdgeColor','none','FaceColor',plotcolors(im,:),'FaceAlpha',alpha);
-    hold on
-    plot(r_true*[1 1],get(gca,'YLim'),m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
-    %     plot(r_mean*[1 1],get(gca,'YLim'),m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    %     plot(r_median*[1 1],get(gca,'YLim'),m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(r_medoids(1)*[1 1],get(gca,'YLim'),medoid_1_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    plot(r_medoids(2)*[1 1],get(gca,'YLim'),medoid_2_style,'Color',plotcolors(im,:),'LineWidth',lw);
-    [f,xi] = ksdensity( sqrt((g(m_samples)-g_obs).^2 ),linspace(0,2,1e3),'Function','cdf');
-    plot(xi,f,'Color',plotcolors(im,:));
-    xlabel('||d-g(m)||_2');%,'interpreter','latex');
-    ylabel('cum. prob.');
-    set(gca,'FontSize',12,'FontName','helvetica');
-    set(gca,'XLim',[-.05 1]);
-    text(0.025,0.85,'A','Units','normalized','FontSize',16,'FontName','Helvetica');
+    % nexttile(1,[1 3]);
+    % histogram(sqrt(misfit_store.^2),1000,'Normalization','cdf','EdgeColor','none','FaceColor',plotcolors(im,:),'FaceAlpha',alpha);
+    % hold on
+    % plot(r_true*[1 1],get(gca,'YLim'),m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
+    % plot(r_mean*[1 1],get(gca,'YLim'),m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(r_median*[1 1],get(gca,'YLim'),m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % [f,xi] = ksdensity( sqrt((g(m_samples)-g_obs).^2 ),linspace(0,3,1000),'Function','cdf');
+    % plot(xi,f,'Color',plotcolors(im,:));
+    % xlabel('||d-g(m)||_2');%,'interpreter','latex');
+    % ylabel('cum. prob.');
+    % set(gca,'FontSize',12,'FontName','helvetica');
+    % set(gca,'XLim',[-.05 1]);
+    % text(0.025,0.85,'A','Units','normalized','FontSize',16,'FontName','Helvetica');
     
+    
+    % %% plotting - second figure shows k-medoids (k=2)
+    % if im == 1
+    %     f=figure(902);
+    %     clf();
+    %     f.Position(3:4) = [560 600];
+    %     t2 = tiledlayout(4,3,'TileSpacing','none');
+    % else
+    %     f=figure(902);
+    % end
+    % alpha = 0.15;
+    % 
+    % [N,m_edges,g_edges] = histcounts2(m_store,g_store,linspace(-5,5,200),linspace(-5,5,201),'Normalization','pdf');
+    % m_center = (m_edges(1:end-1)+m_edges(2:end))/2;
+    % g_center = (g_edges(1:end-1)+g_edges(2:end))/2;
+    % 
+    % nexttile(5,[2 2]);
+    % 
+    % indplot = randperm(length(m_store),nplot);
+    % 
+    % if im==1
+    %     mtmp = linspace(-1,4,201);
+    %     plot(mtmp,g(mtmp),'Color','k');
+    %     hold on
+    % end
+    % colors = [plotcolors(im,:); 1 1 1];
+    % colors = interp1([min(-likeprob_store) max(-likeprob_store)],colors,-likeprob_store(indplot));
+    % sizes = interp1([min(-likeprob_store) max(-likeprob_store)],[20 0],-likeprob_store(indplot));
+    % hs=scatter(m_store(indplot),g_store(indplot),sizes,colors,'filled',...
+    %     'Marker','o','MarkerEdgeColor','none','MarkerFaceAlpha',0.25);
+    % hold on;
+    % set(gca,'XLim',[-1 4],'YLim',[-4 1]);
+    % set(gca,'FontSize',12,'FontName','Helvetica');
+    % set(gca,'Box','on');
+    % text(0.05,0.90,'C','Units','normalized','FontSize',16,'FontName','Helvetica');
+    % ax2 = gca();
+    % 
+    % lw=1; % line width
+    % % k-medoids values computed using the algorithm in sklearn_extra
+    % % with cityblock distance
+    % all_m_medoids = [2.53786867, 1.09447745;
+    %     -0.38164543, -0.56871973 ];
+    % m_medoids = all_m_medoids(im,:);
+    % r_medoids = sqrt( (g(m_medoids) - g_obs).^2 );
+    % g_medoids = g(m_medoids);
+    % medoid_1_style = ':';
+    % medoid_2_style = '--';
+    % 
+    % r_true = sqrt( (g(m_true) - g_obs).^2 ); m_true_style = '-';
+    % 
+    % %
+    % % Panel D - Plot of m
+    % %
+    % ymax = 3.2;
+    % nexttile(8+3,[1 2]);
+    % % [f,xi] = ksdensity(m_store);
+    % histogram(m_store,m_edges,'EdgeColor','none','FaceColor',plotcolors(im,:),'Normalization','pdf','FaceAlpha',alpha);
+    % % plot(xi,f);
+    % hold on
+    % [f,xi] = ksdensity(m_samples);
+    % plot(xi,f,'Color',plotcolors(im,:));
+    % %     plot(m_mean*[1 1],[0 ymax],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % %     plot(m_median*[1 1],[0 ymax],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(m_true*[1 1],[0 ymax],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % % plot the two medians
+    % plot(m_medoids(1)*[1 1],[0 ymax],medoid_1_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(m_medoids(2)*[1 1],[0 ymax],medoid_2_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % set(gca,'YLim',[0 ymax]);
+    % xlabel('m');
+    % ylabel('p(m|d)');
+    % set(gca,'FontSize',12,'FontName','Helvetica');
+    % text(0.05,0.80,'D','Units','normalized','FontSize',16,'FontName','Helvetica');
+    % ax1 = gca();
+    % 
+    % %
+    % % Pabel B - plot of g(m)
+    % %
+    % nexttile(1+3,[2 1]);
+    % % [n,c] = histcounts( (g_store-g_obs).^2/noise_coefficient );
+    % % barh(n,c);
+    % histogram(g_store,g_edges,'Orientation','horizontal','FaceColor',plotcolors(im,:),'EdgeColor','none','Normalization','pdf','FaceAlpha',alpha);
+    % %     [f,xi] = ksdensity(g_store);
+    % %     plot(f,xi);
+    % hold on
+    % % histogram(g(m_samples),'Orientation','horizontal','FaceColor',0.65*[0 0 1],'EdgeColor','none','Normalization','pdf');
+    % [f,xi] = ksdensity(g(m_samples));
+    % plot(f,xi,'Color',plotcolors(im,:),'LineWidth',lw);
+    % ylabel('g(m)')
+    % hold on
+    % % plot(g_obs.^2*[1 1],get(gca,'YLim'),'k--');
+    % %     plot(get(gca,'XLim'),g(m_mean)*[1 1],m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % %     plot(get(gca,'XLim'),g(m_median)*[1 1],m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(get(gca,'XLim'),g_medoids(1)*[1 1],medoid_1_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(get(gca,'XLim'),g_medoids(2)*[1 1],medoid_2_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % 
+    % 
+    % plot(get(gca,'XLim'),g(m_true)*[1 1],m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
+    % set(gca,'FontSize',12,'FontName','Helvetica');
+    % text(0.1,0.9,'B','Units','normalized','FontSize',16,'FontName','Helvetica');
+    % % xlabel('p(g(m)|d)');
+    % ax3 = gca();
+    % set(ax3,'YTick',get(ax2,'YTick'));
+    % set(ax3,'YLim', get(ax2,'YLim'));
+    % set(ax1,'XTick',get(ax2,'XTick'));
+    % set(ax1,'XLim', get(ax2,'XLim'));
+    % % set(ax2,'XTickLabel',[]);
+    % % set(ax2,'YTickLabel',[]);
+    % set(gcf,'Color','w');
+    % 
+    % % cumulative distribution
+    % nexttile(1,[1 3]);
+    % histogram(sqrt(misfit_store.^2),1001,'Normalization','cdf','EdgeColor','none','FaceColor',plotcolors(im,:),'FaceAlpha',alpha);
+    % hold on
+    % plot(r_true*[1 1],get(gca,'YLim'),m_true_style,'Color',plotcolors(im,:),'LineWidth',lw+1);
+    % %     plot(r_mean*[1 1],get(gca,'YLim'),m_mean_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % %     plot(r_median*[1 1],get(gca,'YLim'),m_median_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(r_medoids(1)*[1 1],get(gca,'YLim'),medoid_1_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % plot(r_medoids(2)*[1 1],get(gca,'YLim'),medoid_2_style,'Color',plotcolors(im,:),'LineWidth',lw);
+    % [f,xi] = ksdensity( sqrt((g(m_samples)-g_obs).^2 ),linspace(0,2,1e3),'Function','cdf');
+    % plot(xi,f,'Color',plotcolors(im,:));
+    % xlabel('||d-g(m)||_2');%,'interpreter','latex');
+    % ylabel('cum. prob.');
+    % set(gca,'FontSize',12,'FontName','helvetica');
+    % set(gca,'XLim',[-.05 1]);
+    % text(0.025,0.85,'A','Units','normalized','FontSize',16,'FontName','Helvetica');
+    % 
     %% saving
-    do_save = 1
+    do_save = 1;
     if do_save && im == length(all_m)
         fig=figure(901);
         set(fig,'Visible','off');
         set(fig,'renderer','painters');
-        exportgraphics(t,[label '-mean_median.pdf']);
+        exportgraphics(t,[label '-mean.pdf']);
         set(fig,'renderer','opengl');
         set(fig,'Visible','on');
         
-        fig=figure(902);
-        set(fig,'Visible','off');
-        set(fig,'renderer','painters');
-        exportgraphics(t2,[label '-medoids.pdf']);
-        set(fig,'renderer','opengl');
-        set(fig,'Visible','on');
+        % fig=figure(902);
+        % set(fig,'Visible','off');
+        % set(fig,'renderer','painters');
+        % exportgraphics(t2,[label '-medoids.pdf']);
+        % set(fig,'renderer','opengl');
+        % set(fig,'Visible','on');
     end
     
     %% plot distribution of misfit

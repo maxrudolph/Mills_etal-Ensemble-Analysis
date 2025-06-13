@@ -68,7 +68,12 @@ Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data
 layersProposed = genericSln(pBounds,numMeasurements,Cdi);
 layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
-acceptedGm = model(depths,rhos,lambda);
+if( options.piecewiseLinear)
+    [depths,rhos]= piecewiseLinearSolution(depths,rhos,pBounds);
+    acceptedGm = model(depths,rhos,lambda);
+else
+    acceptedGm = model(depths,rhos,lambda);
+end
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
@@ -124,6 +129,9 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     end
     if ~options.samplePrior
         [depths,rhos] = layersProposed.getSolution();
+        if options.piecewiseLinear
+            [depths,rhos] = piecewiseLinearSolution(depths,rhos,pBounds);
+        end
         proposedGm = model(depths,rhos,lambda); % This is the forward model
         residual = data.y - proposedGm;
         layersProposed.setMisfit(residual);
