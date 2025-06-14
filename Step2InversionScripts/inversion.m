@@ -47,15 +47,15 @@ load(filename)
 
 
 %% Set options
-options.numSteps = 1e6;%2e8; %4e8; %total iterations for loop.
-options.mLPSCoefficient = 1e3;%1e4; %max layers per step, controls 'burn-in' length
+options.numSteps = 2e8; %4e8; %total iterations for loop.
+options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
 options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 100 %400;%800; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 400;%800; %sample every (saveSkip)th step once sampling begins
 options.alterVar = true; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parame`ters which can
 %change) or false for not (variance will never change from intlVar.
