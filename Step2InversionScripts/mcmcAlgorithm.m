@@ -42,6 +42,9 @@ ensemble. Inputs:
         allLikelihoods,allMisfits,allProbAccepts,allVars,maxLayers: records
             these properties at each step (not just for ensemble members).
 %}
+if options.piecewiseLinear
+    model = @(a,b,c) piecewiseLinearWrapper(a,b,c,model,pBounds);
+end
 %% Initializing
 rng(1); %reproducibility
 numMeasurements = length(data.x);
@@ -68,12 +71,9 @@ Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data
 layersProposed = genericSln(pBounds,numMeasurements,Cdi);
 layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
-if( options.piecewiseLinear)
-    [depths,rhos]= piecewiseLinearSolution(depths,rhos,pBounds);
+
     acceptedGm = model(depths,rhos,lambda);
-else
-    acceptedGm = model(depths,rhos,lambda);
-end
+
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
@@ -127,11 +127,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         case 5 % Random option 5: Change noise variance
             proposalRatio = layersProposed.perturbVar();
     end
-    if ~options.samplePrior
-        [depths,rhos] = layersProposed.getSolution();
-        if options.piecewiseLinear
-            [depths,rhos] = piecewiseLinearSolution(depths,rhos,pBounds);
-        end
+    if ~options.samplePrior        
         proposedGm = model(depths,rhos,lambda); % This is the forward model
         residual = data.y - proposedGm;
         layersProposed.setMisfit(residual);

@@ -11,9 +11,9 @@ file_prefix = './'
 % file_prefix = '../Ensembles_09132021/';
 
 filenames = {
-'3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0.02_14-Jun-2025.mat',
+'3LayerA__hierarchical-1_rhoPrior-1_0.05_14-Jun-2025.mat',
+'3LayerA__hierarchical-1_rhoPrior-1_0.1_14-Jun-2025.mat'
     };
 titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};
@@ -42,7 +42,11 @@ ind = [1,3,4,7,2,4];
 h=[];
 for i = 1:numEnsembles    
     load([file_prefix 'Analysis_' filenames{i}]);
-    load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
+    load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
+    if options.piecewiseLinear
+        forwardmodel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds)
+    end
+
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
         allModels{j}.lineStyle = line_styles{j};
@@ -56,7 +60,7 @@ for i = 1:numEnsembles
     set(gca,'YTick',[]);
     set(gca,'XLim',[0.0 0.2])
     hold on;
-    plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
+    % plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
     xlabel('Weighted Relative Error');
     %     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,[],...
     %         i,titles{i},line_widths)
@@ -174,8 +178,8 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 figure(figure1);
 disp('Saving...');
-set(figure1,'Visible','off');
-set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1.eps');
-set(figure1,'Renderer','opengl');
-set(figure1,'Visible','on');
+% set(figure1,'Visible','off');
+% set(figure1,'Renderer','painters');
+exportgraphics(t,'Figure1.pdf');
+% set(figure1,'Renderer','opengl');
+% set(figure1,'Visible','on');
