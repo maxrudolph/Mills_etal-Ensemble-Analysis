@@ -1,10 +1,10 @@
 clear;
 close all;
 delete(gcp('nocreate'));
-parpool(3);
+parpool(8);
 
 %function saveEnsemblesLoop
-noiseLevels = [0,0.01,0.02,0.05,0.1,0.2];
+noiseLevels = [0,0.02,0.05,0.1];
 % subStructs = {'1LayerA','3LayerA','4LayerA'};
 subStructs = {'3LayerA'};
 nstruct = length(subStructs);

@@ -9,12 +9,10 @@ file_prefix = './'
 % file_prefix='../Ensembles_02082023/'
 % file_prefix = '../Ensembles_09132021/'
 filenames = {
-    %'3LayerA_0_02-Jul-2021.mat';
-%     '3LayerA_0.05.mat';
-     '3LayerA__hierarchical-1_rhoPrior-1_0.02_13-Jun-2025';
-     % '3LayerA_0.05.mat';
-     % '3LayerA_0.1.mat';
-%     '3LayerA_0.2_02-Jul-2021.mat'
+'3LayerA__hierarchical-1_rhoPrior-1_0.02_14-Jun-2025.mat',
+'3LayerA__hierarchical-1_rhoPrior-1_0.05_14-Jun-2025.mat',
+'3LayerA__hierarchical-1_rhoPrior-1_0.1_14-Jun-2025.mat'
+%'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0_14-Jun-2025.mat'
 };
 titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};
@@ -103,11 +101,11 @@ nexttile(numEnsembles*4)
 c=colorbar();
 c.Label.String = 'Probability (normalized)';
 
-%{
+
 %% Save the figure
 set(gcf,'Visible','off');
-set(gcf,'Renderer','painters');
-exportgraphics(t,'test.eps');
-set(gcf,'Renderer','opengl');
+%set(gcf,'Renderer','painters');
+exportgraphics(t,'Figure0.pdf','ContentType','Vector');
+%set(gcf,'Renderer','opengl');
 %}
 set(gcf,'Visible','on');
