@@ -18,7 +18,7 @@ mex ./Step1DataGenerationScripts/calculateRho1D11_mex.c
 
 %Create data files
 tic
-parfor i = 1:length(noiseLevels)
+parfor i = 1:length(noiseLevels)+1
     if i>length(noiseLevels) %sample the prior for one subStruct
         a = createSyntheticData(0,'subStructChoice','3LayerA');
         b = inversion(a,'priorOn',true);
