@@ -2,16 +2,12 @@ clear;
 close all;
 
 ensemble_files = {    
-    % 'Ensemble_Constable1984_Renner__hierarchical-1_rhoPrior-1_1_22-Feb-2024.mat',
-    % 'Ensemble_Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024.mat'  
-    % 'Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_04-Mar-2024.mat',
-    % 'Ensemble_Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_04-Mar-2024'
-    'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.02_14-Jun-2025.mat',
-    'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.05_14-Jun-2025.mat',
-    'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.1_14-Jun-2025.mat',
-    'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0_14-Jun-2025.mat',
+'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
+'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
+'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.1.mat',
+'Ensemble_3LayerA__hierarchical-1_rhoPrior-1_0.mat'
 };
-exact_known = false;
+exact_known = true;
 
 delete(gcp('nocreate'));
 parpool();

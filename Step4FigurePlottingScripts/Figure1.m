@@ -11,9 +11,9 @@ file_prefix = './'
 % file_prefix = '../Ensembles_09132021/';
 
 filenames = {
-    '3LayerA__hierarchical-1_rhoPrior-1_0.02_14-Jun-2025.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.05_14-Jun-2025.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.1_14-Jun-2025.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
+'3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
+'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
     };
 titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};

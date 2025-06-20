@@ -72,7 +72,7 @@ layersProposed = genericSln(pBounds,numMeasurements,Cdi);
 layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
 
-    acceptedGm = model(depths,rhos,lambda);
+acceptedGm = model(depths,rhos,lambda);
 
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
