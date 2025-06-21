@@ -73,7 +73,6 @@ layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
 
 acceptedGm = model(depths,rhos,lambda);
-
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
@@ -127,7 +126,8 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         case 5 % Random option 5: Change noise variance
             proposalRatio = layersProposed.perturbVar();
     end
-    if ~options.samplePrior        
+    if ~options.samplePrior   
+	    [depths,rhos] = layersProposed.getSolution();     
         proposedGm = model(depths,rhos,lambda); % This is the forward model
         residual = data.y - proposedGm;
         layersProposed.setMisfit(residual);

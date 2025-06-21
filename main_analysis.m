@@ -13,5 +13,5 @@ delete(gcp('nocreate'));
 parpool();
 
 parfor i=1:length(ensemble_files)
-    ensembleAnalysisMaster( ensemble_files{i},exact_known);
+    ensembleAnalysisMaster_noClustering( ensemble_files{i},exact_known);
 end
