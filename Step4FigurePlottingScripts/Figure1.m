@@ -11,9 +11,9 @@ file_prefix = './'
 % file_prefix = '../Ensembles_09132021/';
 
 filenames = {
-    '3LayerA__hierarchical-1_rhoPrior-1_0.02_14-Jun-2025.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.05_14-Jun-2025.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.1_14-Jun-2025.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0.05',
+    '3LayerA__hierarchical-1_rhoPrior-1_0.1'
     };
 titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};
@@ -44,7 +44,7 @@ for i = 1:numEnsembles
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
     if options.piecewiseLinear
-        forwardmodel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds)
+        forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds)
     end
 
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
@@ -72,7 +72,7 @@ for i = 1:numEnsembles
     xvals = logspace(log10(data.x(1)),log10(data.x(end)),nxplot);
     lamplot = makeLambda(xvals,11);
     Gplot = zeros(nxplot,ntot);
-
+    % DO NOT MAKE THIS PARFOR - IT WILL CRASH COMPUTER
     for j=1:size(results.ensembleG,2)
         if ~mod(j,10000)
             disp([num2str(j/ntot*100) ' percent done'])
