@@ -1,9 +1,18 @@
-function [new_depths,new_rhos]=piecewiseLinearSolution(depths,rhos,pbounds)
+function [new_depths,new_rhos]=piecewiseLinearSolution(varargin)
+depths= varargin(1);
+rhos = varargin(2);
+pbounds = varargin(3);
+if nargin == 4
+    new_depths = varargin(4);
+    ndepth = length(new_depths);
+else
+    ndepth = 100;
+    new_depths = logspace(log10(pbounds.depthMin),log10(pbounds.depthMax),ndepth)';
+end
 % interpolate the solution given in depths,rhos onto a uniformly spaced
 % vector of depth values.
 nlayer = nnz(~isnan(depths));
-ndepth = 100;
-new_depths = logspace(log10(pbounds.depthMin),log10(pbounds.depthMax),ndepth)';
+
 if nlayer == 1
     new_rhos = ones(ndepth,1)*rhos(1);
 else

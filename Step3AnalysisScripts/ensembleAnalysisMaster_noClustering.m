@@ -132,9 +132,9 @@ bestIndex = ind2(1);                      %the one with lowest misfit
 
 %Find their corresponding slns in the ensemble
 dMedian = genModelInd(medianIndex,zVals,data,medianColor,dsLineStyle,...
-    'DS Median',forwardModel,results);
+    'DS Median',forwardModel,results,options,pBounds);
 bestFit = genModelInd(bestIndex,zVals,data,bestFitColor,dsLineStyle,...
-    'DS Best Fit',forwardModel,results);
+    'DS Best Fit',forwardModel,results,options,pBounds);
 % maximumLikelihood = genModelInd()
 
 %Maximum likelihood model (Model Space)
