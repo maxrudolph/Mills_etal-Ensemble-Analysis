@@ -1,4 +1,4 @@
-function h = modelSpacePanel(binCenters,numElements,allModels,panel_number,line_widths)
+function h = modelSpacePanel(binCenters,numElements,allModels,panel_number,line_widths,piecewiseLinear,pBounds)
 
 xdata = 10.^binCenters{1};
 if ~isempty(allModels) && isfield(allModels{1},'rhos')
@@ -18,7 +18,14 @@ hold on
 for iPlot = 1:length(allModels) % iterate backwards to plot exact solution last.
     if (isfield(allModels{iPlot},'rhos')) ...
             || (isobject(allModels{iPlot}) && isprop(allModels{iPlot},'rhos'))
-        plot(allModels{iPlot}.rhos,allModels{iPlot}.depths,'LineStyle',...
+        % interpolate solution if this is a piecewiseLinear model
+        if piecewiseLinear && iPlot>1 % don't interpolate the exact solution.
+            [depth_plot,rho_plot] = piecewiseLinearSolution(allModels{iPlot}.depths,allModels{iPlot}.rhos,pBounds);
+        else
+            depth_plot = allModels{iPlot}.depths;
+            rho_plot = allModels{iPlot}.rhos;
+        end
+        plot(rho_plot,depth_plot,'LineStyle',...
             allModels{iPlot}.lineStyle,'Color',allModels{iPlot}.color,'DisplayName',...
             allModels{iPlot}.displayName,'LineWidth',line_widths{iPlot});
     end

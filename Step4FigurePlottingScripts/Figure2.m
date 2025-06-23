@@ -8,8 +8,8 @@ file_prefix = './';
 % file_prefix = '.'
 filenames = {
     '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
     };
 titles = {'0.02','0.05','0.1'};
 numEnsembles = length(filenames);
@@ -34,7 +34,7 @@ ind = [1,3,4,7,2,4];%,3,4];
 h=[];
 for i = 1:numEnsembles
     load([file_prefix 'Analysis_' filenames{i}]);
-    load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
+    load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
@@ -46,13 +46,13 @@ for i = 1:numEnsembles
         %          allModels{j}.displayName = displayNames{j-1};
         %    end
     end
-    titles{i}    
+    titles{i}
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
         2*i-1,titles{i},line_widths);
     cellfun(@(x) x.displayName,allModels,'UniformOutput',false)
     round(importantNumbers,2)
     nexttile(i+numEnsembles,[2 1])
-    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
+    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths,options.piecewiseLinear,pBounds);
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 1
