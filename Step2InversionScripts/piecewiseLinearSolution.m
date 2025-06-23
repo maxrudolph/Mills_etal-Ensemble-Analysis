@@ -3,7 +3,7 @@ depths= varargin{1};
 rhos = varargin{2};
 pbounds = varargin{3};
 if nargin == 4
-    new_depths = varargin(4);
+    new_depths = varargin{4};
     ndepth = length(new_depths);
 else
     ndepth = 100;
