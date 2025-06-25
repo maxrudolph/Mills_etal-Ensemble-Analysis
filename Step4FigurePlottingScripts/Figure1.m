@@ -135,7 +135,7 @@ for i = 1:numEnsembles
     nexttile(i+4*numEnsembles,[2 1])
     allModels{1}.color = 'r';
     allModels{1}.lineWidth = 0.5;
-    modelSpacePanel(binCenters,numElements,{allModels{1}},5*i,line_widths);
+    modelSpacePanel(binCenters,numElements,{allModels{1}},5*i,line_widths,options.piecewiseLinear,pBounds);
     set(gca,'ColorScale','linear');
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
@@ -178,8 +178,9 @@ c.Label.String = 'Probability (normalized)';
 %% Save the figure
 figure(figure1);
 disp('Saving...');
-% set(figure1,'Visible','off');
-% set(figure1,'Renderer','painters');
+set(figure1,'Visible','off');
+set(figure1,'Renderer','painters');
+exportgraphics(t,'Figure1.eps');
 exportgraphics(t,'Figure1.pdf');
-% set(figure1,'Renderer','opengl');
-% set(figure1,'Visible','on');
+set(figure1,'Renderer','opengl');
+set(figure1,'Visible','on');

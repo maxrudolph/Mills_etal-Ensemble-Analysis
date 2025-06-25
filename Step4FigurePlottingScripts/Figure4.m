@@ -37,7 +37,7 @@ h=[];
 for i = 1:numEnsembles
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],...
-        'results','data','forwardModel');
+        'results','data','forwardModel','options','pBounds');
     for j=1:length(allClusterSets)
         clusterset_weighted_errors = cellfun( @(x) x.wre2n,allClusterSets{j} );
         [~,ind1] = sort(clusterset_weighted_errors(2:end)); %sort weighted errors in 2nd position through end - 1st position is true solution, 2nd through end are clustering results.
@@ -58,7 +58,7 @@ for i = 1:numEnsembles
     cellfun( @(x) x.displayName,allModels,'UniformOutput',false)
     round(importantNumbers,2)
     nexttile(i+numEnsembles,[2 1])
-    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
+    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths,options.piecewiseLinear,pBounds);
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 2
@@ -85,6 +85,7 @@ figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure4.eps');
+exportgraphics(t,'Figure4.pdf');
 set(gcf,'Renderer','opengl');
 
 set(gcf,'Visible','on');
