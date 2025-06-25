@@ -9,9 +9,9 @@ ensemble_files = {
 };
 exact_known = true;
 
-% delete(gcp('nocreate'));
-% parpool();
+delete(gcp('nocreate'));
+parpool();
 
-for i=1:length(ensemble_files)
-    ensembleAnalysisMaster_noClustering( ensemble_files{i},exact_known);
+parfor i=1:length(ensemble_files)
+    ensembleAnalysisMaster( ensemble_files{i},exact_known);
 end
