@@ -11,6 +11,11 @@ filenames = {
     '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
     '3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
     };
+filenames = {
+    '3LayerA_0.02.mat',
+    '3LayerA_0.05.mat',
+    '3LayerA_0.1.mat'
+}
 titles = {'0.02','0.05','0.1'};
 numEnsembles = length(filenames);
 
@@ -35,6 +40,12 @@ h=[];
 for i = 1:numEnsembles
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
+   if ~isfield(options,'piecewiseLinear')
+        options.piecewiseLinear = false;
+    end
+    % if options.piecewiseLinear
+        % forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds)
+    % end
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
@@ -79,6 +90,7 @@ figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure2.eps');
+exportgraphics(t,'Figure2.png');
 exportgraphics(t,'Figure2.pdf');
 set(gcf,'Renderer','opengl');
 

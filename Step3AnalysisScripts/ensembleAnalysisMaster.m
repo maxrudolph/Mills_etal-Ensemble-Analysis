@@ -22,6 +22,7 @@ end
 
 filenameOut = filename(slashpos+9:end);
 disp(['output will be saved to: ' filenameOut]);
+originalForwardModel = forwardModel;
 if options.piecewiseLinear
     forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds);
 end
@@ -157,7 +158,7 @@ if exact_known
     [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
     trueDepthsPlot = 10.^logDepthPlot(:,1);
     trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
-    trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(trueDepths,...
+    trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,originalForwardModel(trueDepths,...
         trueRhos,data.lambda),data.y,trueColor,'-','Exact solution');
     trueModel.setWRE2N(data);
 else

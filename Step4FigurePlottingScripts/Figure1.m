@@ -12,9 +12,15 @@ file_prefix = './'
 
 filenames = {
     '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
-'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
     };
+filenames = {
+    '3LayerA_0.02.mat',
+    '3LayerA_0.05.mat',
+    '3LayerA_0.1.mat'
+}
+
 titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};
 numEnsembles = length(filenames);
@@ -43,6 +49,9 @@ h=[];
 for i = 1:numEnsembles    
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
+    if ~isfield(options,'piecewiseLinear')
+        options.piecewiseLinear = false;
+    end
     if options.piecewiseLinear
         forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds)
     end
@@ -60,7 +69,7 @@ for i = 1:numEnsembles
     set(gca,'YTick',[]);
     set(gca,'XLim',[0.0 0.2])
     hold on;
-    % plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
+    plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
     xlabel('Weighted Relative Error');
     %     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,[],...
     %         i,titles{i},line_widths)
@@ -136,11 +145,11 @@ for i = 1:numEnsembles
     allModels{1}.color = 'r';
     allModels{1}.lineWidth = 0.5;
     modelSpacePanel(binCenters,numElements,{allModels{1}},5*i,line_widths,options.piecewiseLinear,pBounds);
-    set(gca,'ColorScale','linear');
+    set(gca,'ColorScale','log');
+    set(gca,'XLim',[1e-1 1e5]);
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
-    
-    
+        
     % diagnostic plot for misfit
     figure();
     n3mask = results.ensembleNumLayers==3;

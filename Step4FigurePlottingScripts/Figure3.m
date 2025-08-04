@@ -28,9 +28,9 @@ C = [0 0 0;
     colororder()
     ];
 
-line_widths = {1.5,1.5,1.5,1.5,1.5,1.5};
-line_styles = {'-','-','--','-','--','-'};
-ind = [1,2,2,4,4,2,3,4];
+line_widths = {1.5,1.5,1.5,1.5,1.5,1.5,1.5};
+line_styles = {'-','-','--',':'};%,'--','-'};
+ind = [1,2,4,4,4,2,3,4];
 displayNames = {'k-Means centroid 1','k-Means centroid 2','k-medians centroid 1','k-medians centroid 2'};
 
 h=[];
@@ -38,20 +38,37 @@ for i = 1:numEnsembles
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],...
         'results','data','forwardModel','options','pBounds');
+    if options.piecewiseLinear
+        forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds);
+    end
+
+    %allClusterSets = {KMModelsEuclid, KMModelsMan, KMedoidsEuclid, KMedoidsManhattan};
     for j=1:length(allClusterSets)
         clusterset_weighted_errors = cellfun( @(x) x.wre2n,allClusterSets{j} );
         [~,ind1] = sort(clusterset_weighted_errors(2:end)); %sort weighted errors in 2nd position through end - 1st position is true solution, 2nd through end are clustering results.
         allClusterSets{j}(2:end) = allClusterSets{j}(ind1+1);
+        allClusterSets{j}{1} = allModels{1};
+        for k=2:length(allClusterSets{j})
+            if j==1
+                allClusterSets{j}{k}.displayName = ['k-Means ' allClusterSets{j}{k}.displayName];
+            else
+                allClusterSets{j}{k}.displayName = ['k-Medians ' allClusterSets{j}{k}.displayName];
+            end
+            allClusterSets{j}{k}.color = C(ind(j+1),:);
+            allClusterSets{j}{k}.lineStyle = line_styles{k};
+        end
+        allClusterSets{j}{1}.color = C(1,:);% exact solution
+        allClusterSets{j}{1}.lineStyle = '-';
     end
     allModels = {allClusterSets{1}{:},allClusterSets{2}{2:end}};
     % 
 
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
-        allModels{j}.color = C(ind(j),:);
-        allModels{j}.lineStyle = line_styles{j};
+        %allModels{j}.color = C(ind(j),:);
+        %allModels{j}.lineStyle = line_styles{j};
         if j>1
-            allModels{j}.displayName = displayNames{j-1};
+           % allModels{j}.displayName = displayNames{j-1};
         end
     end
     titles{i}
@@ -64,7 +81,7 @@ for i = 1:numEnsembles
     modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths,options.piecewiseLinear,pBounds);
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
-    if i == 2
+    if i == 3
         legend('location','southeast')
         lgd = legend('location','southeast');
         lgd.FontSize = 7;
