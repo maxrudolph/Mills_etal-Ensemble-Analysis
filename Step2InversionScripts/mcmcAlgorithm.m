@@ -126,37 +126,36 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         case 5 % Random option 5: Change noise variance
             proposalRatio = layersProposed.perturbVar();
     end
-    if ~options.samplePrior   
+       
 	    [depths,rhos] = layersProposed.getSolution();     
         proposedGm = model(depths,rhos,lambda); % This is the forward model
         residual = data.y - proposedGm;
         layersProposed.setMisfit(residual);
-    else
-        proposedGm = acceptedGm;
-        residual = data.y;
-    end
+    
     %Step 4: Run proposed sln through forward model to get misfit
     
     %Step 5: choose whether or not to accept the proposed sln
     %See my paper for this, or Malinverno 2002
     
+
+    %probAccept is calculated in ln space
+    phi = layersAccepted.getMahalDist();
+    phiPrime = layersProposed.getMahalDist();
     if options.samplePrior
-        k = layersAccepted.getNumLayers();
-        kPrime = layersProposed.getNumLayers();
-        probAccept = layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
-    else
-        %probAccept is calculated in ln space
-        phi = layersAccepted.getMahalDist();
-        phiPrime = layersProposed.getMahalDist();
-        sigma2 = layersAccepted.getVar();
-        sigma2Prime = layersProposed.getVar();
-        k = layersAccepted.getNumLayers();
-        kPrime = layersProposed.getNumLayers();
-        probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
-        %Note that genericSln has a likeProb property, but it is preferable
-        %to do this this way since its not the 'true' likeProb
+        % For prior sampling, this ensures that the posterior ratio
+        % does not contribute to the acceptance probability.
+        phi = 1;
+        phiPrime = 1;
     end
+    sigma2 = layersAccepted.getVar();
+    sigma2Prime = layersProposed.getVar();
+    k = layersAccepted.getNumLayers();
+    kPrime = layersProposed.getNumLayers();
+    probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
+        log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
+    %Note that genericSln has a likeProb property, but it is preferable
+    %to do this this way since its not the 'true' likeProb
+    
     
     if (isfinite(probAccept) && ( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
