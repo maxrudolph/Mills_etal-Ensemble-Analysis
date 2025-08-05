@@ -141,14 +141,17 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     %probAccept is calculated in ln space
     phi = layersAccepted.getMahalDist();
     phiPrime = layersProposed.getMahalDist();
+    sigma2 = layersAccepted.getVar();
+    sigma2Prime = layersProposed.getVar();
     if options.samplePrior
         % For prior sampling, this ensures that the posterior ratio
         % does not contribute to the acceptance probability.
         phi = 1;
         phiPrime = 1;
+        sigma2 = 1; % because the sigma2 terms enter through the normalization of the likelihood, they also should not contribute to the acceptance probability
+        sigma2Prime = 1;
     end
-    sigma2 = layersAccepted.getVar();
-    sigma2Prime = layersProposed.getVar();
+
     k = layersAccepted.getNumLayers();
     kPrime = layersProposed.getNumLayers();
     probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
