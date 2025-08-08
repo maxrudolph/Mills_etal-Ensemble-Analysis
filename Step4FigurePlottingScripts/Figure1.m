@@ -14,9 +14,7 @@ filenames = {
     % '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
     % '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
     %'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
-    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
-    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
-    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat'    
     };
 % filenames = {
 %     '3LayerA_0.02.mat',
