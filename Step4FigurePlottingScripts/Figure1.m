@@ -14,7 +14,9 @@ filenames = {
     % '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
     % '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
     %'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
-    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
     };
 % filenames = {
 %     '3LayerA_0.02.mat',
@@ -23,7 +25,7 @@ filenames = {
 % }
 
 % titles = {'0.02','0.05','0.1'};
-titles={'0.0'};
+titles={'0.0','0.0','0.0'};
 % titles={'0.05'};
 numEnsembles = 3%length(filenames);
 
