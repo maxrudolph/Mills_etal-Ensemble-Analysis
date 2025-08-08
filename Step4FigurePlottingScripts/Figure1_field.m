@@ -9,14 +9,8 @@ file_prefix = './'
 
 
 filenames = {
-  'Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR'
-   % 'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024'
-    %'3LayerA_0_02-Jul-2021.mat';
-    %     '3LayerA_0.05.mat';
-    % '3LayerA_0.02.mat';
-    % '3LayerA_0.05.mat';
-    % '3LayerA_0.1.mat';
-    %     '3LayerA_0.2_02-Jul-2021.mat'
+  % 'Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR'
+  'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_PRIOR'
     };
 titles = {'1'};
 % titles={'0.05'};
@@ -128,7 +122,8 @@ for i = 1:numEnsembles
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     % set(gca,'XLim',[1e-1 1e1]);
-    set(gca,'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
+    % set(gca,'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
+    set(gca,'XScale','log')
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
