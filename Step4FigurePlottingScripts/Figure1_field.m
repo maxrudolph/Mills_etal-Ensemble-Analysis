@@ -122,13 +122,13 @@ for i = 1:numEnsembles
     %% histogram of noise hyperparameter
     %
     nexttile(i+3*numEnsembles);
-    histogram(results.ensembleVars,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
+    histogram(results.ensembleVars,logspace(-8,8,240),'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
     %plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     % set(gca,'XLim',[0.0 0.2]);
-    set(gca,'XLim',[1e-1 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
+    % set(gca,'XLim',[1e-1 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
