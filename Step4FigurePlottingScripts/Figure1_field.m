@@ -131,7 +131,7 @@ for i = 1:numEnsembles
     allModels{1}.color = 'r';
     allModels{1}.lineWidth = 0.5;
     modelSpacePanel(binCenters,numElements,{allModels{1}},5*i,line_widths);
-    set(gca,'ColorScale','linear');
+    set(gca,'ColorScale','log');
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     set(gca,'XLim',[1e-1 1e7]);
