@@ -127,8 +127,8 @@ for i = 1:numEnsembles
     %plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
-    % set(gca,'XLim',[0.0 0.2]);
-    % set(gca,'XLim',[1e-1 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
+    % set(gca,'XLim',[1e-1 1e1]);
+    set(gca,'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
