@@ -25,7 +25,7 @@ filenames = {
 % titles = {'0.02','0.05','0.1'};
 titles={'0.0','0.0','0.0'};
 % titles={'0.05'};
-numEnsembles = 3%length(filenames);
+numEnsembles = length(filenames);
 
 t = tiledlayout(6,3);
 t.TileSpacing = 'compact';
