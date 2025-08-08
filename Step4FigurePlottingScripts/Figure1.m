@@ -25,7 +25,7 @@ filenames = {
 % titles = {'0.02','0.05','0.1'};
 titles={'0.0'};
 % titles={'0.05'};
-numEnsembles = length(filenames);
+numEnsembles = 3%length(filenames);
 
 t = tiledlayout(6,3);
 t.TileSpacing = 'compact';
@@ -48,7 +48,7 @@ line_styles = {'-','--','--','--','-','-'};
 ind = [1,3,4,7,2,4];
 
 h=[];
-for i = 1:numEnsembles    
+for i = 1:1%numEnsembles    
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
     if ~isfield(options,'piecewiseLinear')
@@ -140,6 +140,7 @@ for i = 1:numEnsembles
     set(gca,'YTick',[]);
     % set(gca,'XLim',[0.0 0.2]);
     % set(gca,'XLim',[1e-4 2e-1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1]);
+    set(gca,'XScale','log')
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
