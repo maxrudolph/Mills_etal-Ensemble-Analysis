@@ -62,7 +62,8 @@ for i = 1:numEnsembles
     figure(figure1);
     nexttile(numEnsembles+i)
     % histogram(ewre2n,250,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
-    m = sort(results.ensembleMisfits);
+    mask = ~isnan(results.ensembleMisfits);
+    m = sort(results.ensembleMisfits(mask));
     nn = length(m);
     mmin = m(1);
     mmax = m(fix(nn*0.95));
