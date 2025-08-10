@@ -138,7 +138,7 @@ for i = 1:numEnsembles
     histogram(results.ensembleVars,logspace(-8,8,240),'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
     if exact_known(i)
-        plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
+        % plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
     end
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
