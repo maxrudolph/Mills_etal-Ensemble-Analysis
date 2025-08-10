@@ -67,7 +67,7 @@ for i = 1:numEnsembles
     set(gca,'XLim',[0.0 0.2])
     hold on;
     if exact_known(i)
-        plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
+        % plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
     end
     xlabel('Weighted Relative Error');
     %     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,[],...
