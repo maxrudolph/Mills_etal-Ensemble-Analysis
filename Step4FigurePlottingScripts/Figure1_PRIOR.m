@@ -61,15 +61,19 @@ for i = 1:numEnsembles
     %% Misfit - second row
     figure(figure1);
     nexttile(numEnsembles+i)
-    histogram(ewre2n,250,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
+    % histogram(ewre2n,250,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
+    bins = logspace(log10(min(results.ensembleMisfits)),log10(max(results.ensembleMisfits)),256);
+    histogram(results.ensembleMisfits,bins,'FaceColor',0.65*[1 1 1],'EdgeColor','none')
     text(0.90,0.90,char(64+5*(i-1)+2),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
-    set(gca,'XLim',[0.0 0.2])
+    set(gca,'XScale','log');
+    % set(gca,'XLim',[0.0 0.2])
     hold on;
     if exact_known(i)
         % plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
     end
-    xlabel('Weighted Relative Error');
+    % xlabel('Weighted Relative Error');
+    xlabel('Residual L_2 norm')
     %     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,[],...
     %         i,titles{i},line_widths)
 
