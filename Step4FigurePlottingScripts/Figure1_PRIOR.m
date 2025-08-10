@@ -62,11 +62,17 @@ for i = 1:numEnsembles
     figure(figure1);
     nexttile(numEnsembles+i)
     % histogram(ewre2n,250,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
+    m = sort(results.ensembleMisfits);
+    nn = length(m);
+    mmin = m(1);
+    mmax = m(fix(nn*0.95));
+
     bins = logspace(log10(min(results.ensembleMisfits)),log10(max(results.ensembleMisfits)),256);
     histogram(results.ensembleMisfits,bins,'FaceColor',0.65*[1 1 1],'EdgeColor','none')
     text(0.90,0.90,char(64+5*(i-1)+2),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     set(gca,'XScale','log');
+    set(gca,'XLim',[mmin mmax]);
     % set(gca,'XLim',[0.0 0.2])
     hold on;
     if exact_known(i)
