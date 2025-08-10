@@ -11,10 +11,9 @@ file_prefix = './'
 % file_prefix = '../Ensembles_09132021/';
 
 filenames = {
-    % '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
-    % '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
-    %'3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
-    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat'    
+    '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
+    'Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR.mat',
+    'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_PRIOR.mat'    
     };
 % filenames = {
 %     '3LayerA_0.02.mat',
@@ -24,15 +23,17 @@ filenames = {
 
 % titles = {'0.02','0.05','0.1'};
 titles={'0.0','0.0','0.0'};
+
+exact_known=[true,false,false];
 % titles={'0.05'};
 numEnsembles = length(filenames);
 
-t = tiledlayout(6,3);
+t = tiledlayout(6,numEnsembles);
 t.TileSpacing = 'compact';
 t.Padding = 'compact';
 figure1 = gcf();
 % figure1.Position(3:4) = [600 720];
-figure1.Position(3:4) = [275 720]*get(groot,'ScreenPixelsPerInch')/72;
+figure1.Position(3:4) = [600 720]*get(groot,'ScreenPixelsPerInch')/72;
 
 set(gcf,'color','white');
 % load([file_prefix 'Ensemble_' filenames{1}],'results')
@@ -50,7 +51,7 @@ line_styles = {'-','--','--','--','-','-'};
 ind = [1,3,4,7,2,4];
 
 h=[];
-for i = 1:1%numEnsembles    
+for i = 1:numEnsembles    
     load([file_prefix 'Analysis_' filenames{i}]);
     load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
     if ~isfield(options,'piecewiseLinear')
@@ -73,7 +74,9 @@ for i = 1:1%numEnsembles
     set(gca,'YTick',[]);
     set(gca,'XLim',[0.0 0.2])
     hold on;
-    plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
+    if exact_known(i)
+        plot(allModels{1}.wre2n*[1 1],get(gca,'YLim'),'Color',exact_color); % add line for wre2n
+    end
     xlabel('Weighted Relative Error');
     %     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,[],...
     %         i,titles{i},line_widths)
@@ -97,8 +100,11 @@ for i = 1:1%numEnsembles
     %% bin data-space values and create a histogram (first row)
     figure(figure1);
     nexttile(i)
-    
+    if i==1
     yvals = logspace(0,3,1001);
+else
+    yvals = logspace(0,4,1001);
+end
     N = zeros(length(yvals)-1,nxplot);
     xplot = repmat(xvals',[1 ntot]);
     for j=1:nxplot
@@ -108,13 +114,14 @@ for i = 1:1%numEnsembles
     yc = 10.^((log10(yvals(1:end-1)) + log10(yvals(2:end)))/2);
     imagesc(xvals,yc,N); hold on;
     set(gca,'YDir','normal');
-    set(gca,'YLim',[5 0.5e3]);
+    set(gca,'YLim',[5 max(data.y)*2]);
     colormap(flipud(gray));
     set(gca,'XScale','log','YScale','log');
     hold on
     plot(data.x,data.y,'.','MarkerFaceColor',observations_color,'MarkerEdgeColor',observations_color)
-    set(gca,'XLim',[0.9 1100]);
-    set(gca,'XTick',10.^[0 1 2 3]);
+    set(gca,'XLim',[1 max(data.x)*2]);
+    set(gca,'XTick',10.^[0 1 2 3 4 5]);
+    set(gca,'YTick',10.^[0 1 2 3 4 5]);
     xlabel('Spacing (m)');
     text(0.90,0.90,char(64+(i-1)*5+1),'units','normalized','FontSize',14);
     title(['\epsilon_n = ' titles{i}]);
@@ -123,10 +130,10 @@ for i = 1:1%numEnsembles
     %% histogram of number of layers
     %
     nexttile(i+2*numEnsembles)
-    histogram(results.ensembleNumLayers,'BinEdges',0.5:10.5,'FaceColor',0.65*[1 1 1]);
+    histogram(results.ensembleNumLayers,'BinEdges',0.5:30.5,'FaceColor',0.65*[1 1 1]);
     set(gca,'YTick',[]);
     text(0.90,0.90,char(64+5*(i-1)+3),'units','normalized','FontSize',14);
-    set(gca,'XTick',1:10);
+    %set(gca,'XTick',1:10);
     hold on
     plot([3 3],get(gca,'Ylim'),'r');
     xlabel('Number of Layers');
@@ -137,7 +144,9 @@ for i = 1:1%numEnsembles
     nexttile(i+3*numEnsembles);
     histogram(results.ensembleVars,logspace(-8,8,240),'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
+    if exact_known(i)
     plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
+    end
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
     % set(gca,'XLim',[0.0 0.2]);
@@ -151,7 +160,7 @@ for i = 1:1%numEnsembles
     allModels{1}.lineWidth = 0.5;
     modelSpacePanel(binCenters,numElements,{allModels{1}},5*i,line_widths,options.piecewiseLinear,pBounds);
     set(gca,'ColorScale','log');
-    set(gca,'XLim',[1e-1 1e5]);
+    set(gca,'XLim',[1e-1 1e7]);
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
         
@@ -166,9 +175,7 @@ for i = 1:1%numEnsembles
     histogram(results.ensembleMisfits(n5mask),'EdgeColor','none','FaceColor','g','FaceAlpha',0.5);
     
     set(gca,'XScale','log')
-    title(titles{i});
-    c=colorbar();
-c.Label.String = 'Probability (normalized)';
+    title(titles{i});    
     
 end
 % nexttile(1); xticks([.01 .02 .03 .04]);
@@ -187,8 +194,8 @@ nexttile(4*numEnsembles+1);
 ylabel('Depth (m)');
 nexttile(numEnsembles*5)
 % uncomment for main text:
-% c=colorbar();
-% c.Label.String = 'Probability (normalized)';
+c=colorbar();
+c.Label.String = 'Probability (normalized)';
 
 
 %% Save the figure
@@ -196,7 +203,7 @@ figure(figure1);
 disp('Saving...');
 set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1.eps');
-exportgraphics(t,'Figure1.pdf');
+exportgraphics(t,'Figure1_PRIOR.eps');
+exportgraphics(t,'Figure1_PRIOR.pdf');
 set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');
