@@ -5,24 +5,16 @@ addpath Step3AnalysisScripts
 addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
 
-% file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
-file_prefix = './'
-% file_prefix = '../Ensembles_02082023/'
-% file_prefix = '../Ensembles_09132021/';
+file_prefix = './';
 
 filenames = {
     '3LayerA__hierarchical-1_rhoPrior-1_0_PRIOR.mat',
     'Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR.mat',
     'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_PRIOR.mat'
     };
-% filenames = {
-%     '3LayerA_0.02.mat',
-%     '3LayerA_0.05.mat',
-%     '3LayerA_0.1.mat'
-% }
 
 % titles = {'0.02','0.05','0.1'};
-titles={'0.0','0.0','0.0'};
+titles={'Three Layer Synthetic','Wauchope - Uniform','Wauchope - Normal'};
 
 exact_known=[true,false,false];
 % titles={'0.05'};
@@ -89,7 +81,7 @@ for i = 1:numEnsembles
     lamplot = makeLambda(xvals,11);
     Gplot = zeros(nxplot,ntot);
     % DO NOT MAKE THIS PARFOR - IT WILL CRASH COMPUTER
-    for j=1:100%size(results.ensembleG,2)
+    for j=1:size(results.ensembleG,2)
         if ~mod(j,10000)
             disp([num2str(j/ntot*100) ' percent done'])
         end
@@ -124,7 +116,7 @@ for i = 1:numEnsembles
     set(gca,'YTick',10.^[0 1 2 3 4 5]);
     xlabel('Spacing (m)');
     text(0.90,0.90,char(64+(i-1)*5+1),'units','normalized','FontSize',14);
-    title(['\epsilon_n = ' titles{i}]);
+    title(titles{i});
 
     %
     %% histogram of number of layers
@@ -132,10 +124,11 @@ for i = 1:numEnsembles
     nexttile(i+2*numEnsembles)
     histogram(results.ensembleNumLayers,'BinEdges',0.5:30.5,'FaceColor',0.65*[1 1 1]);
     set(gca,'YTick',[]);
-    text(0.90,0.90,char(64+5*(i-1)+3),'units','normalized','FontSize',14);
-    %set(gca,'XTick',1:10);
+    text(0.90,0.90,char(64+5*(i-1)+3),'units','normalized','FontSize',14);    
     hold on
-    plot([3 3],get(gca,'Ylim'),'r');
+    if exact_known(i)
+        plot([3 3],get(gca,'Ylim'),'r');
+    end
     xlabel('Number of Layers');
 
     %
@@ -202,7 +195,7 @@ figure(figure1);
 disp('Saving...');
 set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1_PRIOR.eps');
+% exportgraphics(t,'Figure1_PRIOR.eps');
 exportgraphics(t,'Figure1_PRIOR.pdf');
 set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');
