@@ -208,5 +208,6 @@ set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
 % exportgraphics(t,'Figure1_PRIOR.eps');
 exportgraphics(t,'Figure1_PRIOR.pdf');
-set(figure1,'Renderer','opengl');
+savefig('Figure1_PRIOR.fig');
+% set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');
