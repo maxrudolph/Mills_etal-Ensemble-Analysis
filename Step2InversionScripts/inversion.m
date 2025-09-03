@@ -44,10 +44,8 @@ parse(p,filename,varargin{:});
 addpath(genpath(fileparts(mfilename('fullpath'))))
 load(filename)
 
-
-
 %% Set options
-options.numSteps = 2e8; %4e8; %total iterations for loop.
+options.numSteps = 4e8; %total iterations for loop.
 options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
@@ -55,7 +53,7 @@ options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 400;%800; %sample every (saveSkip)th step once sampling begins
+options.saveSkip = 800; %sample every (saveSkip)th step once sampling begins
 options.alterVar = true; %Whether or not the inversion is hierarchical.
 %Set to true for hierarchical (variance is one of the parame`ters which can
 %change) or false for not (variance will never change from intlVar.
@@ -71,7 +69,7 @@ options.piecewiseLinear = p.Results.piecewiseLinear;
 %set pctSteps = 10 or 20 since the loop will finish quickly and you might
 %not want a flood of print statements. This is purely for convenience so
 %there is no 'wrong' setting
-
+options
 %% Set parameter bounds
 % Create bounds on parameter values. Some bounds are based on Appendix A
 % in Malinverno 2002. See also the "genericMedium" constructor function
@@ -86,6 +84,7 @@ pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters
 pBounds.priorChoice = p.Results.priorChoice;
 pBounds.rhoChange = 1.5; % Std dev for resistivity change btwn steps
+pBounds.rhoPrior = p.Results.rhoPrior; % integer selecting prior on rho - see genericSln for details.
 pBounds.varMin = 1e-8; % min variance
 pBounds.varMax = 1e8; % max variance
 pBounds.varChange = 1e-1;  %amount variance can change by if alterVar=true

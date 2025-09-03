@@ -10,7 +10,7 @@ filenames = {
 %    'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024'
 'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
     };
-titles = {'1.0'};
+titles = {'1.0','1.0'};
 numEnsembles = length(filenames);
 
 t = tiledlayout(3,numEnsembles);
@@ -88,7 +88,7 @@ c.Label.String = 'Probability (normalized)';
 figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
-exportgraphics(t,'Figure4_field.pdf');
+exportgraphics(t,'Figure4_field.eps');
 set(gcf,'Renderer','opengl');
 % 
 set(gcf,'Visible','on');

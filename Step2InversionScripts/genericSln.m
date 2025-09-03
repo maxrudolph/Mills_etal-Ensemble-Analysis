@@ -36,6 +36,7 @@ function. Get and set functions are at the end of the methods section.
         lDepthMax;   % Maximum log-depth for a layer interface
         lRhoMin;     % Minimum log-resistivity
         lRhoMax;     % Maximum log-resistivity
+        rhoPrior;    % integer selecting prior on resitivity
         lHMin;       % Minimum log-thickness
         lVarMin;     % in LOG
         lVarMax;     % in LOG
@@ -70,6 +71,7 @@ function. Get and set functions are at the end of the methods section.
             obj.lDepthMax = log10(pBounds.depthMax);
             obj.lRhoMin = log10(pBounds.rhoMin);
             obj.lRhoMax = log10(pBounds.rhoMax);
+            obj.rhoPrior = pBounds.rhoPrior;
             obj.lRhos = [0.5*(obj.lRhoMin+obj.lRhoMax);... %average of bounds
                 nan*zeros(pBounds.maxLayers-1,1)];
             obj.lVarMin = log10(pBounds.varMin);
@@ -81,6 +83,7 @@ function. Get and set functions are at the end of the methods section.
             obj.mahalDist = 0;
             obj.likeProb = 0;
             obj.misfit = 0;
+            obj.prior = 0; % log(p(proposed)/p(accepted)) = log(0) = 1
             obj.Cdi = Cdi;
             obj.badRunsThreshold = ceil(log10(pBounds.numSteps)*20);
             obj.priorChoice = pBounds.priorChoice;
@@ -94,6 +97,7 @@ function. Get and set functions are at the end of the methods section.
             output.var = obj.var;
             output.misfit = obj.misfit;
             output.residual = obj.residual;
+            output.prior = obj.prior;
         end
         
         %This is meant to recieve properties from another genericSln object
@@ -105,6 +109,7 @@ function. Get and set functions are at the end of the methods section.
             obj.var = input.var;
             obj.misfit = input.misfit;
             obj.calculatePosterior();
+            obj.prior = input.prior;
             if nnz(~isnan(obj.lDepths)) ~= nnz(~isnan(obj.lRhos))
                 fprintf('Error: accepted solution # of layers dont match');
             end
@@ -282,6 +287,7 @@ function. Get and set functions are at the end of the methods section.
                 end
             end
             % success = obj.checkDepthProperties(dummy,indx);
+
             %end
             obj.lDepths(indx) = dummy; %Make the change
             if ~issorted(obj.lDepths) %Layers may now be out of order
@@ -348,7 +354,6 @@ function. Get and set functions are at the end of the methods section.
 
         end
         
-        %
         function priorRatio = perturbRho(obj)
             % success = false;
             % nbad = 0;
@@ -440,6 +445,7 @@ function. Get and set functions are at the end of the methods section.
         
         function output = getPrior(obj)
             obj.calculatePrior();
+
             output = obj.prior;
         end
         

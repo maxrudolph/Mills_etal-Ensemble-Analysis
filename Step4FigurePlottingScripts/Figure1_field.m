@@ -7,12 +7,12 @@ addpath Step4FigurePlottingScripts
 
 file_prefix = './'
 
-
 filenames = {
   % 'Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR'
   'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_PRIOR'
     };
-titles = {'1'};
+
+titles = {'wauchope-1','wauchope-0','renner-1','renner-0'};
 % titles={'0.05'};
 numEnsembles = length(filenames);
 
@@ -149,7 +149,7 @@ for i = 1:numEnsembles
     
     set(gca,'XScale','log')
     title(titles{i});
-    
+    drawnow();
     
 end
 % nexttile(1); xticks([.01 .02 .03 .04]);
@@ -176,6 +176,6 @@ figure(figure1);
 disp('Saving...');
 set(figure1,'Visible','off');
 set(figure1,'Renderer','painters');
-exportgraphics(t,'Figure1_field.pdf');
+exportgraphics(t,'Figure1_field.eps');
 set(figure1,'Renderer','opengl');
 set(figure1,'Visible','on');

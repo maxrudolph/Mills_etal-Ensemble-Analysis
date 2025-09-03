@@ -76,6 +76,8 @@ acceptedGm = model(depths,rhos,lambda);
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
 layersProposed.setMisfit(residual);
+layersProposed.calculateRhoPrior();
+layersAccepted.calculateRhoPrior();
 
 % Pre-allocate memory for saving runs. Fields starting with 'ensemble...'
 % only store information from saved solutions, which is toward the end of
@@ -113,7 +115,6 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     choice = chooseOption(layersProposed.getNumLayers(),...
         maxLayersPerStep(iter),randomOptions);
     %Step 2: choose how proposed sln will be edited
-    
     switch choice %Step 3: Edit proposed sln
         case 1 % Random option 1: Change the interface depth
             proposalRatio = layersProposed.perturbDepth();
@@ -158,7 +159,6 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
         log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
     %Note that genericSln has a likeProb property, but it is preferable
     %to do this this way since its not the 'true' likeProb
-    
     
     if (isfinite(probAccept) && ( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
