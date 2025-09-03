@@ -32,20 +32,20 @@ containing the results from the inversion.
 
 %% Part 0 preliminary 
 defaultPriorOn =false;
-defaultHierarchical=true;
-defaultRhoPrior = 1; % 1=flat, 2=Malinverno-type (95% CI on log10(rho) between 1-5)
+defaultLinear = false;
+defaultPriorChoice = int64(1); % 1 = flat prior, 2 = malinverno prior on rho
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
-addParameter(p,'hierarchical',defaultHierarchical,@islogical);
-addParameter(p,'rhoPrior',defaultRhoPrior,@isinteger);
+addParameter(p,'priorChoice',defaultPriorChoice,@isinteger);
+addParameter(p,'piecewiseLinear',defaultLinear,@islogical); % whether to use linear (true) or piecewise constant resistivity
 parse(p,filename,varargin{:});
 
 addpath(genpath(fileparts(mfilename('fullpath'))))
 load(filename)
 
 %% Set options
-options.numSteps = 4e8/8; %total iterations for loop.
+options.numSteps = 4e8; %total iterations for loop.
 options.mLPSCoefficient = 1e4; %max layers per step, controls 'burn-in' length
 %max layers will be set to 2 for the first 2*mLPSCoef steps, 3 for the next 
 %3*mLPSCoef steps, 4 for the next 4*mLPSCoef steps, etc.
@@ -53,13 +53,14 @@ options.saveStart = floor(options.numSteps/2);
 %saveStart is the # of steps before end to start sampling. Should not
 %sample until max # of layers has been reached AND it has had time to test
 %several models with max # of layers.
-options.saveSkip = 100; %sample every (saveSkip)th step once sampling begins
-options.alterVar = p.Results.hierarchical; %Whether or not the inversion is hierarchical.
-%Set to true for hierarchical (variance is one of the parameters which can
+options.saveSkip = 800; %sample every (saveSkip)th step once sampling begins
+options.alterVar = true; %Whether or not the inversion is hierarchical.
+%Set to true for hierarchical (variance is one of the parame`ters which can
 %change) or false for not (variance will never change from intlVar.
 options.samplePrior = p.Results.priorOn; %If true, will base acceptance probability on
 %prior distribution (only set to true for testing purposes)
 options.pctSteps = 5;
+options.piecewiseLinear = p.Results.piecewiseLinear;
 %once mcmc loop starts, a statement is printed regularly that tells you the
 %algorithm is x% finished. If you set pctSteps = 1, you will be updated at
 %1%,2%,3%... if pctSteps = 5, it will be 5%,10%,15%... if options.numSteps
@@ -77,10 +78,11 @@ pBounds.maxLayers = 30; % max # of layers in a given model
 pBounds.depthMin = 1e-1; %min depth for layer interface, ie max thickness of top layer
 pBounds.depthMax = 1e5;%max(data.x); % max depth for layer interface
 pBounds.hMin = 10^((log10(pBounds.depthMax) - log10(pBounds.depthMin))/...
-    (2*pBounds.maxLayers)); %min layer thickness. Malinverno 2002 Append A1
+    (2*pBounds.maxLayers*5)); %min layer thickness. Malinverno 2002 Append A1
 pBounds.depthChange = pBounds.hMin; %Std dev for depth changes btwn steps
 pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters
+pBounds.priorChoice = p.Results.priorChoice;
 pBounds.rhoChange = 1.5; % Std dev for resistivity change btwn steps
 pBounds.rhoPrior = p.Results.rhoPrior; % integer selecting prior on rho - see genericSln for details.
 pBounds.varMin = 1e-8; % min variance
@@ -110,12 +112,12 @@ results = mcmcAlgorithm(data,forwardModel,options,pBounds);
 if p.Results.priorOn
     filenameOut = ['Ensemble_', data.subStructChoice,'_',...
         '_hierarchical-',num2str(options.alterVar),...
-        '_rhoPrior-',num2str(pBounds.rhoPrior),'_',...
+        '_rhoPrior-',num2str(pBounds.priorChoice),'_',...
         num2str(data.noiseCoef),'_PRIOR_',date,'.mat'];
 else    
     filenameOut = ['Ensemble_', data.subStructChoice, '_',...
         '_hierarchical-',num2str(options.alterVar),...
-        '_rhoPrior-',num2str(pBounds.rhoPrior),'_',...
+        '_rhoPrior-',num2str(pBounds.priorChoice),'_',...
         num2str(data.noiseCoef), '_', date, '.mat'];
 end
 

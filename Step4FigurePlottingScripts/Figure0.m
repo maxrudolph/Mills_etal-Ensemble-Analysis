@@ -5,16 +5,13 @@ addpath Step2InversionScripts
 addpath Step4FigurePlottingScripts
 
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09102021/';
-file_prefix = '../'
-file_prefix='../Ensembles_02082023/'
+file_prefix = './'
+% file_prefix='../Ensembles_02082023/'
 % file_prefix = '../Ensembles_09132021/'
 filenames = {
-    %'3LayerA_0_02-Jul-2021.mat';
-%     '3LayerA_0.05.mat';
-     '3LayerA_0.02.mat';
-     '3LayerA_0.05.mat';
-     '3LayerA_0.1.mat';
-%     '3LayerA_0.2_02-Jul-2021.mat'
+'3LayerA__hierarchical-1_rhoPrior-1_0.02',
+'3LayerA__hierarchical-1_rhoPrior-1_0.05',
+'3LayerA__hierarchical-1_rhoPrior-1_0.1'
 };
 titles = {'0.02','0.05','0.1'};
 % titles={'0.05'};
@@ -103,11 +100,11 @@ nexttile(numEnsembles*4)
 c=colorbar();
 c.Label.String = 'Probability (normalized)';
 
-%{
+
 %% Save the figure
 set(gcf,'Visible','off');
-set(gcf,'Renderer','painters');
-exportgraphics(t,'test.eps');
-set(gcf,'Renderer','opengl');
+%set(gcf,'Renderer','painters');
+exportgraphics(t,'Figure0.pdf','ContentType','Vector');
+%set(gcf,'Renderer','opengl');
 %}
 set(gcf,'Visible','on');

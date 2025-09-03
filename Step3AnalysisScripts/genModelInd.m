@@ -1,5 +1,5 @@
 function outModel = genModelInd(index,inDepths,data,color,lineStyle,title,...
-    forwardModel,results)
+    forwardModel,results,options,pBounds)
 %{
 Generate Model From Index 7/7/2021
     Some models, like one with best fit to the data in data space, are not
@@ -14,11 +14,18 @@ data.lambda in order to be evaluated at the same points as the 'actual
 data' were. data.y (the 'actual data') are also required for comparing
 values and calculating misfit. And inDepths is the long array of
 (preferably log-spaced) to generate the resistivities for plotting.
-    %}
-    rhos = results.ensembleRhos(:,index);
-    depths = results.ensembleDepths(:,index);
+%}
+rhos = results.ensembleRhos(:,index);
+depths = results.ensembleDepths(:,index);
+if options.piecewiseLinear
+    [ztmp,rhotmp] = piecewiseLinearSolution(depths,rhos,pBounds,inDepths);
+    rhoPlot = rhotmp;
+else
     rhoPlot = longForm(inDepths,depths,rhos);
-    outModel = calculatedModel(inDepths,rhoPlot,...
-        forwardModel(depths,rhos,data.lambda),data.y,color,lineStyle,title);
-    outModel.setWRE2N(data);
+end
+
+
+outModel = calculatedModel(inDepths,rhoPlot,...
+    forwardModel(depths,rhos,data.lambda),data.y,color,lineStyle,title);
+outModel.setWRE2N(data);
 end

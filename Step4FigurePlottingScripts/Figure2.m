@@ -7,13 +7,15 @@ file_prefix = './';
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 % file_prefix = '.'
 filenames = {
-    '3LayerA_0.02.mat';
-    '3LayerA_0.05.mat';
-    '3LayerA_0.1.mat';
-    %
-    %     '3LayerA_0.1_02-Jul-2021.mat';
-    %      '3LayerA_0.1.mat'
+    '3LayerA__hierarchical-1_rhoPrior-1_0.02.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0.05.mat',
+    '3LayerA__hierarchical-1_rhoPrior-1_0.1.mat'
     };
+filenames = {
+    '3LayerA_0.02.mat',
+    '3LayerA_0.05.mat',
+    '3LayerA_0.1.mat'
+}
 titles = {'0.02','0.05','0.1'};
 numEnsembles = length(filenames);
 
@@ -37,7 +39,13 @@ ind = [1,3,4,7,2,4];%,3,4];
 h=[];
 for i = 1:numEnsembles
     load([file_prefix 'Analysis_' filenames{i}]);
-    load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel');
+    load([file_prefix 'Ensemble_' filenames{i}],'results','data','forwardModel','options','pBounds');
+   if ~isfield(options,'piecewiseLinear')
+        options.piecewiseLinear = false;
+    end
+    % if options.piecewiseLinear
+        % forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds)
+    % end
     nexttile(i)
     for j=1:length(allModels) % re-assign colors based on indexing into color order above
         allModels{j}.color = C(ind(j),:);
@@ -49,13 +57,13 @@ for i = 1:numEnsembles
         %          allModels{j}.displayName = displayNames{j-1};
         %    end
     end
-    titles{i}    
+    titles{i}
     importantNumbers = misfitPanel(ewre2n, results,data,forwardModel,allModels,...
         2*i-1,titles{i},line_widths);
     cellfun(@(x) x.displayName,allModels,'UniformOutput',false)
     round(importantNumbers,2)
     nexttile(i+numEnsembles,[2 1])
-    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths);
+    modelSpacePanel(binCenters,numElements,allModels,2*i,line_widths,options.piecewiseLinear,pBounds);
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     if i == 1
@@ -82,6 +90,8 @@ figure(figure1);
 set(gcf,'Visible','off');
 set(gcf,'Renderer','painters');
 exportgraphics(t,'Figure2.eps');
+exportgraphics(t,'Figure2.png');
+exportgraphics(t,'Figure2.pdf');
 set(gcf,'Renderer','opengl');
 
 set(gcf,'Visible','on');

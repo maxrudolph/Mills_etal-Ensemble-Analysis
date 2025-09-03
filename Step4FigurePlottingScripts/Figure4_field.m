@@ -7,7 +7,7 @@ file_prefix = './';
 
 % file_prefix = '~/Box/Davis/Students/Chris Mills/MCMC Box Shared Folder/Ensembles/Ensembles_09132021/';
 filenames = {
-%'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1.mat',
+%    'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024'
 'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
     };
 titles = {'1.0','1.0'};

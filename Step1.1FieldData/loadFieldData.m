@@ -17,7 +17,7 @@ which is the next step of the process.
 addpath(genpath(fileparts(mfilename('fullpath'))))
 %adds subfolders so you can use the scripts in them
 defaultNoise = 1.0;
-defaultSubStruct = '';%Constable1984_Wauchope';
+defaultSubStruct = 'Constable1984_Wauchope';
 
 p = inputParser;
 validScalarPosNum = @(x) isnumeric(x) && isscalar(x) && (x>=0);
@@ -33,7 +33,7 @@ filterSize = 11;
 %model as well as the size of the lambda matrices, so it is an accuracy vs.
 %computational expense tradeoff.
 
-data.subStructChoice = p.Results.subStructChoice;%'';%'Constable1984_Wauchope';
+data.subStructChoice = p.Results.subStructChoice;
 
 % minDist = 0.1; maxDist = 1000; %in meters
 %numMeasurements = 21; %how many measurements
@@ -44,6 +44,8 @@ data.noiseCoef = 1.0; %How "noisy" are the measurements. (1.0 for field - actual
 
 
 %% Digitized data from Constable paper
+
+% digitization was done with web plot digitizer.
 
 % Wauchope:
 if strcmp(data.subStructChoice,'Constable1984_Wauchope')

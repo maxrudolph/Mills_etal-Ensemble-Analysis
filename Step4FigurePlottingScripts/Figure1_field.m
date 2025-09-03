@@ -7,9 +7,9 @@ addpath Step4FigurePlottingScripts
 
 file_prefix = './'
 
-filenames = {      
-% 'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1.mat',
-'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
+filenames = {
+  % 'Constable1984_Wauchope__hierarchical-1_rhoPrior-1_1_PRIOR'
+  'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1_PRIOR'
     };
 
 titles = {'wauchope-1','wauchope-0','renner-1','renner-0'};
@@ -116,13 +116,14 @@ for i = 1:numEnsembles
     %% histogram of noise hyperparameter
     %
     nexttile(i+3*numEnsembles);
-    histogram(results.ensembleVars,'FaceColor',0.65*[1 1 1],'EdgeColor','none');
+    histogram(results.ensembleVars,logspace(-8,8,240),'FaceColor',0.65*[1 1 1],'EdgeColor','none');
     hold on
     %plot(str2num(titles{i})^2*[1 1],get(gca,'YLim'),'Color',observations_color,'LineWidth',1)
     text(0.90,0.90,char(64+5*(i-1)+4),'units','normalized','FontSize',14);
     set(gca,'YTick',[]);
-    % set(gca,'XLim',[0.0 0.2]);
-    set(gca,'XLim',[1e-1 1e1],'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
+    % set(gca,'XLim',[1e-1 1e1]);
+    % set(gca,'XScale','log','XTick',[1e-4 1e-3 1e-2 1e-1 1e0 1e1]);
+    set(gca,'XScale','log')
     xlabel('Noise Hyperparameter')
     
     %% model space pdf
@@ -130,7 +131,7 @@ for i = 1:numEnsembles
     allModels{1}.color = 'r';
     allModels{1}.lineWidth = 0.5;
     modelSpacePanel(binCenters,numElements,{allModels{1}},5*i,line_widths);
-    set(gca,'ColorScale','linear');
+    set(gca,'ColorScale','log');
     %     colormap(crameri('lajolla'));
     colormap(flipud(gray));
     set(gca,'XLim',[1e-1 1e7]);

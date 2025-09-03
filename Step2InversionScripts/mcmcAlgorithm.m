@@ -42,6 +42,9 @@ ensemble. Inputs:
         allLikelihoods,allMisfits,allProbAccepts,allVars,maxLayers: records
             these properties at each step (not just for ensemble members).
 %}
+if options.piecewiseLinear
+    model = @(a,b,c) piecewiseLinearWrapper(a,b,c,model,pBounds);
+end
 %% Initializing
 rng(1); %reproducibility
 numMeasurements = length(data.x);
@@ -68,6 +71,7 @@ Cdi = pinv(data.Cd); % compute the Moore-Penrose pseudoinverse of the data
 layersProposed = genericSln(pBounds,numMeasurements,Cdi);
 layersAccepted = genericSln(pBounds,numMeasurements,Cdi);
 [depths,rhos] = layersAccepted.getSolution();
+
 acceptedGm = model(depths,rhos,lambda);
 residual = data.y - acceptedGm;
 layersAccepted.setMisfit(residual);
@@ -90,7 +94,7 @@ results.allLikelihoods=zeros(totalSteps,1);
 results.allMisfits = zeros(totalSteps,1);
 results.allProbAccepts = zeros(totalSteps,1);
 results.allVars = zeros(totalSteps,1);
-
+results.allNumLayers = zeros(totalSteps,1);
 % Sets up a 'burn-in' period. Sets the maximum allowed # of layers for a
 % sln at each step to gradually increase
 maxLayersPerStep = []; %This will be the max layers in any given step.
@@ -111,49 +115,52 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     choice = chooseOption(layersProposed.getNumLayers(),...
         maxLayersPerStep(iter),randomOptions);
     %Step 2: choose how proposed sln will be edited
-    success = false;
     switch choice %Step 3: Edit proposed sln
         case 1 % Random option 1: Change the interface depth
-            success = layersProposed.perturbDepth();
+            proposalRatio = layersProposed.perturbDepth();
         case 2 %Random option 2: Delete a layer
-            success = layersProposed.deleteLayer();
+            proposalRatio = layersProposed.deleteLayer();
         case 3 % Random option 3: Add a new layer
-            success = layersProposed.addLayer();
+            proposalRatio = layersProposed.addLayer();
         case 4 %Random option 4: Change a layer's resistivity
-            success = layersProposed.perturbRho();
+            proposalRatio = layersProposed.perturbRho();
         case 5 % Random option 5: Change noise variance
-            success = layersProposed.perturbVar();
+            proposalRatio = layersProposed.perturbVar();
     end
-    if success
-        [depths,rhos] = layersProposed.getSolution();
+       
+	    [depths,rhos] = layersProposed.getSolution();     
         proposedGm = model(depths,rhos,lambda); % This is the forward model
         residual = data.y - proposedGm;
         layersProposed.setMisfit(residual);
-        layersProposed.calculateRhoPrior();
-    end
+    
     %Step 4: Run proposed sln through forward model to get misfit
     
     %Step 5: choose whether or not to accept the proposed sln
     %See my paper for this, or Malinverno 2002
-    if options.samplePrior
-        k = layersAccepted.getNumLayers();
-        kPrime = layersProposed.getNumLayers();
-        probAccept = log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();
-    else
-        %probAccept is calculated in ln space
-        phi = layersAccepted.getMahalDist();
-        phiPrime = layersProposed.getMahalDist();
-        sigma2 = layersAccepted.getVar();
-        sigma2Prime = layersProposed.getVar();
-        k = layersAccepted.getNumLayers();
-        kPrime = layersProposed.getNumLayers();
-        probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
-            log(sigma2Prime))) + log(k) - log(kPrime) + layersProposed.getPrior() - layersAccepted.getPrior();
-        %Note that genericSln has a likeProb property, but it is preferable
-        %to do this this way since its not the 'true' likeProb
-    end
     
-    if ( success && isfinite(probAccept) &&( probAccept > log(rand)))
+
+    %probAccept is calculated in ln space
+    phi = layersAccepted.getMahalDist();
+    phiPrime = layersProposed.getMahalDist();
+    sigma2 = layersAccepted.getVar();
+    sigma2Prime = layersProposed.getVar();
+    if options.samplePrior
+        % For prior sampling, this ensures that the posterior ratio
+        % does not contribute to the acceptance probability.
+        phi = 1;
+        phiPrime = 1;
+        sigma2 = 1; % because the sigma2 terms enter through the normalization of the likelihood, they also should not contribute to the acceptance probability
+        sigma2Prime = 1;
+    end
+
+    k = layersAccepted.getNumLayers();
+    kPrime = layersProposed.getNumLayers();
+    probAccept = 0.5*(phi - phiPrime + numMeasurements*(log(sigma2) - ...
+        log(sigma2Prime))) + layersProposed.getPrior() - layersAccepted.getPrior() + proposalRatio;
+    %Note that genericSln has a likeProb property, but it is preferable
+    %to do this this way since its not the 'true' likeProb
+    
+    if (isfinite(probAccept) && ( probAccept > log(rand)))
         %Compare probAccept with a random number from uniform dist on (0,1)
         acceptProposedSln(layersAccepted,layersProposed);
         acceptedGm = proposedGm;
@@ -184,6 +191,7 @@ for iter=1:totalSteps  %Number of steps in Markov Chain
     results.allChoices(iter) = choice;
     results.allProbAccepts(iter) = probAccept;
     results.allVars(iter) = layersAccepted.getVar();
+    results.allNumLayers(iter) = layersAccepted.getNumLayers();
 end
 
 %% Wrap up

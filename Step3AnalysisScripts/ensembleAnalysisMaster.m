@@ -14,7 +14,7 @@ addpath(genpath(fileparts(mfilename('fullpath'))))
 %access all necessary other folders for scripts
 rng(1); %reproducibility
 disp('Loading data...')
-load(filename,'data','forwardModel','results','pBounds')
+load(filename,'data','forwardModel','results','pBounds','options')
 slashpos = find(filename == '/',1,'last');
 if isempty(slashpos)
     slashpos=1;
@@ -22,6 +22,11 @@ end
 
 filenameOut = filename(slashpos+9:end);
 disp(['output will be saved to: ' filenameOut]);
+originalForwardModel = forwardModel;
+if options.piecewiseLinear
+    forwardModel = @(a,b,c) piecewiseLinearWrapper(a,b,c,forwardModel,pBounds);
+end
+
 
 %% Model space plots
 %The 'model space' plots should show the posterior distribution in
@@ -45,11 +50,18 @@ ewre2n = zeros(1,length(results.ensembleMisfits));
 Cdi = inv(data.Cd);
 denominator = sqrt(data.y'*Cdi*data.y);
 for i = 1:numSavedRuns %for each sln...
-    logRhoPlot(:,i) = log10(longForm(zVals,results.ensembleDepths(:,i),...
-        results.ensembleRhos(:,i)));
-    residuals(:,i) = data.y - forwardModel(results.ensembleDepths(:,i),...
+    if options.piecewiseLinear
+        [depth1,rho1] = piecewiseLinearSolution(results.ensembleDepths(:,i),results.ensembleRhos(:,i),pBounds);
+        logRhoPlot(:,i) = log10(longForm(zVals,depth1,rho1));
+        residuals(:,i) = data.y - forwardModel(depth1,rho1,data.lambda);
+        ewre2n(i) = sqrt(residuals(:,i)'*Cdi*residuals(:,i))/denominator;
+    else
+        logRhoPlot(:,i) = log10(longForm(zVals,results.ensembleDepths(:,i),...
+            results.ensembleRhos(:,i)));    
+        residuals(:,i) = data.y - forwardModel(results.ensembleDepths(:,i),...
         results.ensembleRhos(:,i),data.lambda);
-    ewre2n(i) = sqrt(residuals(:,i)'*Cdi*residuals(:,i))/denominator;
+        ewre2n(i) = sqrt(residuals(:,i)'*Cdi*residuals(:,i))/denominator;
+    end
 end
 
 
@@ -84,9 +96,14 @@ lambdaForXVals = makeLambda(xVals,filterSize);
 %Ensemble members are saved as subsurface structures (layers+resistivities),
 %we want to show them in data space
 for i=1:nSavedPlot
-    yVals(:,i) = forwardModel(squeeze(...
-        results.ensembleDepths(:,runPlotIndex(i))),...
-        results.ensembleRhos(:,runPlotIndex(i)),lambdaForXVals);
+    if options.piecewiseLinear
+        [depth1,rho1] = piecewiseLinearSolution(results.ensembleDepths(:,runPlotIndex(i)),results.ensembleRhos(:,runPlotIndex(i)),pBounds);
+        yVals(:,i) = forwardModel(depth1,rho1,lambdaForXVals);
+    else
+        yVals(:,i) = forwardModel(squeeze(...
+            results.ensembleDepths(:,runPlotIndex(i))),...
+            results.ensembleRhos(:,runPlotIndex(i)),lambdaForXVals);
+    end
 end
 %yVals is the data space representations of selected ensemble members
 %remember, only the ones getting plotted, not all ensemble members
@@ -116,9 +133,9 @@ bestIndex = ind2(1);                      %the one with lowest misfit
 
 %Find their corresponding slns in the ensemble
 dMedian = genModelInd(medianIndex,zVals,data,medianColor,dsLineStyle,...
-    'DS Median',forwardModel,results);
+    'DS Median',forwardModel,results,options,pBounds);
 bestFit = genModelInd(bestIndex,zVals,data,bestFitColor,dsLineStyle,...
-    'DS Best Fit',forwardModel,results);
+    'DS Best Fit',forwardModel,results,options,pBounds);
 % maximumLikelihood = genModelInd()
 
 %Maximum likelihood model (Model Space)
@@ -141,7 +158,7 @@ if exact_known
     [trueDepths,trueRhos] = subStructGen(data.subStructChoice);
     trueDepthsPlot = 10.^logDepthPlot(:,1);
     trueRhoPlot = longForm(trueDepthsPlot,trueDepths,trueRhos);
-    trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,forwardModel(trueDepths,...
+    trueModel = calculatedModel(trueDepthsPlot,trueRhoPlot,originalForwardModel(trueDepths,...
         trueRhos,data.lambda),data.y,trueColor,'-','Exact solution');
     trueModel.setWRE2N(data);
 else

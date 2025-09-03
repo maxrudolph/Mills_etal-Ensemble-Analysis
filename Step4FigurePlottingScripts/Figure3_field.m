@@ -6,9 +6,9 @@ close all;
 % file_prefix = '../Ensembles_02082023/';
 file_prefix = './';
 
-filenames = {    
-%'Constable1984_Wauchope__hierarchical-0_rhoPrior-2_1.mat',
+filenames = {
 'Constable1984_Wauchope__hierarchical-1_rhoPrior-2_1'
+ %   'Constable1984_Renner__hierarchical-1_rhoPrior-2_1_22-Feb-2024'
     };
 titles = {'1.0','1.0'};
 numEnsembles = length(filenames);

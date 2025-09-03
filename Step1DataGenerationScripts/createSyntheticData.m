@@ -57,7 +57,7 @@ switch filterSize
     case 7
         forwardModel = @(a,b,c) calculateRho1D07(a,b,c);
     case 11
-        forwardModel = @(a,b,c) calculateRho1D11(a,b,c);
+        forwardModel = @(a,b,c) calculateRho1D11_mex(a,b,c)';
     case 19
         forwardModel = @(a,b,c) calculateRho1D19(a,b,c);
 end %anything else is an invalid choice
