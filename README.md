@@ -1,5 +1,5 @@
 # Senior-Thesis-stuff
-Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Monte Carlo Markov Chain approach
+Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Markov Chain Monte Carlo approach
 
 Step 1: Synthetic Data Generation
   - Main script: main_inversion.m
@@ -25,10 +25,4 @@ Step 4: Making figures
 
 Sequencing Ensemble Solutions
      - A Python language jupyter notebook is in the Sequencing/ subdirectory and can be used to sequence a subset of solutions from an ensemble.
--------
-
-Changes: 
-Ensembles from 9/13/2021:seed=1. Chains were run for 2e8 steps, saving at halfway through, save skip=400
-Ensembles from 2/8/2023: initial random seed=2, 4e8 steps, save skip=800
-Ensembles from 7/6/2023: initial random seed=1, 4e8 steps, save skip=800 (version used in Mills et al. paper)
 
