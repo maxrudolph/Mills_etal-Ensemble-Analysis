@@ -1,7 +1,8 @@
 # Mills_etal-Ensemble-Analysis
 Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Markov Chain Monte Carlo approach and ensemble appraisal.
 This code accompanies the manuscript:
-Mills, C.L., Rudolph, M.L., and Lekic, V. Exploring and Summarizing Ensemble Solutions to Geophysical Inverse Problems. Submitted to Journal of Geophysical Research: Machine Learning and Computation
+
+- Mills, C.L., Rudolph, M.L., and Lekic, V. Exploring and Summarizing Ensemble Solutions to Geophysical Inverse Problems. Submitted to Journal of Geophysical Research: Machine Learning and Computation
 
 Step 1: Synthetic Data Generation
   - Main script: main_inversion.m
