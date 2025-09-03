@@ -1,4 +1,4 @@
-# Senior-Thesis-stuff
+# Mills_etal-Ensemble-Analysis
 Files for Transdimensional Bayesian inversion of 1D geophysical resistivity surveys with a Markov Chain Monte Carlo approach
 
 Step 1: Synthetic Data Generation
