@@ -37,7 +37,9 @@ defaultPriorChoice = int64(1); % 1 = flat prior, 2 = malinverno prior on rho
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
-addParameter(p,'priorChoice',defaultPriorChoice,@isinteger);
+% accept 1 or 2 as any numeric type (isinteger rejected doubles such as 2)
+validPriorChoice = @(x) isnumeric(x) && isscalar(x) && any(x == [1 2]);
+addParameter(p,'priorChoice',defaultPriorChoice,validPriorChoice);
 addParameter(p,'piecewiseLinear',defaultLinear,@islogical); % whether to use linear (true) or piecewise constant resistivity
 parse(p,filename,varargin{:});
 
