@@ -71,11 +71,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
         mexErrMsgTxt("rhos has fewer non-NaN values than depths.");
     }
 
-    // Compute layer thicknesses
+    // Compute layer thicknesses and 1/rho (one division per layer instead of per lambda)
     double *h = mxMalloc((n > 1 ? n - 1 : 1) * sizeof(double));
+    double *invRho = mxMalloc(n * sizeof(double));
     for (mwSize i = 0; i + 1 < n; ++i) {
         h[i] = depths[i + 1] - depths[i];
     }
+    for (mwSize i = 0; i < n; ++i) {
+        invRho[i] = 1.0 / rhos[i];
+    }
+
+    // For x >= TANH_SAT, tanh(x) rounds to exactly 1.0 (1 - tanh(x) < 1e-17),
+    // and then Constable A-4 gives T_k = rho_k whatever T_{k+1} is.
+    const double TANH_SAT = 20.0;
 
     // Filter coefficients (Guptasarma 1982)
     double filter[11] = {
@@ -98,36 +106,35 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     // Main loop over each electrode spacing
     for (mwSize i = 0; i < m; ++i) {
-        double T[11];
-        double lam[11];
-
-        // Load lambda column
-        for (int j = 0; j < 11; ++j) {
-            lam[j] = lambda[j + 11 * i];
-            T[j] = rhos[n - 1];  // Start with rho_n
-        }
-
-        // Loop over layers from n-2 downto 0
-        // (unsigned counter kk = k+1 avoids converting the unsigned n-2 to int)
-        for (mwSize kk = n - 1; kk > 0; --kk) {
-            mwSize k = kk - 1;
-            for (int j = 0; j < 11; ++j) {
-                double tanh_val = tanh(lam[j] * h[k]);
-                double numerator = T[j] + rhos[k] * tanh_val;
-                double denominator = 1 + (T[j] * tanh_val / rhos[k]);
-                T[j] = numerator / denominator;
-            }
-        }
-
-        // Compute apparent resistivity by summing filter * T
         double sum = 0.0;
+
         for (int j = 0; j < 11; ++j) {
-            sum += T[j] * filter[j];
+            const double lam = lambda[j + 11 * i];
+
+            // Start at the shallowest saturated layer (T = rho_k there) if
+            // there is one; otherwise at the half-space (T = rho_n).
+            mwSize start = n - 1;
+            for (mwSize k = 0; k + 1 < n; ++k) {
+                if (lam * h[k] >= TANH_SAT) { start = k; break; }
+            }
+            double T = rhos[start];
+
+            // Constable A-4 for layers start-1 downto 0
+            // (unsigned counter kk = k+1 avoids converting the unsigned n-2 to int)
+            for (mwSize kk = start; kk > 0; --kk) {
+                mwSize k = kk - 1;
+                double tanh_val = tanh(lam * h[k]);
+                T = (T + rhos[k] * tanh_val) / (1.0 + T * tanh_val * invRho[k]);
+            }
+
+            // Apparent resistivity is the filter-weighted sum of T
+            sum += T * filter[j];
         }
         apparentResistivity[i] = sum;
     }
 
     mxFree(h);
+    mxFree(invRho);
     mxFree(depths);
     mxFree(rhos);
 }
