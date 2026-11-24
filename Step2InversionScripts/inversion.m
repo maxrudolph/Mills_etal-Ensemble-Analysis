@@ -37,7 +37,9 @@ defaultPriorChoice = int64(1); % 1 = flat prior, 2 = malinverno prior on rho
 p = inputParser;
 addRequired(p,'filename',@ischar);
 addParameter(p,'priorOn',defaultPriorOn,@islogical);
-addParameter(p,'priorChoice',defaultPriorChoice,@isinteger);
+% accept 1 or 2 as any numeric type (isinteger rejected doubles such as 2)
+validPriorChoice = @(x) isnumeric(x) && isscalar(x) && any(x == [1 2]);
+addParameter(p,'priorChoice',defaultPriorChoice,validPriorChoice);
 addParameter(p,'piecewiseLinear',defaultLinear,@islogical); % whether to use linear (true) or piecewise constant resistivity
 parse(p,filename,varargin{:});
 
@@ -69,7 +71,7 @@ options.piecewiseLinear = p.Results.piecewiseLinear;
 %set pctSteps = 10 or 20 since the loop will finish quickly and you might
 %not want a flood of print statements. This is purely for convenience so
 %there is no 'wrong' setting
-options
+
 %% Set parameter bounds
 % Create bounds on parameter values. Some bounds are based on Appendix A
 % in Malinverno 2002. See also the "genericMedium" constructor function
@@ -84,7 +86,6 @@ pBounds.rhoMin = 1e-8; % min resistivity, ohm meters
 pBounds.rhoMax = 1e8; % max resistivity, ohm meters
 pBounds.priorChoice = p.Results.priorChoice;
 pBounds.rhoChange = 1.5; % Std dev for resistivity change btwn steps
-pBounds.rhoPrior = p.Results.rhoPrior; % integer selecting prior on rho - see genericSln for details.
 pBounds.varMin = 1e-8; % min variance
 pBounds.varMax = 1e8; % max variance
 pBounds.varChange = 1e-1;  %amount variance can change by if alterVar=true
