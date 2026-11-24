@@ -34,7 +34,7 @@ elseif currentLayers >= maxLayers %if at max layers...
     if tmp < 1/numOptions
         output = 2; %delete layer
     else
-        availableOptions = [1 4 5];
+        availableOptions = [1 4:numOptions]; % perturbDepth, perturbRho (and changeVar if numOptions = 5)
         output = availableOptions(randi(length(availableOptions)));
     end
 else %If 1 < number of layers < maxLayers...

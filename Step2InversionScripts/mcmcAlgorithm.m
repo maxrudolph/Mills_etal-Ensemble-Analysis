@@ -85,7 +85,7 @@ results.ensembleRhos = nan*zeros(pBounds.maxLayers,numSavedRuns);
 results.ensembleVars = zeros(1,numSavedRuns);
 results.ensembleMisfits = zeros(1,numSavedRuns);
 results.ensembleNumLayers = zeros(1,numSavedRuns);
-results.ensembleGm = zeros(length(acceptedGm),numSavedRuns);
+results.ensembleG = zeros(length(acceptedGm),numSavedRuns);
 
 results.allChoices = zeros(totalSteps,1);
 results.allLikelihoods=zeros(totalSteps,1);

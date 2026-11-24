@@ -233,8 +233,8 @@ function. Get and set functions are at the end of the methods section.
                     case 1                     
                         obj.prior = -log(obj.numLayers); %prior on k is 1/k
                     case 2
-                        % flat prior on number of layers. Prior on rho gets
-                        % wrapped up in proposal ratios below.
+                        % prior on k is 1/k, as in case 1. The Normal prior on
+                        % log10(rho) is applied in the proposal ratios below.
                         obj.prior = -log(obj.numLayers);
                 end
             end

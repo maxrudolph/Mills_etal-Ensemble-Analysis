@@ -17,10 +17,10 @@ disp('Loading data...')
 load(filename,'data','forwardModel','results','pBounds','options')
 slashpos = find(filename == '/',1,'last');
 if isempty(slashpos)
-    slashpos=1;
+    slashpos=0;
 end
 
-filenameOut = filename(slashpos+9:end);
+filenameOut = filename(slashpos+10:end); % drop the path and the 9-character prefix "Ensemble_"
 disp(['output will be saved to: ' filenameOut]);
 originalForwardModel = forwardModel;
 if options.piecewiseLinear
@@ -53,7 +53,7 @@ for i = 1:numSavedRuns %for each sln...
     if options.piecewiseLinear
         [depth1,rho1] = piecewiseLinearSolution(results.ensembleDepths(:,i),results.ensembleRhos(:,i),pBounds);
         logRhoPlot(:,i) = log10(longForm(zVals,depth1,rho1));
-        residuals(:,i) = data.y - forwardModel(depth1,rho1,data.lambda);
+        residuals(:,i) = data.y - originalForwardModel(depth1,rho1,data.lambda);
         ewre2n(i) = sqrt(residuals(:,i)'*Cdi*residuals(:,i))/denominator;
     else
         logRhoPlot(:,i) = log10(longForm(zVals,results.ensembleDepths(:,i),...
@@ -98,7 +98,7 @@ lambdaForXVals = makeLambda(xVals,filterSize);
 for i=1:nSavedPlot
     if options.piecewiseLinear
         [depth1,rho1] = piecewiseLinearSolution(results.ensembleDepths(:,runPlotIndex(i)),results.ensembleRhos(:,runPlotIndex(i)),pBounds);
-        yVals(:,i) = forwardModel(depth1,rho1,lambdaForXVals);
+        yVals(:,i) = originalForwardModel(depth1,rho1,lambdaForXVals);
     else
         yVals(:,i) = forwardModel(squeeze(...
             results.ensembleDepths(:,runPlotIndex(i))),...
@@ -120,10 +120,10 @@ msLineStyle = '-'; dsLineStyle = '--';
 %Model space mean and median
 msMeanRhos = 10.^(mean(logRhoPlot,2));%Calculated in log space
 mMean = genModelCalc(msMeanRhos,zVals,data,meanColor,msLineStyle,...
-    'MS Mean',forwardModel);
+    'MS Mean',originalForwardModel);
 msMedianRhos = 10.^(median(logRhoPlot,2));
 mMedian = genModelCalc(msMedianRhos,zVals,data,medianColor,msLineStyle,...
-    'MS Median',forwardModel);
+    'MS Median',originalForwardModel);
 
 % Data space median and best fit models + maximumLikelihood
 [~,ind2] = sort(ewre2n); %sort all slns by misfit
@@ -151,7 +151,7 @@ parfor i=1:nzplot
     maxLikelihoodRho(i) = 10.^pdfXVals(ind1); %Find associated resistivity
 end
 maxLikelihood = genModelCalc(maxLikelihoodRho,zVals,data,...
-    maxLikelihoodColor,msLineStyle,'MS Max Likelihood',forwardModel);
+    maxLikelihoodColor,msLineStyle,'MS Max Likelihood',originalForwardModel);
 
 if exact_known
     %Setup true model or exact solution
@@ -179,9 +179,9 @@ disp('Clustering Manhattan...')
 manPartition = clusterMSpace(logRhoPlot,maxNumClusters,'cityblock');
 
 KMModelsEuclid = setUpClusterCell(trueModel,euclidPartition,zVals,...
-    data,forwardModel);
+    data,originalForwardModel);
 KMModelsMan = setUpClusterCell(trueModel,manPartition,zVals,...
-    data,forwardModel);
+    data,originalForwardModel);
 
 disp('k-Medoids Euclidean');
 kMedoidsEuclideanPartition = cluster_model_space_kmedoids(logRhoPlot,maxNumClusters,'sqeuclidean');
@@ -190,9 +190,9 @@ kMedoidsManhattanPartition = cluster_model_space_kmedoids(logRhoPlot,maxNumClust
 
 disp('Calculating Clustering Models...')
 KMedoidsEuclid    = setUpClusterCell(trueModel,kMedoidsEuclideanPartition,zVals,...
-    data,forwardModel);
+    data,originalForwardModel);
 KMedoidsManhattan = setUpClusterCell(trueModel,kMedoidsManhattanPartition,zVals,...
-    data,forwardModel);
+    data,originalForwardModel);
 
 allClusterSets = {KMModelsEuclid, KMModelsMan, KMedoidsEuclid, KMedoidsManhattan};
 allPartitions = {euclidPartition, manPartition, kMedoidsEuclideanPartition, kMedoidsManhattanPartition};
